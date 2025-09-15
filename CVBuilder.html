@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wizard CV — CI Solution</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <!-- Favicon -->
+  <link rel="icon" href="https://res.cloudinary.com/doivgytwg/image/upload/v1754073056/Logo_IANgine_Negro_y7shtd.png" type="image/png">
+  <link rel="shortcut icon" href="https://res.cloudinary.com/doivgytwg/image/upload/v1754073056/Logo_IANgine_Negro_y7shtd.png" type="image/png">
+  <link rel="apple-touch-icon" href="https://res.cloudinary.com/doivgytwg/image/upload/v1754073056/Logo_IANgine_Negro_y7shtd.png">
+  <style>
+    :root{
+      --brand:#1c2b67; /* tono corporativo oscuro */
+      --brand-2:#d99c50; /* acento miel/dorado */
+      --bg:#0f1220;
+      --card:#12162a;
+      --muted:#8fa0c5;
+      --ok:#1fbf75; 
+      --danger:#ff5a5f;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; 
+      background: radial-gradient(1200px 600px at 70% -10%, #222a55 0%, transparent 60%), 
+                  radial-gradient(900px 500px at 20% 120%, #1a2042 0%, transparent 60%), 
+                  var(--bg);
+      color:#e9ecf8; 
+    }
+    .container{max-width:980px;margin:24px auto;padding:20px}
+    header{
+      display:flex; align-items:center; justify-content:space-between; gap:16px; 
+      padding:16px 20px; background:linear-gradient(180deg, #171c37, #12162a); border:1px solid #242b58; border-radius:16px; box-shadow:0 10px 24px rgba(0,0,0,.35);
+    }
+    header .brand{display:flex; align-items:center; gap:14px}
+    header img{height:44px; width:auto; object-fit:contain; filter:drop-shadow(0 2px 6px rgba(0,0,0,.35));}
+    header h1{font-size:20px; margin:0; font-weight:700; letter-spacing:.2px}
+    header p{margin:0; color:var(--muted); font-size:13px}
+
+    /* Stepper */
+    .stepper{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:22px 0 16px}
+    .step{
+      position:relative; display:flex; flex-direction:column; align-items:center; gap:8px; 
+      padding:12px 10px; background:var(--card); border:1px solid #222956; border-radius:14px; 
+    }
+    .step .num{height:30px;width:30px;border-radius:999px;display:grid;place-items:center;background:#1b2350;border:1px solid #2a3473}
+    .step.active{outline:2px solid var(--brand-2)}
+    .step.complete .num{background:var(--ok); border-color:var(--ok); color:#072c17}
+    .step span{font-size:12px; color:#c6d2ff}
+
+    /* Card */
+    .card{background:linear-gradient(180deg, #12162a, #0f1330); border:1px solid #232a58; border-radius:18px; padding:20px; box-shadow:0 20px 40px rgba(0,0,0,.35)}
+    .grid{display:grid; gap:14px}
+    .grid.cols-2{grid-template-columns:repeat(2, minmax(0,1fr))}
+    .grid.cols-3{grid-template-columns:repeat(3, minmax(0,1fr))}
+    @media (max-width: 860px){.grid.cols-2,.grid.cols-3{grid-template-columns:1fr}}
+
+    label{display:block; font-size:13px; color:#b8c5ff; margin:4px 0 6px}
+    input, select, textarea{
+      width:100%; padding:12px 12px; border-radius:12px; border:1px solid #2b346b; background:#0e1330; color:#e9ecf8;
+      outline:none; transition: box-shadow .2s, border-color .2s;
+    }
+    input:focus, select:focus, textarea:focus{box-shadow:0 0 0 3px rgba(217,156,80,.18); border-color: var(--brand-2)}
+    input[readonly]{opacity:.85; background:#0d122c}
+
+    /* Input group for phone code + number */
+    .input-group{display:flex; gap:8px; align-items:center}
+    .input-group select{max-width:140px}
+
+    .row{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+    .btn{
+      appearance:none; border:none; padding:11px 16px; border-radius:12px; 
+      background:#26306d; color:#e9ecf8; font-weight:600; cursor:pointer; 
+      border:1px solid #2b367b; transition: transform .04s, background .2s;
+    }
+    .btn:hover{background:#2c3a86}
+    .btn:active{transform:translateY(1px)}
+    .btn.primary{background:linear-gradient(180deg, #3848a2, #2c3a86); border-color:#5262c4}
+    .btn.success{background:linear-gradient(180deg, #1fbf75, #16a765); border-color:#1fbf75; color:#062716}
+    .btn.ghost{background:transparent}
+    .btn.danger{background:#53242e; border-color:#762f3f}
+
+    .muted{color:#97a6d9; font-size:12px}
+    .hint{font-size:12px; color:#9db1fb}
+    .counter{font-size:12px; color:#8fa0c5; text-align:right; margin-top:6px}
+
+    .list{display:grid; gap:12px; margin-top:10px}
+    .item{padding:14px; border-radius:14px; border:1px dashed #2b346b; background:#0f1437}
+
+    .nav{display:flex; justify-content:space-between; gap:10px; margin-top:18px}
+
+    .error{border-color: var(--danger)!important}
+
+    /* Overlay loading */
+    .overlay{position:fixed; inset:0; background:rgba(12,14,28,.88); display:none; align-items:center; justify-content:center; z-index:50;}
+    .overlay.active{display:flex}
+    .spinner{width:66px;height:66px;border-radius:50%; border:6px solid #2a326a; border-top-color: var(--brand-2); animation:spin 1s linear infinite; margin-bottom:16px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* Modal */
+    .modal{position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:60;}
+    .modal.active{display:flex}
+    .modal .backdrop{position:absolute; inset:0; background:rgba(7,9,20,.7)}
+    .modal .dialog{position:relative; width:min(780px, 92vw); max-height:80vh; overflow:auto; background:#111633; border:1px solid #26306c; border-radius:16px; padding:18px}
+    .modal header{position:sticky; top:0; background:#0f1430; border-radius:12px; margin:-8px -8px 12px -8px; padding:10px 14px; border:1px solid #232a58}
+    .modal h3{margin:0; font-size:16px}
+    pre{white-space:pre-wrap; word-wrap:break-word; background:#0d122c; padding:12px; border-radius:12px; border:1px solid #232a58}
+
+    .footer-note{margin-top:18px; font-size:12px; color:#9fb0ff}
+      /* Footer brand */
+    footer{margin:16px auto 24px; max-width:980px}
+    .footer-link{display:flex; align-items:center; justify-content:center; gap:10px; padding:10px 12px; font-size:12px; color:#97a6d9; text-decoration:none; opacity:.7; border-top:1px solid #232a58; border-radius:0 0 14px 14px}
+    .footer-link:hover{opacity:1}
+    .footer-link img{height:16px; width:auto}
+      /* Grid span helpers */
+    .grid .col-span-2{grid-column: span 2;}
+    .grid .col-span-3{grid-column: span 3;}
+    textarea{width:100%; display:block}
+
+    /* Responsive tweaks */
+    @media (max-width: 860px){
+      .stepper{grid-template-columns: 1fr;}
+      .grid.cols-2,.grid.cols-3{grid-template-columns:1fr}
+      .grid .col-span-2, .grid .col-span-3{grid-column:auto}
+    }
+    @media (max-width: 640px){
+      .container{padding:12px}
+      header{flex-direction:column; align-items:flex-start; gap:8px}
+      .input-group{flex-direction:column; align-items:stretch}
+      .input-group select{max-width:none; width:100%}
+      .nav{flex-direction:column; gap:8px}
+      .nav .row{width:100%}
+      .nav .row .btn{width:100%}
+    }
+
+    
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <img src="https://res.cloudinary.com/doivgytwg/image/upload/v1757115177/logo-cisolution_pxpovd.png" alt="Logo CI Solution" />
+        <div>
+          <h1>Captura de Curriculum Vitae</h1>
+          <p>Wizard de 3 pasos • Información general → Educación → Experiencia laboral</p>
+        </div>
+      </div>
+      <div class="muted">v1.2</div>
+    </header>
+
+    <div class="stepper" id="stepper">
+      <div class="step active" data-step="0">
+        <div class="num">1</div>
+        <span>Información general</span>
+      </div>
+      <div class="step" data-step="1">
+        <div class="num">2</div>
+        <span>Educación</span>
+      </div>
+      <div class="step" data-step="2">
+        <div class="num">3</div>
+        <span>Experiencia laboral</span>
+      </div>
+    </div>
+
+    <!-- STEP 1: Información general -->
+    <section class="card" data-panel="0">
+      <div class="grid cols-2">
+        <div>
+          <label for="primerNombre">Primer Nombre *</label>
+          <input id="primerNombre" required placeholder="Ej. Ana" />
+        </div>
+        <div>
+          <label for="segundoNombre">Segundo Nombre</label>
+          <input id="segundoNombre" placeholder="Opcional" />
+        </div>
+        <div>
+          <label for="primerApellido">Primer Apellido *</label>
+          <input id="primerApellido" required placeholder="Ej. López" />
+        </div>
+        <div>
+          <label for="segundoApellido">Segundo Apellido</label>
+          <input id="segundoApellido" placeholder="Opcional" />
+        </div>
+        <div>
+          <label for="fechaNac">Fecha de nacimiento *</label>
+          <input id="fechaNac" type="date" required />
+        </div>
+        <div>
+          <label for="edad">Edad (auto)</label>
+          <input id="edad" type="number" readonly placeholder="Se calcula automáticamente" />
+        </div>
+        <div>
+          <label for="telefono">Teléfono Celular *</label>
+          <div class="input-group">
+            <select id="telCode" required>
+              <option value="+504">+504 (HN)</option>
+              <option value="+502">+502 (GT)</option>
+              <option value="+503">+503 (SV)</option>
+              <option value="+505">+505 (NI)</option>
+              <option value="+506">+506 (CR)</option>
+              <option value="+52">+52 (MX)</option>
+              <option value="+1">+1 (US/CA)</option>
+              <option value="+57">+57 (CO)</option>
+              <option value="+34">+34 (ES)</option>
+              <option value="+51">+51 (PE)</option>
+              <option value="+56">+56 (CL)</option>
+              <option value="+507">+507 (PA)</option>
+              <option value="+593">+593 (EC)</option>
+              <option value="+54">+54 (AR)</option>
+            </select>
+            <input id="telefono" type="text" inputmode="numeric" required pattern="[0-9]{7,15}" placeholder="99999999" data-numeric />
+          </div>
+          <small class="hint">Solo dígitos. El código se concatena automáticamente.</small>
+        </div>
+        <div>
+          <label for="email">Correo electrónico *</label>
+          <input id="email" type="email" required placeholder="ejemplo@correo.com" />
+        </div>
+        <div>
+          <label for="paisResidencia">País de residencia</label>
+          <select id="paisResidencia" required>
+            <option value="">Seleccione…</option>
+            <option>Honduras</option>
+            <option>Guatemala</option>
+            <option>El Salvador</option>
+            <option>Nicaragua</option>
+            <option>Costa Rica</option>
+            <option>México</option>
+            <option>Estados Unidos</option>
+            <option>Colombia</option>
+            <option>España</option>
+            <option>Perú</option>
+            <option>Chile</option>
+            <option>Panamá</option>
+            <option>Ecuador</option>
+            <option>Argentina</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div>
+          <label for="ciudad">Ciudad</label>
+          <input id="ciudad" type="text" placeholder="Ej. Tegucigalpa" required />
+        </div>
+        <div class="col-span-2">
+          <label for="direccion">Dirección (máx. 200 caracteres)</label>
+          <textarea id="direccion" rows="3" maxlength="200" placeholder="Colonia, ciudad, referencias..."></textarea>
+          <div class="counter"><span id="dirCount">0</span>/200</div>
+        </div>
+      </div>
+      <div class="nav">
+        <div></div>
+        <div class="row">
+          <button class="btn primary" id="next1">Siguiente →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 2: Educación -->
+    <section class="card" data-panel="1" hidden>
+      <div class="row">
+        <button class="btn" id="addEdu">+ Agregar educación</button>
+        <span class="hint">Puede ingresar múltiples títulos académicos.</span>
+      </div>
+      <div class="list" id="eduList"></div>
+
+      <div class="nav">
+        <button class="btn ghost" id="back2">← Anterior</button>
+        <div class="row">
+          <button class="btn primary" id="next2">Siguiente →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 3: Experiencia laboral -->
+    <section class="card" data-panel="2" hidden>
+      <div class="row">
+        <button class="btn" id="addExp">+ Agregar experiencia</button>
+        <span class="hint">Puede ingresar varios trabajos previos.</span>
+      </div>
+      <div class="list" id="expList"></div>
+
+      <div class="nav">
+        <button class="btn ghost" id="back3">← Anterior</button>
+        <div class="row">
+          <button class="btn success" id="saveBtn">Guardar</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Loading overlay -->
+  <div class="overlay" id="overlay">
+    <div style="text-align:center">
+      <div class="spinner"></div>
+      <div>Guardando información y generando PDF…</div>
+      <div class="footer-note">No cierres esta ventana.</div>
+    </div>
+  </div>
+
+  <!-- Modal respuesta webhook -->
+  <div class="modal" id="resultModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="backdrop"></div>
+    <div class="dialog">
+      <header>
+        <h3 id="modalTitle">Respuesta</h3>
+      </header>
+      <div>
+        <p class="muted">Esto es lo que respondió el servidor al recibir tus datos:</p>
+        <pre id="modalResponse">—</pre>
+      </div>
+      <div class="nav">
+        <div class="row">
+          <button class="btn" id="copyResp" style="display: none;">Copiar respuesta</button>
+        </div>
+        <div class="row">
+          <button type="button" class="btn" id="downloadPdf" style="display: none;" >Descargar PDF</button>
+          <button class="btn" id="openPdf">Abrir PDF</button>
+          <button class="btn primary" id="closeModal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script>
+    
+    const steps = Array.from(document.querySelectorAll('.step'));
+    const panels = Array.from(document.querySelectorAll('[data-panel]'));
+    const stepper = (idx)=>{
+      steps.forEach((s,i)=>{
+        s.classList.toggle('active', i===idx);
+        s.classList.toggle('complete', i<idx);
+      });
+      panels.forEach((p,i)=> p.hidden = i!==idx);
+    }
+
+    // Helpers
+    const byId = id => document.getElementById(id);
+    const overlay = byId('overlay');
+    const modal = byId('resultModal');
+    const respPre = byId('modalResponse');
+    const downloadPdfLink = byId('downloadPdf');
+    const openPdfBtn = byId('openPdf');
+    let latestPdfBlob = null;
+    let latestPdfUrl = null;
+    let latestPdfDoc = null;
+
+    // Contadores y edad
+    const direccion = byId('direccion');
+    const dirCount = byId('dirCount');
+    direccion.addEventListener('input', ()=> dirCount.textContent = direccion.value.length);
+
+    const fechaNac = byId('fechaNac');
+    const edad = byId('edad');
+    // Establecer fecha máxima permitida (>=18 años)
+    (function(){
+      const today = new Date();
+      const maxDate = new Date(today.getFullYear()-18, today.getMonth(), today.getDate());
+      const pad = n => String(n).padStart(2,'0');
+      const maxStr = `${maxDate.getFullYear()}-${pad(maxDate.getMonth()+1)}-${pad(maxDate.getDate())}`;
+      fechaNac.max = maxStr;
+    })();
+    fechaNac.addEventListener('change', ()=>{
+      const v = fechaNac.value;
+      if(!v){edad.value=''; return}
+      const year = new Date(v).getFullYear();
+      const currentYear = new Date().getFullYear();
+      const calc = currentYear - year; // según requisito: año actual - año nacimiento
+      edad.value = isFinite(calc) ? calc : '';
+    });
+
+    // Solo números en inputs marcados con data-numeric
+    function attachNumericOnly(scope=document){
+      scope.querySelectorAll('[data-numeric]').forEach(el=>{
+        const sanitize = ()=>{ el.value = el.value.replace(/\D/g,''); };
+        el.addEventListener('input', sanitize);
+        el.addEventListener('paste', e=>{ e.preventDefault(); const t=(e.clipboardData||window.clipboardData).getData('text'); el.value=(el.value+t).replace(/\D/g,''); });
+        el.addEventListener('keypress', e=>{ if(!/[0-9]/.test(e.key)) e.preventDefault(); });
+      });
+    }
+    attachNumericOnly();
+
+    // Edu / Exp dynamics
+    const eduList = byId('eduList');
+    const expList = byId('expList');
+
+    const createEduItem = ()=>{
+      const wrap = document.createElement('div');
+      wrap.className='item';
+      wrap.innerHTML = `
+        <div class="grid cols-2">
+          <div>
+            <label>Nombre de Título *</label>
+            <select required>
+              <option value="">Seleccione…</option>
+              <option>Administrador/a de Empresas</option>
+              <option>Abogado/a</option>
+              <option>Arquitecto/a</option>
+              <option>Auditor/a</option>
+              <option>Biólogo/a</option>
+              <option>Chef / Gastronomía</option>
+              <option>Comercio Internacional</option>
+              <option>Contador/a Público/a</option>
+              <option>Docente / Profesor/a</option>
+              <option>Diseñador/a Gráfico/a</option>
+              <option>Economista</option>
+              <option>Enfermero/a</option>
+              <option>Farmacéutico/a</option>
+              <option>Fisioterapeuta</option>
+              <option>Ingeniero/a Civil</option>
+              <option>Ingeniero/a Industrial</option>
+              <option>Ingeniero/a en Sistemas</option>
+              <option>Ingeniero/a Eléctrico/a</option>
+              <option>Ingeniero/a Mecánico/a</option>
+              <option>Ingeniero/a Químico/a</option>
+              <option>Logística y Operaciones</option>
+              <option>Marketing / Mercadotecnia</option>
+              <option>Marketing Digital</option>
+              <option>Médico/a Cirujano/a</option>
+              <option>Música</option>
+              <option>Nutricionista</option>
+              <option>Odontólogo/a</option>
+              <option>Periodista / Comunicador/a</option>
+              <option>Psicólogo/a</option>
+              <option>QA / Tester</option>
+              <option>Recursos Humanos</option>
+              <option>Relaciones Internacionales</option>
+              <option>Desarrollador/a de Software</option>
+              <option>Arquitecto/a de Software</option>
+              <option>Analista de Datos</option>
+              <option>Científico/a de Datos</option>
+              <option>Ciberseguridad</option>
+              <option>Redes / Telecomunicaciones</option>
+              <option>Turismo y Hotelería</option>
+              <option>UX / UI Designer</option>
+              <option>Veterinario/a</option>
+              <option>Artes Plásticas</option>
+              <option>Trabajador/a Social</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div>
+            <label>Nivel educativo *</label>
+            <select required>
+              <option value="">Seleccione…</option>
+              <option>Primaria</option>
+              <option>Secundaria</option>
+              <option>Universitario</option>
+              <option>Maestria</option>
+              <option>Doctorado</option>
+              <option>Diplomado</option>
+              <option>Certificado</option>
+            </select>
+          </div>
+          <div>
+            <label>Nombre del centro educativo *</label>
+            <input required placeholder="Universidad / Instituto" />
+          </div>
+          <div>
+            <label>Año</label>
+            <input type="number" min="1900" max="2100" placeholder="Ej. 2024" />
+          </div>
+        </div>
+        <div class="row" style="margin-top:10px; justify-content:flex-end">
+          <button class="btn danger remove">Eliminar</button>
+        </div>
+      `;
+      wrap.querySelector('.remove').addEventListener('click', ()=> wrap.remove());
+      return wrap;
+    }
+
+    const createExpItem = ()=>{
+      const wrap = document.createElement('div');
+      wrap.className='item';
+      wrap.innerHTML = `
+        <div class="grid cols-3">
+          <div>
+            <label>Nombre empresa *</label>
+            <input data-field="empresa" required placeholder="Ej. CI Solution" />
+          </div>
+          <div>
+            <label>Fecha de ingreso *</label>
+            <input type="date" data-field="ingreso" required />
+          </div>
+          <div>
+            <label>Fecha de salida</label>
+            <input type="date" data-field="salida" />
+          </div>
+          <div>
+            <label>Cargo o puesto *</label>
+            <input data-field="cargo" required placeholder="Ej. Analista de Datos" />
+          </div>
+          <div>
+            <label>Nombre jefe inmediato</label>
+            <input data-field="jefe" placeholder="Opcional" />
+          </div>
+          <div>
+            <label>Teléfono jefe inmediato</label>
+            <div class="input-group">
+              <select class="telCode">
+                <option value="+504">+504 (HN)</option>
+                <option value="+502">+502 (GT)</option>
+                <option value="+503">+503 (SV)</option>
+                <option value="+505">+505 (NI)</option>
+                <option value="+506">+506 (CR)</option>
+                <option value="+52">+52 (MX)</option>
+                <option value="+1">+1 (US/CA)</option>
+                <option value="+57">+57 (CO)</option>
+                <option value="+34">+34 (ES)</option>
+                <option value="+51">+51 (PE)</option>
+                <option value="+56">+56 (CL)</option>
+                <option value="+507">+507 (PA)</option>
+                <option value="+593">+593 (EC)</option>
+                <option value="+54">+54 (AR)</option>
+              </select>
+              <input class="telNum" type="text" inputmode="numeric" pattern="[0-9]{7,15}" placeholder="Opcional" data-numeric />
+            </div>
+          </div>
+          <div class="col-span-3">
+            <label>Descripción de labores (máx. 500)</label>
+            <textarea data-field="desc" rows="3" maxlength="500" placeholder="Resumen de responsabilidades, logros, herramientas…"></textarea>
+            <div class="counter"><span class="descCount">0</span>/500</div>
+          </div>
+        </div>
+        <div class="row" style="margin-top:10px; justify-content:flex-end">
+          <button class="btn danger remove">Eliminar</button>
+        </div>
+      `;
+      const ta = wrap.querySelector('textarea');
+      const cnt = wrap.querySelector('.descCount');
+      ta.addEventListener('input', ()=> cnt.textContent = ta.value.length);
+      wrap.querySelector('.remove').addEventListener('click', ()=> wrap.remove());
+      // aplicar filtros numéricos a este bloque
+      attachNumericOnly(wrap);
+      return wrap;
+    }
+
+    byId('addEdu').addEventListener('click', ()=> eduList.appendChild(createEduItem()));
+    byId('addExp').addEventListener('click', ()=> expList.appendChild(createExpItem()));
+
+    // Add one default entry to each list for convenience
+    eduList.appendChild(createEduItem());
+    expList.appendChild(createExpItem());
+
+    // Navigation & validation
+    const requireFieldsIn = (root)=>{
+      const invalid = [];
+      root.querySelectorAll('input[required], select[required], textarea[required]')
+        .forEach(el=>{
+          if(!el.value || (el.tagName==='SELECT' && !el.value)) invalid.push(el);
+        });
+      return invalid;
+    }
+
+    const markInvalid = (nodes)=>{
+      nodes.forEach(n=>{
+        n.classList.add('error');
+        n.addEventListener('input', ()=> n.classList.remove('error'), { once:true });
+        n.addEventListener('change', ()=> n.classList.remove('error'), { once:true });
+      })
+    }
+
+    byId('next1').addEventListener('click', ()=>{
+      const panel = panels[0];
+      const invalid = requireFieldsIn(panel);
+      if(invalid.length){ markInvalid(invalid); panel.scrollIntoView({behavior:'smooth'}); return }
+      const telNumDigits = byId('telefono').value.replace(/\D/g,'');
+      if(telNumDigits.length < 7){ markInvalid([byId('telefono')]); byId('telefono').focus(); return }
+      const ageNum = parseInt(byId('edad').value, 10) || 0;
+      if(ageNum < 18){ markInvalid([byId('fechaNac')]); alert('El candidato debe ser mayor o igual a 18 años.'); return }
+      stepper(1);
+    });
+    byId('back2').addEventListener('click', ()=> stepper(0));
+    byId('next2').addEventListener('click', ()=>{
+      const panel = panels[1];
+      // Ensure each education item has required filled
+      const invalid = [];
+      panel.querySelectorAll('.item').forEach(item=>{
+        item.querySelectorAll('input[required], select[required]').forEach(el=>{ if(!el.value) invalid.push(el) })
+      })
+      if(!panel.querySelector('.item')) invalid.push(byId('addEdu')); // force at least one
+      if(invalid.length){ markInvalid(invalid); panel.scrollIntoView({behavior:'smooth'}); return }
+      stepper(2);
+    });
+    byId('back3').addEventListener('click', ()=> stepper(1));
+
+    // Gather data
+    const getFormData = ()=>{
+      const telCodeSel = byId('telCode').value;
+      const telNumDigits = byId('telefono').value.replace(/\D/g,'');
+      const general = {
+        primerNombre: byId('primerNombre').value.trim(),
+        segundoNombre: byId('segundoNombre').value.trim(),
+        primerApellido: byId('primerApellido').value.trim(),
+        segundoApellido: byId('segundoApellido').value.trim(),
+        fechaNacimiento: byId('fechaNac').value,
+        edad: byId('edad').value,
+        telefono: telCodeSel + telNumDigits,
+        telefonoCodigo: telCodeSel,
+        telefonoNumero: telNumDigits,
+        email: byId('email').value.trim(),
+        paisResidencia: byId('paisResidencia') ? byId('paisResidencia').value : '',
+        ciudad: byId('ciudad') ? byId('ciudad').value.trim() : '',
+        direccion: byId('direccion').value.trim(),
+      };
+
+      const educacion = Array.from(eduList.querySelectorAll('.item')).map(item=>{
+        const [titulo, nivelSel, centro, anio] = item.querySelectorAll('input, select');
+        return {
+          titulo: titulo.value.trim(),
+          nivel: nivelSel.value,
+          centro: centro.value.trim(),
+          anio: anio.value ? Number(anio.value) : null,
+        }
+      });
+
+      const experiencia = Array.from(expList.querySelectorAll('.item')).map(item=>{
+        const empresa = item.querySelector('[data-field="empresa"]');
+        const fIngreso = item.querySelector('[data-field="ingreso"]');
+        const fSalida = item.querySelector('[data-field="salida"]');
+        const cargo = item.querySelector('[data-field="cargo"]');
+        const jefe = item.querySelector('[data-field="jefe"]');
+        const telCodeSelX = item.querySelector('.telCode');
+        const telNumInputX = item.querySelector('.telNum');
+        const desc = item.querySelector('[data-field="desc"]');
+
+        const telNumDigitsX = telNumInputX ? telNumInputX.value.replace(/\D/g,'') : '';
+        const telCodeX = telCodeSelX ? telCodeSelX.value : '';
+        const telFull = (telCodeX && telNumDigitsX) ? (telCodeX + telNumDigitsX) : '';
+
+        return {
+          empresa: empresa ? empresa.value.trim() : '',
+          fechaIngreso: fIngreso ? fIngreso.value : '',
+          fechaSalida: fSalida ? fSalida.value : '',
+          cargo: cargo ? cargo.value.trim() : '',
+          jefeInmediato: jefe ? jefe.value.trim() : '',
+          telefonoJefe: telFull,
+          telefonoJefeCodigo: telCodeX,
+          telefonoJefeNumero: telNumDigitsX,
+          descripcion: desc ? desc.value.trim() : '',
+        }
+      });
+
+      return {
+        general,
+        educacion,
+        experiencia,
+        metadata: {
+          createdAt: new Date().toISOString(),
+          userAgent: navigator.userAgent,
+          source: 'Wizard CV — CI Solution v1.1'
+        }
+      }
+    }
+
+    // PDF generation using jsPDF
+    async function generatePDF(data){
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit:'pt', format:'a4' });
+      const margin = 40;
+      const lineHeight = 16;
+      const maxWidth = 515; // 595 - margins
+      let y = margin;
+
+      // Try to add logo
+      try {
+        const logoUrl = 'https://res.cloudinary.com/doivgytwg/image/upload/v1757115177/logo-cisolution_pxpovd.png';
+        const img = await fetch(logoUrl).then(r=>r.blob());
+        const reader = new FileReader();
+        const p = new Promise(res=>{ reader.onload = ()=> res(reader.result) });
+        reader.readAsDataURL(img);
+        const dataURL = await p;
+        doc.addImage(dataURL, 'PNG', margin, y, 120, 38);
+      } catch(e){}
+
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(18);
+      doc.text('Curriculum Vitae — Captura', margin, y+=60);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(11);
+      doc.setTextColor(40);
+      y += 10;
+
+      const addSection = (title)=>{
+        doc.setFont('helvetica','bold');
+        doc.setFontSize(13);
+        doc.text(title, margin, y+=26);
+        doc.setFont('helvetica','normal');
+        doc.setFontSize(11);
+      }
+
+      const writeKV = (k,v)=>{
+        const text = `${k}: ${v??''}`;
+        const lines = doc.splitTextToSize(text, maxWidth);
+        lines.forEach(line=>{ if(y>780){ doc.addPage(); y=margin } doc.text(line, margin, y+=lineHeight); });
+      }
+
+      // GENERAL
+      addSection('Información general');
+      const g = data.general;
+      writeKV('Nombre completo', `${g.primerNombre} ${g.segundoNombre} ${g.primerApellido} ${g.segundoApellido}`.replace(/\s+/g,' ').trim());
+      writeKV('Fecha de nacimiento', g.fechaNacimiento);
+      writeKV('Edad', g.edad);
+      writeKV('Teléfono', g.telefonoCodigo ? `${g.telefonoCodigo} ${g.telefonoNumero}` : g.telefono);
+      writeKV('Correo', g.email);
+      writeKV('Dirección', g.direccion);
+      writeKV('País de residencia', g.paisResidencia||'');
+      writeKV('Ciudad', g.ciudad||'');
+
+      // EDUCACION
+      addSection('Educación');
+      if(!data.educacion.length){ writeKV('—', 'Sin registros'); }
+      data.educacion.forEach((e,i)=>{
+        writeKV(`Título ${i+1}`, e.titulo);
+        writeKV('Nivel', e.nivel);
+        writeKV('Centro', e.centro);
+        writeKV('Año', e.anio||'');
+        y += 6;
+      });
+
+      // EXPERIENCIA
+      addSection('Experiencia laboral');
+      if(!data.experiencia.length){ writeKV('—', 'Sin registros'); }
+      data.experiencia.forEach((x,i)=>{
+        writeKV(`Empresa ${i+1}`, x.empresa);
+        writeKV('Cargo', x.cargo);
+        writeKV('Ingreso', x.fechaIngreso);
+        writeKV('Salida', x.fechaSalida||'');
+        writeKV('Jefe inmediato', x.jefeInmediato||'');
+        writeKV('Tel. jefe', x.telefonoJefeCodigo ? `${x.telefonoJefeCodigo} ${x.telefonoJefeNumero}` : (x.telefonoJefe||''));
+        writeKV('Descripción', x.descripcion||'');
+        y += 6;
+      });
+
+      // Footer
+      if(y>780){ doc.addPage(); y=margin }
+      doc.setDrawColor(180);
+      doc.line(margin, y+18, margin+maxWidth, y+18);
+      doc.setFontSize(9);
+      doc.setTextColor(100);
+      doc.text(`Generado: ${new Date().toLocaleString()}`, margin, y+34);
+      doc.text(`${data.metadata.source}`, margin, y+48);
+
+      return doc;
+    }
+
+    // Save handler
+    const saveBtn = byId('saveBtn');
+    saveBtn.addEventListener('click', async ()=>{
+      // Validate experiences minimal (at least one & requireds)
+      const panel = panels[2];
+      const invalid = [];
+      if(!panel.querySelector('.item')) invalid.push(byId('addExp'));
+      panel.querySelectorAll('.item').forEach(item=>{
+        const req = item.querySelectorAll('input[required]');
+        req.forEach(el=>{ if(!el.value) invalid.push(el) })
+      });
+      if(invalid.length){ markInvalid(invalid); panel.scrollIntoView({behavior:'smooth'}); return }
+
+      overlay.classList.add('active');
+      try {
+        const data = getFormData();
+        const pdf = await generatePDF(data);
+        latestPdfDoc = pdf;
+        const pdfBlob = pdf.output('blob');
+        latestPdfBlob = pdfBlob;
+
+        // Prepare download link right away
+        if (latestPdfUrl) try { URL.revokeObjectURL(latestPdfUrl); } catch {}
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+        latestPdfUrl = pdfUrl;
+
+        // Build FormData for webhook
+        const form = new FormData();
+        form.append('cvPdf', pdfBlob, 'CV.pdf');
+        form.append('cvData', JSON.stringify(data));
+        // Some convenient top-level fields
+        form.append('nombreCompleto', `${data.general.primerNombre} ${data.general.segundoNombre} ${data.general.primerApellido} ${data.general.segundoApellido}`.replace(/\s+/g,' ').trim());
+        form.append('telefono', data.general.telefono);
+        form.append('email', data.general.email);
+        form.append('paisResidencia', data.general.paisResidencia || '');
+        form.append('ciudad', data.general.ciudad || '');
+
+        // POST to webhook
+        const resp = await fetch('https://n8n.srv902776.hstgr.cloud/webhook/7e6ca46b-d707-4e68-8e5f-88830ec9d6cc', {
+          method: 'POST',
+          body: form
+        });
+
+        let text;
+        try{
+          const json = await resp.clone().json();
+          text = JSON.stringify(json, null, 2);
+        }catch{
+          text = await resp.text();
+        }
+        respPre.textContent = text || 'Sin contenido';
+        modal.classList.add('active');
+      } catch (err){
+        respPre.textContent = 'Error: ' + (err?.message || err);
+        modal.classList.add('active');
+      } finally {
+        overlay.classList.remove('active');
+      }
+    });
+
+    // Descargar siempre de forma programática (máxima compatibilidad)
+    downloadPdfLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (latestPdfDoc && typeof latestPdfDoc.save === 'function') { try { latestPdfDoc.save('CV.pdf'); return; } catch(e){} }
+      try {
+        if (!latestPdfBlob && !latestPdfUrl) {
+          alert('Primero guarda para generar el PDF.');
+          return;
+        }
+        const url = latestPdfUrl || URL.createObjectURL(latestPdfBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.setAttribute('download','CV.pdf');
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(()=> {
+          const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+          if (isIOS) window.open(url, '_blank');
+        }, 100);
+      } catch(err) {
+        console.error('Descarga PDF error:', err);
+        const href = downloadPdfLink.getAttribute('href');
+        if (href) window.open(href, '_blank');
+      }
+    });
+
+    // Abrir PDF en nueva pestaña
+    openPdfBtn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      try{
+        if (!latestPdfUrl && latestPdfBlob) latestPdfUrl = URL.createObjectURL(latestPdfBlob);
+        if (latestPdfUrl) window.open(latestPdfUrl, '_blank');
+        else alert('Primero guarda para generar el PDF.');
+      }catch(err){ console.error('Abrir PDF error:', err); }
+    });
+
+    // Modal actions
+    byId('closeModal').addEventListener('click', ()=> modal.classList.remove('active'));
+    byId('copyResp').addEventListener('click', async ()=>{
+      try{ await navigator.clipboard.writeText(respPre.textContent); 
+        alert('Respuesta copiada al portapapeles');
+      }catch{ alert('No se pudo copiar') }
+    });
+  </script>
+  <footer role="contentinfo">
+    <a class="footer-link" href="https://iangine.com" target="_blank" rel="noopener noreferrer" title="Ir a IANGINE.com">
+      <img src="https://res.cloudinary.com/doivgytwg/image/upload/v1755851728/Logo_IANgine_blanco_fondo_transparente_prfzsc.png" alt="IANGINE" />
+      <span>Desarrollado por IANGINE</span>
+    </a>
+  </footer>
+</body>
+</html>
