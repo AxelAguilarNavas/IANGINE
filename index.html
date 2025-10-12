@@ -2,7 +2,7 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>IANGINE - Inteligencia Artificial</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
@@ -50,21 +50,21 @@
   <body class="font-sans text-gray-900 bg-white">
     <!-- Hero -->
     <header
-      class="min-h-screen flex flex-col items-center justify-center text-white text-center px-6 bg-cover bg-center relative"
+      class="min-h-screen flex flex-col items-center justify-center text-white text-center px-4 sm:px-6 bg-cover bg-center relative"
       style="background-image: url('https://res.cloudinary.com/doivgytwg/image/upload/v1755970919/ChatGPT_Image_23_ago_2025_11_39_47_a.m._p4uwmb.png');"
     >
       <div class="absolute inset-0 bg-black bg-opacity-60"></div>
       <div class="relative z-10 flex flex-col items-center justify-center">
         <img src="https://res.cloudinary.com/doivgytwg/image/upload/v1755851728/Logo_IANgine_blanco_fondo_transparente_prfzsc.png" alt="Logo IANGINE" class="w-28 sm:w-32 md:w-40 mb-6 animate-pulse" />
         <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6 leading-tight drop-shadow-lg">IANGINE</h1>
-        <p class="text-lg sm:text-xl md:text-2xl max-w-2xl leading-relaxed">
+        <p class="text-base sm:text-xl md:text-2xl max-w-2xl leading-relaxed">
           Potenciamos empresas, emprendedores y personas con soluciones de
           Inteligencia Artificial para transformar la forma en que trabajan y
           viven.
         </p>
         <button
           onclick="document.getElementById('contacto').scrollIntoView({behavior:'smooth'})"
-          class="mt-8 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 active:scale-95 rounded-xl shadow-xl transition transform duration-300"
+          class="mt-8 w-full sm:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-700 active:scale-95 rounded-xl shadow-xl transition transform duration-300"
         >
           Contáctanos
         </button>
@@ -72,7 +72,7 @@
     </header>
 
     <!-- Misión -->
-    <section class="py-16 px-6 bg-gray-50 text-center" id="mision">
+    <section class="py-12 sm:py-16 px-4 sm:px-6 bg-gray-50 text-center" id="mision">
       <h2 class="text-3xl md:text-4xl font-bold mb-6">Nuestra Misión</h2>
       <p class="max-w-3xl mx-auto text-base sm:text-lg md:text-xl text-gray-700 leading-relaxed">
         Facilitar a las empresas la adopción de herramientas digitales y sistemas de automatización que eliminen procesos manuales, reduzcan errores y optimicen recursos. Nuestro compromiso es diseñar e implementar soluciones personalizadas que conecten canales de comunicación, plataformas de gestión y flujos de trabajo, logrando operaciones más rápidas, eficientes y escalables.
@@ -80,7 +80,7 @@
     </section>
 
     <!-- Visión -->
-    <section class="py-16 px-6 bg-white text-center" id="vision">
+    <section class="py-12 sm:py-16 px-4 sm:px-6 bg-white text-center" id="vision">
       <h2 class="text-3xl md:text-4xl font-bold mb-6">Nuestra Visión</h2>
       <p class="max-w-3xl mx-auto text-base sm:text-lg md:text-xl text-gray-700 leading-relaxed">
         Ser la empresa líder en Latinoamérica en la transformación digital de negocios, impulsando a empresas de todos los tamaños a alcanzar su máximo potencial mediante la automatización inteligente, la integración de sistemas y la innovación tecnológica, generando eficiencia, ahorro de costos y una mejor calidad de vida para cada persona que forma parte de la organización.
@@ -88,7 +88,7 @@
     </section>
 
     <!-- Sobre Nosotros -->
-    <section class="py-16 px-6 bg-gray-50 text-center" id="nosotros">
+    <section class="py-12 sm:py-16 px-4 sm:px-6 bg-gray-50 text-center" id="nosotros">
       <h2 class="text-3xl md:text-4xl font-bold mb-6">Sobre Nosotros</h2>
       <div class="max-w-3xl mx-auto text-base sm:text-lg md:text-xl text-gray-700 leading-relaxed space-y-4 text-left">
         <p>
@@ -100,7 +100,7 @@
         <p>
           Diseñamos soluciones a la medida, porque sabemos que cada empresa es única. Nuestro objetivo es ayudar a las organizaciones a:
         </p>
-        <ul class="list-disc pl-6 space-y-2">
+        <ul class="list-disc pl-5 sm:pl-6 space-y-2">
           <li>Reducir costos operativos.</li>
           <li>Eliminar tareas repetitivas.</li>
           <li>Mejorar la comunicación con clientes y equipos.</li>
@@ -114,13 +114,13 @@
 
     <!-- Contacto -->
     <section
-      class="py-20 px-6 bg-gradient-to-br from-indigo-900 via-black to-gray-900 text-white"
+      class="py-16 sm:py-20 px-4 sm:px-6 bg-gradient-to-br from-indigo-900 via-black to-gray-900 text-white"
       id="contacto"
     >
       <h2 class="text-3xl md:text-4xl font-bold mb-10 text-center">Contáctanos</h2>
       <form
         id="contactForm"
-        class="max-w-xl mx-auto bg-white p-8 rounded-2xl shadow-2xl text-gray-900 space-y-6"
+        class="max-w-xl mx-auto bg-white p-6 sm:p-8 rounded-2xl shadow-2xl text-gray-900 space-y-6"
       >
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <input
@@ -157,8 +157,8 @@
             title="Ingrese un correo electrónico válido"
             class="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
           />
-          <div class="flex gap-2">
-            <select name="codigo" required class="border border-gray-300 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none w-32">
+          <div class="flex flex-col sm:flex-row gap-3">
+            <select name="codigo" required class="border border-gray-300 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none w-full sm:w-32">
               <option value="">Código</option>
               <optgroup label="América">
                 <option value="+1">+1 USA / CAN</option>
@@ -196,7 +196,7 @@
               required
               pattern="^[0-9]{7,15}$"
               title="Ingrese un número de teléfono válido"
-              class="flex-1 border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              class="flex-1 border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none w-full"
             />
           </div>
         </div>
@@ -205,7 +205,7 @@
           placeholder="Describe tu duda o problema (mínimo 30 caracteres)"
           required
           minlength="30"
-          class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none h-32"
+          class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none h-32 sm:h-36"
         ></textarea>
         <div class="flex items-start space-x-2">
           <input type="checkbox" id="consentimiento" name="consentimiento" required class="mt-1" />
@@ -223,7 +223,7 @@
     </section>
 
     <!-- Footer -->
-    <footer class="py-6 text-center bg-black text-gray-400 text-sm sm:text-base">
+    <footer class="py-6 px-4 text-center bg-black text-gray-400 text-sm sm:text-base">
       <p>
         © <span id="year"></span> IANGINE.com - Todos los derechos reservados
       </p>
@@ -318,3 +318,4 @@
     </script>
   </body>
 </html>
+
