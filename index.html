@@ -71,6 +71,19 @@
       </div>
     </header>
 
+    <!-- Agenda -->
+    <section class="py-12 sm:py-16 px-4 sm:px-6 bg-white text-center" id="agenda">
+      <div class="max-w-4xl mx-auto space-y-6">
+        <h2 class="text-3xl md:text-4xl font-bold">Agenda una reunión</h2>
+        <p class="text-base sm:text-lg md:text-xl text-gray-700 leading-relaxed">
+          Reserva un espacio con nuestro equipo y descubre cómo podemos apoyar la automatización de tu negocio.
+        </p>
+        <div class="bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden">
+          <div id="my-cal-inline-30min" class="w-full h-[720px] overflow-auto"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- Misión -->
     <section class="py-12 sm:py-16 px-4 sm:px-6 bg-gray-50 text-center" id="mision">
       <h2 class="text-3xl md:text-4xl font-bold mb-6">Nuestra Misión</h2>
@@ -222,6 +235,52 @@
       </form>
     </section>
 
+    <!-- Cal inline embed code begins -->
+    <script type="text/javascript">
+      (function (C, A, L) {
+        let p = function (a, ar) {
+          a.q.push(ar);
+        };
+        let d = C.document;
+        C.Cal =
+          C.Cal ||
+          function () {
+            let cal = C.Cal;
+            let ar = arguments;
+            if (!cal.loaded) {
+              cal.ns = {};
+              cal.q = cal.q || [];
+              d.head.appendChild(d.createElement("script")).src = A;
+              cal.loaded = true;
+            }
+            if (ar[0] === L) {
+              const api = function () {
+                p(api, arguments);
+              };
+              const namespace = ar[1];
+              api.q = api.q || [];
+              if (typeof namespace === "string") {
+                cal.ns[namespace] = cal.ns[namespace] || api;
+                p(cal.ns[namespace], ar);
+                p(cal, ["initNamespace", namespace]);
+              } else p(cal, ar);
+              return;
+            }
+            p(cal, ar);
+          };
+      })(window, "https://app.cal.com/embed/embed.js", "init");
+      Cal("init", "30min", { origin: "https://app.cal.com" });
+
+      Cal.ns["30min"]("inline", {
+        elementOrSelector: "#my-cal-inline-30min",
+        config: { layout: "month_view" },
+        calLink: "axl-aguilar/30min",
+      });
+
+      Cal.ns["30min"]("ui", { hideEventTypeDetails: false, layout: "month_view" });
+    </script>
+    <!-- Cal inline embed code ends -->
+
     <!-- Footer -->
     <footer class="py-6 px-4 text-center bg-black text-gray-400 text-sm sm:text-base">
       <p>
@@ -318,4 +377,3 @@
     </script>
   </body>
 </html>
-
