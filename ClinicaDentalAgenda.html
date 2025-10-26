@@ -456,7 +456,7 @@
           }catch(err){ console.error('Booking POST error', err); }
         };
 
-        Cal.ns['clinica-odontologica']('on', { action: 'bookingSuccessfulV2', callback: (e)=> { const d = e?.detail?.data || {}; const reason = getReason(d); postBooking(getDate(d), reason); showThanks(d, false); } });
+        //Cal.ns['clinica-odontologica']('on', { action: 'bookingSuccessfulV2', callback: (e)=> { const d = e?.detail?.data || {}; const reason = getReason(d); postBooking(getDate(d), reason); showThanks(d, false); } });
         Cal.ns['clinica-odontologica']('on', { action: 'bookingSuccessful', callback: (e)=> { const d = e?.detail?.data || {}; const reason = getReason(d); postBooking(getDate(d), reason); showThanks(d, false); } });
         Cal.ns['clinica-odontologica']('on', { action: 'rescheduleBookingSuccessfulV2', callback: (e)=> { const d = e?.detail?.data || {}; const reason = getReason(d); postBooking(getDate(d), reason); showThanks(d, true); } });
 
