@@ -175,7 +175,7 @@
 <!-- Agenda principal: justo después del header -->
   <section id="agenda" class="requires-auth" style="padding: clamp(24px,5vw,48px) 0; scroll-margin-top:84px">
     <div class="container">
-      <h2 id="agendaTitle" class="section-title" style="margin-bottom:8px">Agenda tu cita online<\/h2>
+      <h2 id="agendaTitle" class="section-title" style="margin-bottom:8px">Agenda tu cita online</h2>
       <p class="note">Elige el día y la hora que más te convengan. Confirmación inmediata.</p>
       <div class="calendar-wrapper" aria-label="Calendario de citas">
         <!-- Cal inline embed code begins -->
@@ -319,77 +319,93 @@
 
     // Año en footer
     document.getElementById('year').textContent = new Date().getFullYear();
-  <\/script>
+  </script>
   <script>
-    // Gating por querystring + validación vía webhook
+    // Gating por querystring + validación vía webhook (con timeout, no-cache y logs)
     (function(){
+      const log = (...a)=>{ try{ console.log('[Landing]', ...a);}catch(e){} };
+
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
       const session = params.get('Session');
 
       // Si no hay parámetros, no mostramos botones ni agenda
-      if(!(id && session)) { return; }
+      if(!(id && session)) { log('Faltan parámetros', {id, session}); return; }
 
       const webhook = new URL('https://n8n.srv902776.hstgr.cloud/webhook/5a7db169-ad8b-44cf-9cfa-0a49f8367a32');
-      webhook.search = new URLSearchParams({ id, Session: session }).toString();
+      webhook.search = new URLSearchParams({ id, Session: session, t: Date.now().toString() }).toString();
 
-      fetch(webhook.toString(), { method: 'GET' })
-        .then(async (r) => {
-          const text = await r.text();
-          try { return JSON.parse(text); } catch { return {}; }
-        })
-        .then((data) => {
-          const enabled = (String(data.Enabled).toLowerCase() === 'true' || data.Enabled === true);
-          const name = data.Name || data.name;
+      const ctrl = new AbortController();
+      const timeoutId = setTimeout(()=> ctrl.abort(), 10000); // 10s timeout
 
-          // Mostrar agenda SIEMPRE cuando hay respuesta del webhook
-          const agenda = document.getElementById('agenda');
-          if (agenda) { agenda.classList.remove('requires-auth'); }
+      fetch(webhook.toString(), {
+        method: 'GET',
+        mode: 'cors',
+        credentials: 'omit',
+        cache: 'no-store',
+        referrerPolicy: 'no-referrer',
+        signal: ctrl.signal
+      })
+      .then(async (res) => {
+        clearTimeout(timeoutId);
+        log('Webhook status', res.status);
+        if(!res.ok) throw new Error('HTTP '+res.status);
+        const text = await res.text();
+        try { return JSON.parse(text); } catch (e) { throw new Error('JSON inválido: '+ text.slice(0,160)); }
+      })
+      .then((data) => {
+        log('Webhook data', data);
+        const enabled = (String(data.Enabled).toLowerCase() === 'true' || data.Enabled === true);
+        const name = data.Name || data.name;
 
-          // Personalizar título con el nombre
-          const title = document.getElementById('agendaTitle');
-          if (title && name) {
-            title.textContent = `Hola, ${name}. Agenda tu cita online`;
-          }
+        // Mostrar agenda SIEMPRE cuando hay respuesta del webhook
+        const agenda = document.getElementById('agenda');
+        if (agenda) { agenda.classList.remove('requires-auth'); }
 
-          // Botones: sólo si Enabled === true
-          if (enabled) {
-            document.getElementById('btnHeaderReserva')?.classList.remove('requires-auth');
-            document.getElementById('btnHeroAgendar')?.classList.remove('requires-auth');
-            document.querySelector('.sticky-cta')?.classList.remove('requires-auth');
-          }
+        // Personalizar título con el nombre
+        const title = document.getElementById('agendaTitle');
+        if (title && name) {
+          title.textContent = `Hola, ${name}. Agenda tu cita online`;
+        }
 
-          // Cargar Cal.com (agenda visible en ambos casos)
-          (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === "string"){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, ["initNamespace", namespace]);} else p(cal, ar); return;} p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
-          Cal("init", "clinica-odontologica", {origin:"https://app.cal.com"});
-          Cal.ns["clinica-odontologica"]("inline", {
-            elementOrSelector:"#my-cal-inline-clinica-odontologica",
-            config: {"layout":"month_view"},
-            calLink: "axl-aguilar/clinica-odontologica",
-          });
-          Cal.ns["clinica-odontologica"]("ui", {"hideEventTypeDetails":false,"layout":"month_view"});
+        // Botones: sólo si Enabled === true
+        if (enabled) {
+          document.getElementById('btnHeaderReserva')?.classList.remove('requires-auth');
+          document.getElementById('btnHeroAgendar')?.classList.remove('requires-auth');
+          document.querySelector('.sticky-cta')?.classList.remove('requires-auth');
+        }
 
-          // UX: ocultar barra fija cuando el calendario esté a la vista (sólo si botones visibles)
-          const sticky = document.querySelector('.sticky-cta');
-          const calEl = document.getElementById('my-cal-inline-clinica-odontologica');
-          if(enabled && sticky && calEl && 'IntersectionObserver' in window){
-            const io = new IntersectionObserver(([entry])=>{
-              sticky.style.display = entry.isIntersecting ? 'none' : '';
-            }, {threshold: .3});
-            io.observe(calEl);
-          }
-
-          // Fallback si el embed tarda
-          setTimeout(()=>{
-            const cont = document.getElementById('my-cal-inline-clinica-odontologica');
-            const fb = document.getElementById('calFallback');
-            if(cont && fb && cont.childElementCount === 0){ fb.hidden = false; }
-          }, 4000);
-        })
-        .catch((err) => {
-          // Si falla el webhook, mantener todo oculto para seguridad
-          console.error('Webhook error', err);
+        // Cargar Cal.com (agenda visible en ambos casos)
+        (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement('script')).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === 'string'){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, ['initNamespace', namespace]);} else p(cal, ar); return;} p(cal, ar); }; })(window, 'https://app.cal.com/embed/embed.js', 'init');
+        Cal('init', 'clinica-odontologica', {origin:'https://app.cal.com'});
+        Cal.ns['clinica-odontologica']('inline', {
+          elementOrSelector:'#my-cal-inline-clinica-odontologica',
+          config: {layout:'month_view'},
+          calLink: 'axl-aguilar/clinica-odontologica',
         });
+        Cal.ns['clinica-odontologica']('ui', {hideEventTypeDetails:false, layout:'month_view'});
+
+        // UX: ocultar barra fija cuando el calendario esté a la vista (sólo si botones visibles)
+        const sticky = document.querySelector('.sticky-cta');
+        const calEl = document.getElementById('my-cal-inline-clinica-odontologica');
+        if(enabled && sticky && calEl && 'IntersectionObserver' in window){
+          const io = new IntersectionObserver(([entry])=>{
+            sticky.style.display = entry.isIntersecting ? 'none' : '';
+          }, {threshold: .3});
+          io.observe(calEl);
+        }
+
+        // Fallback si el embed tarda
+        setTimeout(()=>{
+          const cont = document.getElementById('my-cal-inline-clinica-odontologica');
+          const fb = document.getElementById('calFallback');
+          if(cont && fb && cont.childElementCount === 0){ fb.hidden = false; }
+        }, 4000);
+      })
+      .catch((err) => {
+        // Si falla el webhook, mantener todo oculto para seguridad
+        console.error('Webhook error', err);
+      });
     })();
   </script>
 </body>
