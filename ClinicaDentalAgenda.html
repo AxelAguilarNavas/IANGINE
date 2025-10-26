@@ -90,6 +90,15 @@
     .calendar-wrapper{height:clamp(560px, 78vh, 820px); border-radius: var(--radius-xl); border:1px solid #eaf0ff; background:#fff; overflow:hidden; box-shadow:var(--shadow)}
     .note{color:var(--ink-600); margin-bottom:18px}
 
+    /* --- Thank You Modal --- */
+    #thanksOverlay{position:fixed; inset:0; background:rgba(14,26,42,.45); display:none; place-items:center; z-index:80; padding:20px}
+    #thanksOverlay.show{display:grid}
+    #thanksCard{background:#fff; border:1px solid #eaf0ff; border-radius:20px; padding:24px; max-width:520px; width:min(520px,92%); box-shadow:var(--shadow); text-align:center}
+    #thanksCard h3{margin:0 0 6px; font-size:clamp(20px,3vw,26px)}
+    #thanksCard p{color:var(--ink-600); margin:6px 0 16px}
+    #thanksClose{display:inline-block; border:0; padding:10px 14px; border-radius:12px; background:linear-gradient(135deg,var(--brand-600),var(--brand-500)); color:#fff; font-weight:700; cursor:pointer}
+    @media (prefers-reduced-motion: reduce){ #thanksOverlay{transition:none} }
+
     /* --- FAQ --- */
     .faq{max-width:900px; margin-inline:auto}
     details{border:1px solid #eaf0ff; background:#fff; border-radius:14px; padding:14px 16px; margin-bottom:10px}
@@ -269,6 +278,14 @@
     </div>
   </section>
 
+  <div id="thanksOverlay" role="dialog" aria-modal="true" aria-labelledby="thanksTitle" aria-hidden="true">
+    <div id="thanksCard" class="card">
+      <h3 id="thanksTitle">¡Gracias!</h3>
+      <p id="thanksText">Tu cita ha sido agendada. Te enviamos un correo con los detalles.</p>
+      <button id="thanksClose">Listo</button>
+    </div>
+  </div>
+
   <div class="sticky-cta requires-auth" aria-hidden="true">
     <a class="bar" href="#agenda">Agendar cita</a>
   </div>
@@ -357,10 +374,11 @@
         log('Webhook data', data);
         const enabled = (String(data.Enabled).toLowerCase() === 'true' || data.Enabled === true);
         const name = data.Name || data.name;
+        window.CLIENT_NAME = name;
 
-        // Mostrar agenda SIEMPRE cuando hay respuesta del webhook
+        // Agenda: visible solo si Enabled === true
         const agenda = document.getElementById('agenda');
-        if (agenda) { agenda.classList.remove('requires-auth'); }
+        if (enabled && agenda) { agenda.classList.remove('requires-auth'); } else { agenda?.classList.add('requires-auth'); }
 
         // Personalizar título con el nombre
         const title = document.getElementById('agendaTitle');
@@ -375,7 +393,8 @@
           document.querySelector('.sticky-cta')?.classList.remove('requires-auth');
         }
 
-        // Cargar Cal.com (agenda visible en ambos casos)
+        if (!enabled) { return; }
+        // Cargar Cal.com
         (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement('script')).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === 'string'){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, ['initNamespace', namespace]);} else p(cal, ar); return;} p(cal, ar); }; })(window, 'https://app.cal.com/embed/embed.js', 'init');
         Cal('init', 'clinica-odontologica', {origin:'https://app.cal.com'});
         Cal.ns['clinica-odontologica']('inline', {
@@ -384,6 +403,62 @@
           calLink: 'axl-aguilar/clinica-odontologica',
         });
         Cal.ns['clinica-odontologica']('ui', {hideEventTypeDetails:false, layout:'month_view'});
+
+        // Agradecimiento al finalizar la reserva
+        function formatDateTime(iso){ try{ return iso ? new Date(iso).toLocaleString(undefined,{dateStyle:'full', timeStyle:'short'}) : ''; }catch(e){ return ''; } }
+        function showThanks(data, isReschedule){
+          const overlay = document.getElementById('thanksOverlay');
+          const title = document.getElementById('thanksTitle');
+          const textEl = document.getElementById('thanksText');
+          const who = window.CLIENT_NAME ? `, ${window.CLIENT_NAME}` : '';
+          const when = formatDateTime(data?.startTime || data?.date);
+          title.textContent = isReschedule ? `¡Listo${who}!` : `¡Gracias${who}!`;
+          const actionText = isReschedule ? 'actualizada' : 'agendada';
+          textEl.innerHTML = `Tu cita ha sido <strong>${actionText}</strong>${when ? ' para <strong>' + when + '</strong>' : ''}. Te enviamos un correo con los detalles.`;
+          overlay.classList.add('show');
+          overlay.setAttribute('aria-hidden','false');
+        }
+        document.getElementById('thanksClose')?.addEventListener('click',()=>{
+          const overlay = document.getElementById('thanksOverlay');
+          overlay.classList.remove('show');
+          overlay.setAttribute('aria-hidden','true');
+          // Ocultar botones y agenda tras cerrar el agradecimiento
+          ['btnHeaderReserva','btnHeroAgendar'].forEach(id=>{
+            const el = document.getElementById(id);
+            if(el){ el.classList.add('requires-auth'); }
+          });
+          const sticky = document.querySelector('.sticky-cta');
+          if(sticky){ sticky.classList.add('requires-auth'); }
+          const agendaSec = document.getElementById('agenda');
+          if(agendaSec){ agendaSec.classList.add('requires-auth'); }
+          const calCont = document.getElementById('my-cal-inline-clinica-odontologica');
+          if(calCont){ calCont.innerHTML=''; }
+        });
+        // Helpers para POST al finalizar
+        const getDate = (d)=> (d?.startTime || d?.start_time || d?.start || d?.date || null);
+        const getReason = (d)=>{
+          try{
+            const raw = d?.booking?.responses?.notes;
+            if(raw === undefined || raw === null) return '';
+            return (typeof raw === 'string') ? raw.trim() : String(raw);
+          }catch(e){ return ''; }
+        };
+        const postBooking = (dateIso, reason)=>{
+          try{
+            const ctrl2 = new AbortController();
+            setTimeout(()=> ctrl2.abort(), 10000);
+            fetch('https://n8n.srv902776.hstgr.cloud/webhook/5a7db169-ad8b-44cf-9cfa-0a49f8367a32',{
+              method:'POST', mode:'cors', credentials:'omit',
+              headers:{'Content-Type':'application/json'},
+              body: JSON.stringify({ id, Session: session, date: dateIso, Reason: (reason || '') }),
+              keepalive:true, signal: ctrl2.signal
+            }).then(r=>log('Booking POST status', r.status)).catch(err=>console.error('Booking POST error', err));
+          }catch(err){ console.error('Booking POST error', err); }
+        };
+
+        Cal.ns['clinica-odontologica']('on', { action: 'bookingSuccessfulV2', callback: (e)=> { const d = e?.detail?.data || {}; const reason = getReason(d); postBooking(getDate(d), reason); showThanks(d, false); } });
+        Cal.ns['clinica-odontologica']('on', { action: 'bookingSuccessful', callback: (e)=> { const d = e?.detail?.data || {}; const reason = getReason(d); postBooking(getDate(d), reason); showThanks(d, false); } });
+        Cal.ns['clinica-odontologica']('on', { action: 'rescheduleBookingSuccessfulV2', callback: (e)=> { const d = e?.detail?.data || {}; const reason = getReason(d); postBooking(getDate(d), reason); showThanks(d, true); } });
 
         // UX: ocultar barra fija cuando el calendario esté a la vista (sólo si botones visibles)
         const sticky = document.querySelector('.sticky-cta');
