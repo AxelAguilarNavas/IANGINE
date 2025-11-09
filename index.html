@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>IANGINE - Inteligencia Artificial</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
     <style>
       html {
         scroll-behavior: smooth;
@@ -288,7 +287,6 @@
       </p>
     </footer>
 
-    <div id="n8n-chat"></div>
 
     <script>
       document.getElementById("year").textContent = new Date().getFullYear();
@@ -341,39 +339,21 @@
         }
       });
     </script>
-
-    <script type="module">
-      import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
-
-      createChat({
-        webhookUrl: 'https://n8n.srv902776.hstgr.cloud/webhook/a3a8e12b-4c3d-4533-aa7b-eebc069ca0c0/chat',
-        webhookConfig: {
-          method: 'POST',
-          headers: {}
-        },
-        target: '#n8n-chat',
-        mode: 'window',
-        chatInputKey: 'chatInput',
-        chatSessionKey: 'sessionId',
-        loadPreviousSession: true,
-        metadata: {},
-        showWelcomeScreen: true,
-        defaultLanguage: 'en',
-        initialMessages: [
-          'Hola ! 👋',
-          'Me presento, mi nombre es Ethan y soy el asistente virtual de iangine.com. ¿Cómo puedo ayudarte hoy?'
-        ],
-        i18n: {
-          en: {
-            title: '¡ Hola ! 👋',
-            subtitle: " Inicia el chat. Estamos aqui 24/7 para ayudarte.",
-            footer: '',
-            getStarted: 'Nueva conversacion',
-            inputPlaceholder: 'Ingresa tu pregunta..',
-          },
-        },
-        enableStreaming: false,
-      });
+    <script>
+      (function(d,t) {
+        var BASE_URL="https://chatwoot.srv902776.hstgr.cloud";
+        var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+        g.src=BASE_URL+"/packs/js/sdk.js";
+        g.async = true;
+        s.parentNode.insertBefore(g,s);
+        g.onload=function(){
+          window.chatwootSDK.run({
+            websiteToken: 'Q7FvpmqtpfvgZ1WUfvQzsmAs',
+            baseUrl: BASE_URL
+          })
+        }
+      })(document,"script");
     </script>
+
   </body>
 </html>
