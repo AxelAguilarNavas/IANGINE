@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IANGINE | Calculadora de Automatización (Wizard)</title>
+  <style>
+    :root{
+      --bg:#0b1220;          /* fondo oscuro corporativo */
+      --panel:rgba(255,255,255,0.06);
+      --panel-2:rgba(255,255,255,0.10);
+      --text:#e6edf7;
+      --muted:#9fb0c3;
+      --accent:#22d3ee;      /* cian */
+      --accent-2:#7c3aed;    /* violeta secundario */
+      --danger:#ff6b6b;
+      --ok:#22c55e;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 16px;
+    }
+    *,*::before,*::after{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color:var(--text); background: radial-gradient(1000px 700px at 20% -10%, rgba(124,58,237,.20), transparent),
+                           radial-gradient(900px 600px at 110% 10%, rgba(34,211,238,.15), transparent),
+                           var(--bg);
+    }
+    .container{max-width:980px; margin:24px auto 80px; padding:16px;}
+    header.app-header{display:flex; align-items:center; gap:14px; margin-bottom:14px;}
+    header.app-header img{height:40px; width:auto; filter: drop-shadow(0 3px 12px rgba(34,211,238,.3));}
+    header.app-header .brand{font-weight:700; letter-spacing:.3px;}
+    header.app-header .brand small{display:block; color:var(--muted); font-weight:500; margin-top:2px}
+
+    .card{background:linear-gradient(180deg, var(--panel), var(--panel-2)); border:1px solid rgba(255,255,255,.08); box-shadow:var(--shadow);
+          border-radius:var(--radius); overflow:hidden}
+    .card .pad{padding:22px}
+
+    /* Stepper */
+    .stepper{display:flex; align-items:center; gap:8px; padding:12px 16px; backdrop-filter:blur(6px); border-bottom:1px solid rgba(255,255,255,.08)}
+    .stepper .step-pill{display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08); color:var(--muted); font-weight:600; font-size:13px}
+    .stepper .step-pill .dot{width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,.25);}
+    .stepper .step-pill.active{color:var(--text); background: linear-gradient(90deg, rgba(124,58,237,.45), rgba(34,211,238,.45)); border-color:transparent}
+    .stepper .step-pill.active .dot{background: white}
+    .progress-wrap{height:4px; background:rgba(255,255,255,.08); width:100%; border-radius:999px; overflow:hidden;}
+    .progress{height:100%; width:0%; background:linear-gradient(90deg, var(--accent), var(--accent-2));}
+
+    /* Wizard sections */
+    .step{display:none}
+    .step.active{display:block}
+    .grid{display:grid; gap:16px}
+    .grid-2{grid-template-columns: 1fr 1fr}
+    @media (max-width: 840px){ .grid-2{grid-template-columns: 1fr} }
+    .h1{font-size:28px; font-weight:800; letter-spacing:.2px}
+    .h2{font-size:20px; font-weight:700}
+    .muted{color:var(--muted)}
+
+    /* Inputs */
+    .group{display:grid; gap:10px}
+    .label{font-weight:700}
+    .inline{display:flex; gap:10px; flex-wrap:wrap}
+    .chip{display:inline-flex; align-items:center; gap:8px; padding:10px 14px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); border-radius:12px; cursor:pointer; user-select:none}
+    .chip input{accent-color: var(--accent)}
+    input[type="number"], input[type="text"], select{background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); color:var(--text); padding:12px 12px; border-radius:12px; outline:none; width:100%}
+    input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance: none; margin:0 }
+    input[type="number"]{ -moz-appearance: textfield }
+    input[type="range"]{width:100%}
+
+    details{background:rgba(255,255,255,.05); border:1px dashed rgba(255,255,255,.15); padding:12px 14px; border-radius:12px}
+    summary{cursor:pointer; font-weight:700}
+
+    /* Buttons */
+    .actions{display:flex; gap:10px; justify-content:space-between; align-items:center; margin-top:10px}
+    .btn{appearance:none; border:0; border-radius:12px; padding:12px 16px; font-weight:800; cursor:pointer; color:#07131a; background:linear-gradient(90deg, var(--accent), var(--accent-2)); box-shadow: 0 8px 24px rgba(34,211,238,.25)}
+    .btn.secondary{background:rgba(255,255,255,.08); color:var(--text); box-shadow:none}
+    .btn.ghost{background:transparent; color:var(--muted); border:1px solid rgba(255,255,255,.12)}
+    .btn:disabled{opacity:.5; cursor:not-allowed}
+
+    .note{font-size:12px; color:var(--muted)}
+
+    /* Result */
+    .result-card{display:grid; gap:14px; padding:16px; border-radius:14px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10)}
+    .pill{display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; font-size:12px; font-weight:800; background:rgba(34,211,238,.2); border:1px solid rgba(34,211,238,.4); color:#dffbff}
+    .pill.ia{background:rgba(124,58,237,.22); border-color:rgba(124,58,237,.45)}
+    .pill.rpa{background:rgba(34,197,94,.20); border-color:rgba(34,197,94,.45)}
+    .pill.auto{background:rgba(14,165,233,.20); border-color:rgba(14,165,233,.45)}
+    .kpis{display:grid; grid-template-columns: repeat(3, 1fr); gap:14px}
+    @media (max-width:840px){ .kpis{grid-template-columns:1fr} }
+    .kpi{padding:14px; border-radius:12px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10)}
+    .kpi .num{font-size:22px; font-weight:800}
+
+    footer{margin-top:18px; text-align:center; color:var(--muted); font-size:12px}
+    .brand-ribbon{display:flex; align-items:center; gap:10px; justify-content:center}
+    .brand-ribbon img{height:22px}
+      /* Modal + lead form */
+    .modal{position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:9999}
+    .modal.open{display:flex}
+    .modal .backdrop{position:absolute; inset:0; background:rgba(0,0,0,.6); backdrop-filter: blur(6px)}
+    .modal-card{position:relative; width:min(760px, 94vw); background:linear-gradient(180deg, rgba(11,18,32,.86), rgba(11,18,32,.92)); border:1px solid rgba(255,255,255,.22); border-radius:var(--radius); box-shadow: var(--shadow); padding:22px; overflow:hidden}
+    .modal-card h3{margin:0 0 8px 0; font-size:22px}
+    .modal-close{position:absolute; top:10px; right:10px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); color:var(--text); border-radius:10px; padding:6px 10px; cursor:pointer}
+    .form-grid{display:grid; gap:14px; grid-template-columns:1fr 1fr}
+    @media (max-width:760px){ .form-grid{grid-template-columns:1fr} }
+    .form-row{display:grid; gap:8px}
+    .modal .actions{justify-content:flex-end}
+
+    /* Loading animation */
+    .ai-loader{position:absolute; inset:0; display:none; place-items:center; pointer-events:none}
+    .modal.loading .ai-loader{display:grid}
+    .ai-stage{position:relative; width:280px; height:280px; filter: drop-shadow(0 8px 32px rgba(124,58,237,.35))}
+    .ai-orbit{position:absolute; inset:0; border-radius:50%; border:3px solid transparent}
+    .ai-orbit.o1{border-top-color: var(--accent); animation:spin 1.2s linear infinite}
+    .ai-orbit.o2{inset:20px; border-right-color: var(--accent-2); animation:spin 1.8s linear infinite reverse}
+    .ai-orbit.o3{inset:40px; border-bottom-color: #60a5fa; animation:spin 2.4s linear infinite}
+    .ai-scan{position:absolute; inset:0; border-radius:50%; background:conic-gradient(from 0deg, rgba(34,211,238,.0), rgba(34,211,238,.25), rgba(124,58,237,.25), rgba(34,211,238,.0)); -webkit-mask: radial-gradient(circle at center, transparent 55%, black 56%); animation:spin 2.8s linear infinite}
+    .ai-core{position:absolute; top:50%; left:50%; width:18px; height:18px; transform:translate(-50%, -50%); background: radial-gradient(circle at 30% 30%, #fff, var(--accent)); border-radius:50%; box-shadow: 0 0 30px rgba(34,211,238,.6), 0 0 60px rgba(124,58,237,.35)}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes pulse{0%{transform:scale(1)}100%{transform:scale(1.15)}}
+
+    /* Success state */
+    .success-wrap{position:absolute; inset:0; display:none; place-items:center; background:rgba(0,0,0,.35); backdrop-filter: blur(2px)}
+    .modal.success .success-wrap{display:grid}
+    .check{width:120px; height:120px; border-radius:50%; border:4px solid var(--ok); position:relative; animation:pulse .6s ease-in-out alternate infinite}
+    .check:after{content:''; position:absolute; left:28px; top:55px; width:26px; height:10px; border-left:4px solid var(--ok); border-bottom:4px solid var(--ok); transform:rotate(-45deg)}
+
+    /* Inputs extra for modal */
+    input[type="email"], input[type="tel"], textarea{background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); color:var(--text); padding:12px 12px; border-radius:12px; outline:none; width:100%}
+    textarea{resize:vertical; min-height:110px}
+    /* Mayor opacidad al formulario de lead */
+    #leadForm{background:rgba(11,18,32,0.72); border:1px solid rgba(255,255,255,.18); border-radius:14px; padding:16px}
+</style>
+</head>
+<body>
+  <div class="container">
+    <header class="app-header">
+      <img src="https://res.cloudinary.com/doivgytwg/image/upload/v1755851728/Logo_IANgine_blanco_fondo_transparente_prfzsc.png" alt="IANGINE" />
+      <div class="brand">
+        IANGINE • Calculadora de Automatización
+        <small>Descubre si tu proyecto necesita <b>RPA</b>, <b>IA</b> o <b>Automatización</b> conectando apps.</small>
+      </div>
+    </header>
+
+    <div class="card" role="region" aria-labelledby="wizardTitle">
+      <div class="stepper">
+        <div class="step-pill" id="pill-0"><span class="dot"></span> Intro</div>
+        <div class="step-pill" id="pill-1"><span class="dot"></span> Preguntas</div>
+        <div class="step-pill" id="pill-2"><span class="dot"></span> Datos</div>
+        <div class="step-pill" id="pill-3"><span class="dot"></span> Resultado</div>
+      </div>
+      <div class="pad">
+        <div class="progress-wrap" aria-hidden="true"><div class="progress" id="progress"></div></div>
+
+        <form id="calcForm" class="grid" aria-describedby="helper">
+          <!-- STEP 0: INTRO -->
+          <section class="step active" data-step="0" aria-label="Introducción">
+            <div class="grid" style="gap:22px">
+              <div>
+                <div class="h1" id="wizardTitle">Calculadora gratuita (2 minutos)</div>
+                <p class="muted">Responde 2 pasos y obtén una recomendación inmediata según el <b>framework de 3 preguntas</b>: ¿es repetitivo?, ¿requiere análisis?, ¿es un flujo simple?</p>
+              </div>
+              <details>
+                <summary>¿Qué mide esta calculadora?</summary>
+                <ul>
+                  <li><b>RPA:</b> bots que imitan clicks/teclas para tareas repetitivas.</li>
+                  <li><b>IA:</b> modelos que predicen/deciden con datos (p.ej. análisis de riesgo).</li>
+                  <li><b>Automatización:</b> conectar apps con reglas/eventos (sin bot de pantalla).</li>
+                </ul>
+              </details>
+              <div class="actions">
+                <span class="note">Tiempo estimado: 2 minutos</span>
+                <div>
+                  <button type="button" class="btn" id="startBtn">Comenzar</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- STEP 1: FRAMEWORK -->
+          <section class="step" data-step="1" aria-label="Framework de 3 preguntas">
+            <div class="grid" style="gap:18px">
+              <div class="h2">Paso 1 · Framework de 3 preguntas</div>
+
+              <div class="group">
+                <div class="label">1) ¿La tarea es <u>repetitiva</u> (mismos pasos, alto volumen)?</div>
+                <div class="inline" role="radiogroup" aria-label="Repetitivo">
+                  <label class="chip"><input type="radio" name="repetitivo" value="si" required> Sí</label>
+                  <label class="chip"><input type="radio" name="repetitivo" value="no"> No</label>
+                </div>
+              </div>
+
+              <div class="group">
+                <div class="label">2) ¿Requiere <u>análisis/decisiones complejas</u> con datos (p. ej., scoring, predicción)?</div>
+                <div class="inline" role="radiogroup" aria-label="Análisis">
+                  <label class="chip"><input type="radio" name="analisis" value="si" required> Sí</label>
+                  <label class="chip"><input type="radio" name="analisis" value="no"> No</label>
+                </div>
+              </div>
+
+              <div class="group">
+                <div class="label">3) ¿Es un <u>workflow simple</u> entre apps (evento → regla → acción)?</div>
+                <div class="inline" role="radiogroup" aria-label="Workflow simple">
+                  <label class="chip"><input type="radio" name="simple" value="si" required> Sí</label>
+                  <label class="chip"><input type="radio" name="simple" value="no"> No</label>
+                </div>
+              </div>
+
+              <details>
+                <summary>Ejemplos rápidos</summary>
+                <ul>
+                  <li><b>RPA:</b> procesar facturas PDF al ERP, descargar/renombrar estados de cuenta.</li>
+                  <li><b>IA:</b> análisis de riesgo, clasificación inteligente de tickets, pronósticos.</li>
+                  <li><b>Automatización:</b> Form → Email → CRM, alertas entre Slack/WhatsApp/Odoo.</li>
+                </ul>
+              </details>
+
+              <div class="actions">
+                <button type="button" class="btn secondary" id="back1">Anterior</button>
+                <div style="display:flex; gap:8px">
+                  <button type="button" class="btn" id="next1">Siguiente</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- STEP 2: DATOS -->
+          <section class="step" data-step="2" aria-label="Datos del caso">
+            <div class="grid" style="gap:18px">
+              <div class="h2">Paso 2 · Datos rápidos</div>
+
+              <div class="grid grid-2">
+                <div class="group">
+                  <label class="label" for="tareasSemana">Tareas repetitivas por semana</label>
+                  <input id="tareasSemana" type="number" min="0" step="1" placeholder="p. ej., 120" value="40"/>
+                  <span class="note">¿Cuántas ejecuciones de la misma tarea haces por semana?</span>
+                </div>
+                <div class="group">
+                  <label class="label" for="minPorTarea">Minutos por tarea</label>
+                  <input id="minPorTarea" type="number" min="1" step="1" placeholder="p. ej., 5" value="5"/>
+                  <span class="note">Duración aproximada por ejecución.</span>
+                </div>
+                <div class="group">
+                  <label class="label" for="sistemas"># de sistemas/apps a integrar</label>
+                  <input id="sistemas" type="number" min="1" step="1" value="2"/>
+                </div>
+                <div class="group">
+                  <label class="label" for="nivelDatos">Nivel de datos</label>
+                  <select id="nivelDatos">
+                    <option value="bajo">Bajo (reglas simples)</option>
+                    <option value="medio" selected>Medio (datos limpios con algunas reglas)</option>
+                    <option value="alto">Alto (modelos/ML/limpieza compleja)</option>
+                  </select>
+                </div>
+                <div class="group">
+                  <label class="label" for="costoHora">Costo hora (opcional)</label>
+                  <input id="costoHora" type="number" min="0" step="1" placeholder="HNL por hora"/>
+                  <span class="note">Si lo indicas, estimamos ahorro mensual en moneda local.</span>
+                </div>
+                <div class="group">
+                  <label class="label" for="urgencia">Urgencia</label>
+                  <select id="urgencia">
+                    <option value="normal" selected>Normal (4–6 semanas)</option>
+                    <option value="alta">Alta (2–3 semanas)</option>
+                  </select>
+                  <span class="note">Semanas o urgencia requerida.</span>
+                </div>
+              </div>
+
+              <details>
+                <summary>Consejos para mejores estimaciones</summary>
+                <ul>
+                  <li>Si <b>tareasSemana</b> = 0, la calculadora prioriza <b>IA/Automatización</b> según el paso 1.</li>
+                  <li><b>Nivel de datos alto</b> + "análisis = sí" → agrega complejidad y semanas.</li>
+                </ul>
+              </details>
+
+              <div class="actions">
+                <button type="button" class="btn secondary" id="back2">Anterior</button>
+                <div style="display:flex; gap:8px">
+                  <button type="button" class="btn" id="finishBtn">Ver resultado</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- STEP 3: RESULTADO -->
+          <section class="step" data-step="3" aria-label="Resultado">
+            <div class="grid" style="gap:18px">
+              <div class="h2">Resultado y plan de acción</div>
+
+              <div class="result-card" id="resultadoBox">
+                <div id="recTags" class="inline" aria-live="polite"></div>
+                <div id="recText" class="muted"></div>
+              </div>
+
+              <div class="kpis" aria-live="polite">
+                <div class="kpi">
+                  <div class="muted">Horas ahorradas / mes</div>
+                  <div class="num" id="kpiHoras">—</div>
+                </div>
+                <div class="kpi">
+                  <div class="muted">Ahorro estimado / mes</div>
+                  <div class="num" id="kpiAhorro">—</div>
+                </div>
+                <div class="kpi">
+                  <div class="muted">Plazo de implementación</div>
+                  <div class="num" id="kpiPlazo">—</div>
+                </div>
+              </div>
+
+              <div class="result-card">
+                <div class="h2" style="font-size:18px">Roadmap sugerido</div>
+                <ol id="roadmap" style="margin:0 0 0 18px; line-height:1.6">
+                  <!-- dinámico -->
+                </ol>
+              </div>
+
+              <div class="actions">
+                <div class="inline">
+                  <button type="button" class="btn ghost" id="copyBtn" style="display:none;">Copiar diagnóstico</button>
+                  <button type="button" class="btn ghost" id="printBtn">Imprimir / PDF</button>
+                </div>
+                <div>
+                  <button type="button" class="btn" id="ctaImplement">Solicitar implementación</button>
+                  <button type="button" class="btn" id="restartBtn">Nuevo diagnóstico</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Solicitar Implementación -->
+    <div id="leadModal" class="modal" aria-hidden="true" aria-labelledby="leadTitle" role="dialog">
+      <div class="backdrop" id="leadBackdrop"></div>
+      <div class="modal-card">
+        <button class="modal-close" id="leadClose" aria-label="Cerrar">✕</button>
+        <h3 id="leadTitle">Solicitar implementación</h3>
+        <p class="muted" style="margin-top:-4px">Déjanos tus datos. Enviaremos junto a tu solicitud el diagnóstico calculado.</p>
+        <form id="leadForm" class="form-grid">
+          <div class="form-row">
+            <label class="label" for="lfNombre">Nombre *</label>
+            <input id="lfNombre" name="nombre" type="text" required placeholder="Nombre" />
+          </div>
+          <div class="form-row">
+            <label class="label" for="lfApellido">Apellido *</label>
+            <input id="lfApellido" name="apellido" type="text" required placeholder="Apellido" />
+          </div>
+          <div class="form-row">
+            <label class="label" for="lfEmpresa">Nombre de la empresa (opcional)</label>
+            <input id="lfEmpresa" name="empresa" type="text" placeholder="Empresa" />
+          </div>
+          <div class="form-row">
+            <label class="label" for="lfCorreo">Correo *</label>
+            <input id="lfCorreo" name="correo" type="email" required placeholder="tucorreo@dominio.com" />
+          </div>
+          <div class="form-row">
+            <label class="label" for="lfCodigo">Código de país *</label>
+            <select id="lfCodigo" name="codigo" required>
+              <option value="+504" selected>Honduras (+504)</option>
+              <option value="+1">EE.UU./Canadá (+1)</option>
+              <option value="+52">México (+52)</option>
+              <option value="+57">Colombia (+57)</option>
+              <option value="+34">España (+34)</option>
+              <option value="+51">Perú (+51)</option>
+              <option value="+54">Argentina (+54)</option>
+              <option value="+593">Ecuador (+593)</option>
+              <option value="+507">Panamá (+507)</option>
+              <option value="+506">Costa Rica (+506)</option>
+              <option value="+503">El Salvador (+503)</option>
+              <option value="+502">Guatemala (+502)</option>
+              <option value="+505">Nicaragua (+505)</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label class="label" for="lfTelefono">Teléfono *</label>
+            <input id="lfTelefono" name="telefono" type="tel" inputmode="numeric" pattern="[0-9]{6,15}" required placeholder="Ej. 99887766" />
+          </div>
+          <div class="form-row" style="grid-column:1/-1">
+            <label class="label" for="lfDescripcion">Descripción del problema *</label>
+            <textarea id="lfDescripcion" name="descripcion" required rows="4" placeholder="Cuéntanos el proceso y el resultado deseado"></textarea>
+          </div>
+          <div class="form-row" style="grid-column:1/-1">
+            <label class="inline" style="align-items:center; gap:10px">
+              <input id="lfConsent" type="checkbox" required />
+              <span>Autorizo que IANGINE me contacte y procese mis datos para gestionar esta solicitud.</span>
+            </label>
+          </div>
+          <div class="actions" style="grid-column:1/-1">
+            <button type="button" class="btn ghost" id="leadCancel">Cancelar</button>
+            <div style="display:flex; gap:8px">
+              <button type="submit" class="btn" id="leadSubmit">Enviar solicitud</button>
+            </div>
+          </div>
+        </form>
+        <div class="ai-loader" id="leadLoading" aria-hidden="true">
+          <div class="ai-stage" aria-hidden="true">
+            <div class="ai-orbit o1"></div>
+            <div class="ai-orbit o2"></div>
+            <div class="ai-orbit o3"></div>
+            <div class="ai-scan"></div>
+            <div class="ai-core"></div>
+          </div>
+        </div>
+        <div class="success-wrap" id="leadSuccess" aria-hidden="true">
+          <div class="check" aria-hidden="true"></div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <div class="brand-ribbon">
+        <span>Hecho con</span>
+        <img src="https://res.cloudinary.com/doivgytwg/image/upload/v1755851728/Logo_IANgine_blanco_fondo_transparente_prfzsc.png" alt="IANGINE"/>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // --- Wizard state ---
+    const steps = Array.from(document.querySelectorAll('.step'));
+    const pills = [0,1,2,3].map(i=>document.getElementById('pill-'+i));
+    const progressEl = document.getElementById('progress');
+    let current = 0;
+
+    const go = (n)=>{
+      current = Math.max(0, Math.min(steps.length-1, n));
+      steps.forEach((s,i)=> s.classList.toggle('active', i===current));
+      pills.forEach((p,i)=> p.classList.toggle('active', i===current));
+      progressEl.style.width = (current/(steps.length-1))*100 + '%';
+      // move focus for accessibility
+      const active = steps[current];
+      if(active){
+        const focusable = active.querySelector('input, select, button');
+        if(focusable) focusable.focus({preventScroll:false});
+      }
+    };
+
+    // buttons
+    document.getElementById('startBtn').addEventListener('click',()=> go(1));
+    document.getElementById('back1').addEventListener('click',()=> go(0));
+    document.getElementById('next1').addEventListener('click',()=>{
+      // validate radios exist
+      const r = getRadio('repetitivo');
+      const a = getRadio('analisis');
+      const s = getRadio('simple');
+      if(!r || !a || !s){
+        alert('Responde las 3 preguntas antes de continuar.');
+        return;
+      }
+      go(2);
+    });
+    document.getElementById('back2').addEventListener('click',()=> go(1));
+    document.getElementById('finishBtn').addEventListener('click',()=>{
+      computeAndRender();
+      go(3);
+    });
+    document.getElementById('restartBtn').addEventListener('click',()=>{
+      document.getElementById('calcForm').reset();
+      // clear dynamic
+      document.getElementById('recTags').innerHTML='';
+      document.getElementById('recText').textContent='';
+      ['kpiHoras','kpiAhorro','kpiPlazo'].forEach(id=> document.getElementById(id).textContent='—');
+      document.getElementById('roadmap').innerHTML='';
+      go(0);
+    });
+    document.getElementById('copyBtn').addEventListener('click',copyResult);
+    document.getElementById('printBtn').addEventListener('click',()=> window.print());
+
+    function getRadio(name){
+      const el = document.querySelector(`input[name="${name}"]:checked`);
+      return el ? el.value : null;
+    }
+
+    function computeAndRender(){
+      const repetitivo = getRadio('repetitivo')==='si';
+      const analisis   = getRadio('analisis')==='si';
+      const simple     = getRadio('simple')==='si';
+
+      const tareasSemana = toNum('tareasSemana', 0);
+      const minPorTarea  = toNum('minPorTarea', 1);
+      const sistemas     = toNum('sistemas', 1);
+      const nivelDatos   = document.getElementById('nivelDatos').value; // bajo | medio | alto
+      const costoHora    = toNum('costoHora', 0);
+      const urgencia     = document.getElementById('urgencia').value; // normal | alta
+
+      // --- Recomendación
+      const recommendation = decide(repetitivo, analisis, simple);
+      renderTags(recommendation);
+
+      // --- KPIs: horas y ahorro
+      const horasMes = Math.max(0, (tareasSemana * minPorTarea / 60) * 4);
+      document.getElementById('kpiHoras').textContent = horasMes.toFixed(1) + ' h';
+      const ahorro = costoHora>0 ? horasMes * costoHora : null;
+      document.getElementById('kpiAhorro').textContent = (ahorro!==null) ? (formatCurrency(ahorro)) : '—';
+
+      // --- Plazo estimado (semanas)
+      let semanas = 2; // base quick-win
+      if (sistemas>=3) semanas += 1;
+      if (analisis){
+        semanas += (nivelDatos === 'alto') ? 3 : 2;
+      }
+      if (repetitivo) semanas += 1; // mapping + pruebas RPA
+      if (urgencia==='alta') semanas = Math.max(2, Math.round(semanas*0.7));
+      document.getElementById('kpiPlazo').textContent = semanas + (semanas===1?' semana':' semanas');
+
+      // --- Texto de resultado
+      const recText = buildRecText(recommendation, {tareasSemana, minPorTarea, sistemas, nivelDatos, horasMes});
+      document.getElementById('recText').innerHTML = recText;
+
+      // --- Roadmap
+      const roadmap = buildRoadmap(recommendation, semanas, sistemas, analisis, nivelDatos);
+      const rm = document.getElementById('roadmap');
+      rm.innerHTML = '';
+      roadmap.forEach(step=>{
+        const li = document.createElement('li');
+        li.innerHTML = step;
+        rm.appendChild(li);
+      })
+    }
+
+    function decide(r, a, s){
+      // Devuelve un array de etiquetas prioritarias
+      if(!r && !a && !s){ return ['Diagnóstico manual']; }
+      if(a && r && s) return ['IA', 'RPA', 'Automatización'];
+      if(a && r)      return ['IA','RPA'];
+      if(a && s)      return ['IA','Automatización'];
+      if(a)           return ['IA'];
+      if(r && s)      return ['RPA','Automatización'];
+      if(r)           return ['RPA'];
+      if(s)           return ['Automatización'];
+      return ['Diagnóstico manual'];
+    }
+
+    function renderTags(tags){
+      const wrap = document.getElementById('recTags');
+      wrap.innerHTML = '';
+      tags.forEach(t=>{
+        const span = document.createElement('span');
+        span.className = 'pill ' + (t==='IA'?'ia': t==='RPA'?'rpa': t==='Automatización'?'auto':'');
+        span.textContent = t;
+        wrap.appendChild(span);
+      })
+    }
+
+    function buildRecText(tags, ctx){
+      if(tags[0]==='Diagnóstico manual'){
+        return `No hay suficientes señales para una recomendación automática. <br/>Sugerencia: agenda una sesión de 15 min para mapear el proceso y definir si conviene <b>RPA</b>, <b>IA</b> o <b>Automatización</b>.`;
+      }
+      const bullets = [];
+      if(tags.includes('RPA')) bullets.push('<b>RPA:</b> ideal si hay pasos repetitivos con reglas claras (ej.: carga de facturas, renombrado, exportar/importar a ERP).');
+      if(tags.includes('IA'))  bullets.push('<b>IA:</b> cuando necesitas predicción/decisión (ej.: scoring de riesgo, clasificación inteligente, extractores).');
+      if(tags.includes('Automatización')) bullets.push('<b>Automatización:</b> conectar apps por eventos (ej.: Form → Email → CRM → WhatsApp).');
+
+      const ahorroTxt = ctx.horasMes>0 ? `Con tus datos, podrías recuperar <b>${ctx.horasMes.toFixed(1)} h/mes</b> solo por automatizar esta tarea.` : '';
+
+      return `${bullets.map(b=>`<div>• ${b}</div>`).join('')}<div style="margin-top:8px" class="muted">${ahorroTxt}</div>`;
+    }
+
+    function buildRoadmap(tags, semanas, sistemas, analisis, nivelDatos){
+      const items = [];
+      const semBloque = Math.max(1, Math.round(semanas/3));
+      items.push(`<b>Semana 1–${semBloque}:</b> Descubrimiento + mapeo del proceso, definición de éxito, seguridad y accesos.`);
+
+      if(tags.includes('IA')){
+        items.push(`<b>Semana ${semBloque+1}–${semBloque*2}:</b> Dataset, limpieza y prototipo de modelo. ${nivelDatos==='alto'?'(incluye feature engineering y evaluación extendida)':'(prueba de concepto rápida)'}.`);
+      } else {
+        items.push(`<b>Semana ${semBloque+1}–${semBloque*2}:</b> Diseño de flujo y orquestación de ${sistemas} sistema(s), pruebas de integraciones.`);
+      }
+
+      const cierreIni = semBloque*2 + 1;
+      items.push(`<b>Semana ${cierreIni}–${semanas}:</b> Piloto con usuarios, ajuste fino, monitoreo y traspaso al equipo.`);
+
+      return items;
+    }
+
+    function toNum(id, fallback){
+      const v = parseFloat(document.getElementById(id).value);
+      return Number.isFinite(v) ? v : fallback;
+    }
+
+    function formatCurrency(n){
+      try{
+        return new Intl.NumberFormat(navigator.language, {style:'currency', currency: guessCurrency()}).format(n);
+      }catch(e){
+        return n.toFixed(2);
+      }
+    }
+
+    function guessCurrency(){
+      // Heurística simple: si el idioma es es-HN usamos HNL; de lo contrario USD.
+      const lang = (navigator.language||'').toLowerCase();
+      if(lang.includes('-hn')) return 'HNL';
+      if(lang.includes('es-')) return 'USD'; // fallback para otros es-*
+      return 'USD';
+    }
+
+    function copyResult(){
+      const tags = Array.from(document.querySelectorAll('#recTags .pill')).map(x=>x.textContent).join(', ');
+      const text = document.getElementById('recText').innerText;
+      const horas = document.getElementById('kpiHoras').innerText;
+      const ahorro = document.getElementById('kpiAhorro').innerText;
+      const plazo = document.getElementById('kpiPlazo').innerText;
+      const roadmap = Array.from(document.querySelectorAll('#roadmap li')).map(li=>li.innerText).join('\n');
+      const blob = `Recomendación: ${tags}\nResumen: ${text}\nHoras ahorradas/mes: ${horas}\nAhorro estimado/mes: ${ahorro}\nPlazo estimado: ${plazo}\n\nRoadmap:\n${roadmap}`;
+      navigator.clipboard.writeText(blob).then(()=>{
+        alert('Diagnóstico copiado al portapapeles');
+      });
+    }
+
+    // --- Lead modal logic ---
+    const leadModal = document.getElementById('leadModal');
+    const openLead = ()=>{ leadModal.classList.add('open'); setTimeout(()=>{ const first = document.getElementById('lfNombre'); if(first) first.focus(); }, 80); };
+    const closeLead = ()=>{ leadModal.classList.remove('open','loading','success'); };
+
+    const ctaBtn = document.getElementById('ctaImplement');
+    if(ctaBtn){ ctaBtn.addEventListener('click', openLead); }
+    ;['leadClose','leadCancel','leadBackdrop'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.addEventListener('click', closeLead);
+    });
+
+    const leadForm = document.getElementById('leadForm');
+    if(leadForm){
+      leadForm.addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        if(!leadForm.reportValidity()) return;
+        leadModal.classList.add('loading');
+        const submitBtn = document.getElementById('leadSubmit');
+        submitBtn.disabled = true;
+        const payload = buildLeadPayload();
+        try{
+          const res = await fetch('https://n8n.srv902776.hstgr.cloud/webhook/ab64a91f-a142-4844-bd52-ba28cbb1c1f7', {
+            method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
+          });
+          if(!res.ok && res.type !== 'opaque') throw new Error('HTTP '+res.status);
+          leadModal.classList.remove('loading');
+          leadModal.classList.add('success');
+          setTimeout(()=>{ closeLead(); leadForm.reset(); submitBtn.disabled=false; }, 1800);
+        }catch(err){
+          leadModal.classList.remove('loading');
+          alert('No se pudo enviar la solicitud. Intenta nuevamente o contáctanos por WhatsApp.');
+          submitBtn.disabled = false;
+        }
+      });
+    }
+
+    function buildLeadPayload(){
+      const nombre = document.getElementById('lfNombre').value.trim();
+      const apellido = document.getElementById('lfApellido').value.trim();
+      const empresa = document.getElementById('lfEmpresa').value.trim();
+      const correo = document.getElementById('lfCorreo').value.trim();
+      const codigo = document.getElementById('lfCodigo').value;
+      const telefono = document.getElementById('lfTelefono').value.trim();
+      const descripcion = document.getElementById('lfDescripcion').value.trim();
+      const consentimiento = document.getElementById('lfConsent').checked === true;
+
+      // Entradas de la calculadora (paso 1 y 2)
+      const repetitivo = getRadio('repetitivo');
+      const analisis = getRadio('analisis');
+      const simple = getRadio('simple');
+      const tareasSemana = document.getElementById('tareasSemana').value;
+      const minPorTarea = document.getElementById('minPorTarea').value;
+      const sistemas = document.getElementById('sistemas').value;
+      const nivelDatos = document.getElementById('nivelDatos').value;
+      const costoHora = document.getElementById('costoHora').value;
+      const urgencia = document.getElementById('urgencia').value;
+
+      // Recalcular KPIs clave para enviarlos en claro
+      const tareasNum = parseFloat(tareasSemana)||0;
+      const minNum = parseFloat(minPorTarea)||0;
+      const costoNum = parseFloat(costoHora)||0;
+      const sistemasNum = parseInt(sistemas)||1;
+      const horasMesCalc = Math.max(0,(tareasNum*minNum/60)*4);
+      let semanas = 2;
+      if(sistemasNum>=3) semanas += 1;
+      if(analisis==='si') semanas += (nivelDatos==='alto') ? 3 : 2;
+      if(repetitivo==='si') semanas += 1;
+      if(urgencia==='alta') semanas = Math.max(2, Math.round(semanas*0.7));
+      const ahorroEstimado = costoNum>0 ? horasMesCalc*costoNum : null;
+
+      // Elementos del resultado ya renderizados
+      const tags = Array.from(document.querySelectorAll('#recTags .pill')).map(x=>x.textContent);
+      const horasTxt = document.getElementById('kpiHoras').innerText;
+      const ahorroTxt = document.getElementById('kpiAhorro').innerText;
+      const plazoTxt = document.getElementById('kpiPlazo').innerText;
+      const recText = document.getElementById('recText').innerText;
+      const roadmap = Array.from(document.querySelectorAll('#roadmap li')).map(li=>li.innerText);
+
+      const respuestas = { repetitivo, analisis, simple, tareasSemana, minPorTarea, sistemas, nivelDatos, costoHora, urgencia };
+
+      // Estructura solicitada por el webhook + DatosAnalisis
+      return {
+        nombre,
+        apellido,
+        empresa,
+        correo,
+        codigo,
+        telefono,
+        descripcion,
+        consentimiento,
+        DatosAnalisis: {
+          entradas: respuestas,
+          resultados: {
+            horasMes: Number(horasMesCalc.toFixed(2)),
+            ahorroEstimado: (ahorroEstimado!==null ? Number(ahorroEstimado.toFixed(2)) : null),
+            plazoSemanas: semanas,
+            recomendaciones: tags,
+            resumen: recText,
+            roadmap
+          }
+        }
+      };
+    }
+
+    // Inicial
+    go(0);
+  </script>
+</body>
+</html>

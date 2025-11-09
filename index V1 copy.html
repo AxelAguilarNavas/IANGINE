@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>IANGINE - Inteligencia Artificial</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
+    <style>
+      html {
+        scroll-behavior: smooth;
+      }
+      button, input, textarea, select {
+        touch-action: manipulation;
+      }
+      .ai-loader {
+        display: inline-block;
+        position: relative;
+        width: 24px;
+        height: 24px;
+      }
+      .ai-loader div {
+        position: absolute;
+        border: 3px solid #fff;
+        opacity: 1;
+        border-radius: 50%;
+        animation: ai-loader 1.5s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+      }
+      .ai-loader div:nth-child(2) {
+        animation-delay: -0.75s;
+      }
+      @keyframes ai-loader {
+        0% {
+          top: 12px;
+          left: 12px;
+          width: 0;
+          height: 0;
+          opacity: 1;
+        }
+        100% {
+          top: -1px;
+          left: -1px;
+          width: 26px;
+          height: 26px;
+          opacity: 0;
+        }
+      }
+    </style>
+  </head>
+  <body class="font-sans text-gray-900 bg-white">
+    <!-- Hero -->
+    <header
+      class="min-h-screen flex flex-col items-center justify-center text-white text-center px-4 sm:px-6 bg-cover bg-center relative"
+      style="background-image: url('https://res.cloudinary.com/doivgytwg/image/upload/v1755970919/ChatGPT_Image_23_ago_2025_11_39_47_a.m._p4uwmb.png');"
+    >
+      <div class="absolute inset-0 bg-black bg-opacity-60"></div>
+      <div class="relative z-10 flex flex-col items-center justify-center">
+        <img src="https://res.cloudinary.com/doivgytwg/image/upload/v1755851728/Logo_IANgine_blanco_fondo_transparente_prfzsc.png" alt="Logo IANGINE" class="w-28 sm:w-32 md:w-40 mb-6 animate-pulse" />
+        <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6 leading-tight drop-shadow-lg">IANGINE</h1>
+        <p class="text-base sm:text-xl md:text-2xl max-w-2xl leading-relaxed">
+          Potenciamos empresas, emprendedores y personas con soluciones de
+          Inteligencia Artificial para transformar la forma en que trabajan y
+          viven.
+        </p>
+        <button
+          onclick="document.getElementById('contacto').scrollIntoView({behavior:'smooth'})"
+          class="mt-8 w-full sm:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-700 active:scale-95 rounded-xl shadow-xl transition transform duration-300"
+        >
+          Contáctanos
+        </button>
+      </div>
+    </header>
+
+    <!-- Agenda -->
+    <section class="py-12 sm:py-16 px-4 sm:px-6 bg-white text-center" id="agenda">
+      <div class="max-w-4xl mx-auto space-y-6">
+        <h2 class="text-3xl md:text-4xl font-bold">Agenda una reunión</h2>
+        <p class="text-base sm:text-lg md:text-xl text-gray-700 leading-relaxed">
+          Reserva un espacio con nuestro equipo y descubre cómo podemos apoyar la automatización de tu negocio.
+        </p>
+        <div class="bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden">
+          <div id="my-cal-inline-30min" class="w-full h-[720px] overflow-auto"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Misión -->
+    <section class="py-12 sm:py-16 px-4 sm:px-6 bg-gray-50 text-center" id="mision">
+      <h2 class="text-3xl md:text-4xl font-bold mb-6">Nuestra Misión</h2>
+      <p class="max-w-3xl mx-auto text-base sm:text-lg md:text-xl text-gray-700 leading-relaxed">
+        Facilitar a las empresas la adopción de herramientas digitales y sistemas de automatización que eliminen procesos manuales, reduzcan errores y optimicen recursos. Nuestro compromiso es diseñar e implementar soluciones personalizadas que conecten canales de comunicación, plataformas de gestión y flujos de trabajo, logrando operaciones más rápidas, eficientes y escalables.
+      </p>
+    </section>
+
+    <!-- Visión -->
+    <section class="py-12 sm:py-16 px-4 sm:px-6 bg-white text-center" id="vision">
+      <h2 class="text-3xl md:text-4xl font-bold mb-6">Nuestra Visión</h2>
+      <p class="max-w-3xl mx-auto text-base sm:text-lg md:text-xl text-gray-700 leading-relaxed">
+        Ser la empresa líder en Latinoamérica en la transformación digital de negocios, impulsando a empresas de todos los tamaños a alcanzar su máximo potencial mediante la automatización inteligente, la integración de sistemas y la innovación tecnológica, generando eficiencia, ahorro de costos y una mejor calidad de vida para cada persona que forma parte de la organización.
+      </p>
+    </section>
+
+    <!-- Sobre Nosotros -->
+    <section class="py-12 sm:py-16 px-4 sm:px-6 bg-gray-50 text-center" id="nosotros">
+      <h2 class="text-3xl md:text-4xl font-bold mb-6">Sobre Nosotros</h2>
+      <div class="max-w-3xl mx-auto text-base sm:text-lg md:text-xl text-gray-700 leading-relaxed space-y-4 text-left">
+        <p>
+          En <strong>IANGINE.com</strong> creemos que la tecnología debe estar al servicio de las personas y de los negocios.
+        </p>
+        <p>
+          Somos un equipo especializado en automatización, integración de sistemas y optimización de procesos, con experiencia en la implementación de herramientas como <strong>n8n</strong>, WhatsApp, Messenger, Instagram, Telegram, correo electrónico, Chatwoot y Odoo.
+        </p>
+        <p>
+          Diseñamos soluciones a la medida, porque sabemos que cada empresa es única. Nuestro objetivo es ayudar a las organizaciones a:
+        </p>
+        <ul class="list-disc pl-5 sm:pl-6 space-y-2">
+          <li>Reducir costos operativos.</li>
+          <li>Eliminar tareas repetitivas.</li>
+          <li>Mejorar la comunicación con clientes y equipos.</li>
+          <li>Integrar todos sus sistemas en una sola experiencia digital eficiente.</li>
+        </ul>
+        <p>
+          En <strong>IANGINE.com</strong> trabajamos para que tu empresa deje de perder tiempo en tareas manuales y empiece a enfocarse en lo que realmente importa: crecer, innovar y ofrecer un mejor servicio a sus clientes.
+        </p>
+      </div>
+    </section>
+
+    <!-- Contacto -->
+    <section
+      class="py-16 sm:py-20 px-4 sm:px-6 bg-gradient-to-br from-indigo-900 via-black to-gray-900 text-white"
+      id="contacto"
+    >
+      <h2 class="text-3xl md:text-4xl font-bold mb-10 text-center">Contáctanos</h2>
+      <form
+        id="contactForm"
+        class="max-w-xl mx-auto bg-white p-6 sm:p-8 rounded-2xl shadow-2xl text-gray-900 space-y-6"
+      >
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input
+            type="text"
+            name="nombre"
+            placeholder="Nombre (Obligatorio)"
+            required
+            pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$"
+            title="Ingrese un nombre válido"
+            class="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+          />
+          <input
+            type="text"
+            name="apellido"
+            placeholder="Apellido (Obligatorio)"
+            required
+            pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,50}$"
+            title="Ingrese un apellido válido"
+            class="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+          />
+        </div>
+        <input
+          type="text"
+          name="empresa"
+          placeholder="Nombre de la empresa (opcional)"
+          class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+        />
+        <div class="grid grid-cols-1 gap-4">
+          <input
+            type="email"
+            name="correo"
+            placeholder="Correo (Obligatorio)"
+            required
+            title="Ingrese un correo electrónico válido"
+            class="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+          />
+          <div class="flex flex-col sm:flex-row gap-3">
+            <select name="codigo" required class="border border-gray-300 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none w-full sm:w-32">
+              <option value="">Código</option>
+              <optgroup label="América">
+                <option value="+1">+1 USA / CAN</option>
+                <option value="+52">+52 México</option>
+                <option value="+502">+502 Guatemala</option>
+                <option value="+503">+503 El Salvador</option>
+                <option value="+504">+504 Honduras</option>
+                <option value="+505">+505 Nicaragua</option>
+                <option value="+506">+506 Costa Rica</option>
+                <option value="+507">+507 Panamá</option>
+                <option value="+51">+51 Perú</option>
+                <option value="+54">+54 Argentina</option>
+                <option value="+55">+55 Brasil</option>
+                <option value="+56">+56 Chile</option>
+                <option value="+57">+57 Colombia</option>
+                <option value="+58">+58 Venezuela</option>
+              </optgroup>
+              <optgroup label="Europa">
+                <option value="+34">+34 España</option>
+                <option value="+33">+33 Francia</option>
+                <option value="+39">+39 Italia</option>
+                <option value="+49">+49 Alemania</option>
+                <option value="+44">+44 Reino Unido</option>
+                <option value="+31">+31 Países Bajos</option>
+                <option value="+32">+32 Bélgica</option>
+                <option value="+41">+41 Suiza</option>
+                <option value="+43">+43 Austria</option>
+                <option value="+351">+351 Portugal</option>
+              </optgroup>
+            </select>
+            <input
+              type="tel"
+              name="telefono"
+              placeholder="Teléfono celular (Obligatorio)"
+              required
+              pattern="^[0-9]{7,15}$"
+              title="Ingrese un número de teléfono válido"
+              class="flex-1 border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none w-full"
+            />
+          </div>
+        </div>
+        <textarea
+          name="descripcion"
+          placeholder="Describe tu duda o problema (mínimo 30 caracteres)"
+          required
+          minlength="30"
+          class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none h-32 sm:h-36"
+        ></textarea>
+        <div class="flex items-start space-x-2">
+          <input type="checkbox" id="consentimiento" name="consentimiento" required class="mt-1" />
+          <label for="consentimiento" class="text-sm text-gray-700">Acepto que se me envíen correos y mensajes relacionados con mi consulta.</label>
+        </div>
+        <button
+          id="submitBtn"
+          type="submit"
+          class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-lg font-semibold transition transform duration-300 shadow-md flex items-center justify-center"
+        >
+          <span id="submitText">Enviar</span>
+          <span id="loader" class="hidden ml-2 ai-loader"><div></div><div></div></span>
+        </button>
+      </form>
+    </section>
+
+    <!-- Cal inline embed code begins -->
+    <script type="text/javascript">
+      (function (C, A, L) {
+        let p = function (a, ar) {
+          a.q.push(ar);
+        };
+        let d = C.document;
+        C.Cal =
+          C.Cal ||
+          function () {
+            let cal = C.Cal;
+            let ar = arguments;
+            if (!cal.loaded) {
+              cal.ns = {};
+              cal.q = cal.q || [];
+              d.head.appendChild(d.createElement("script")).src = A;
+              cal.loaded = true;
+            }
+            if (ar[0] === L) {
+              const api = function () {
+                p(api, arguments);
+              };
+              const namespace = ar[1];
+              api.q = api.q || [];
+              if (typeof namespace === "string") {
+                cal.ns[namespace] = cal.ns[namespace] || api;
+                p(cal.ns[namespace], ar);
+                p(cal, ["initNamespace", namespace]);
+              } else p(cal, ar);
+              return;
+            }
+            p(cal, ar);
+          };
+      })(window, "https://app.cal.com/embed/embed.js", "init");
+      Cal("init", "30min", { origin: "https://app.cal.com" });
+
+      Cal.ns["30min"]("inline", {
+        elementOrSelector: "#my-cal-inline-30min",
+        config: { layout: "month_view" },
+        calLink: "axl-aguilar/30min",
+      });
+
+      Cal.ns["30min"]("ui", { hideEventTypeDetails: false, layout: "month_view" });
+    </script>
+    <!-- Cal inline embed code ends -->
+
+    <!-- Footer -->
+    <footer class="py-6 px-4 text-center bg-black text-gray-400 text-sm sm:text-base">
+      <p>
+        © <span id="year"></span> IANGINE.com - Todos los derechos reservados
+      </p>
+    </footer>
+
+    <div id="n8n-chat"></div>
+
+    <script>
+      document.getElementById("year").textContent = new Date().getFullYear();
+
+      const form = document.getElementById("contactForm");
+      const submitBtn = document.getElementById("submitBtn");
+      const submitText = document.getElementById("submitText");
+      const loader = document.getElementById("loader");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        if (!form.checkValidity()) {
+          form.reportValidity();
+          return;
+        }
+
+        submitText.classList.add("hidden");
+        loader.classList.remove("hidden");
+        submitBtn.disabled = true;
+
+        const formData = {
+          nombre: form.nombre.value.trim(),
+          apellido: form.apellido.value.trim(),
+          empresa: form.empresa.value.trim(),
+          correo: form.correo.value.trim(),
+          codigo: form.codigo.value,
+          telefono: form.telefono.value.trim(),
+          descripcion: form.descripcion.value.trim(),
+          consentimiento: form.consentimiento.checked
+        };
+
+        try {
+          await fetch(
+            "https://n8n.srv902776.hstgr.cloud/webhook/ab64a91f-a142-4844-bd52-ba28cbb1c1f7",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(formData),
+            }
+          );
+          alert("✅ Tu mensaje ha sido enviado. Nos pondremos en contacto pronto.");
+          form.reset();
+        } catch (error) {
+          alert("❌ Hubo un error al enviar el mensaje. Intenta de nuevo.");
+        } finally {
+          submitText.classList.remove("hidden");
+          loader.classList.add("hidden");
+          submitBtn.disabled = false;
+        }
+      });
+    </script>
+
+    <script type="module">
+      import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
+
+      createChat({
+        webhookUrl: 'https://n8n.srv902776.hstgr.cloud/webhook/a3a8e12b-4c3d-4533-aa7b-eebc069ca0c0/chat',
+        webhookConfig: {
+          method: 'POST',
+          headers: {}
+        },
+        target: '#n8n-chat',
+        mode: 'window',
+        chatInputKey: 'chatInput',
+        chatSessionKey: 'sessionId',
+        loadPreviousSession: true,
+        metadata: {},
+        showWelcomeScreen: true,
+        defaultLanguage: 'en',
+        initialMessages: [
+          'Hola ! 👋',
+          'Me presento, mi nombre es Ethan y soy el asistente virtual de iangine.com. ¿Cómo puedo ayudarte hoy?'
+        ],
+        i18n: {
+          en: {
+            title: '¡ Hola ! 👋',
+            subtitle: " Inicia el chat. Estamos aqui 24/7 para ayudarte.",
+            footer: '',
+            getStarted: 'Nueva conversacion',
+            inputPlaceholder: 'Ingresa tu pregunta..',
+          },
+        },
+        enableStreaming: false,
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survey Iangine</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background-color: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #6a34d8, #5a26c4);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        .header h1 {
+            font-size: 2rem;
+            margin: 0 0 10px;
+            font-weight: 600;
+        }
+        .header p {
+            font-size: 1rem;
+            margin: 0;
+            line-height: 1.5;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+            color: #333;
+        }
+        .benefit-list {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 30px;
+        }
+        .benefit-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        .benefit-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #f0eafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 20px;
+        }
+        .benefit-icon svg {
+            fill: #5a26c4;
+        }
+        .benefit-text h3 {
+            font-size: 1.1rem;
+            margin: 0 0 5px;
+            font-weight: 600;
+        }
+        .benefit-text p {
+            font-size: 0.9rem;
+            margin: 0;
+            color: #666;
+            line-height: 1.4;
+        }
+        .packages-title {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin: 40px 0 20px;
+        }
+        .package-card {
+            background-color: #fafafa;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border: 1px solid #e0e0e0;
+        }
+        .package-info h4 {
+            font-size: 1.1rem;
+            margin: 0 0 5px;
+            font-weight: 600;
+        }
+        .package-info p.subtitle {
+            font-size: 0.9rem;
+            margin: 0 0 10px;
+            color: #888;
+        }
+        .package-info p.description {
+            font-size: 0.9rem;
+            margin: 0;
+            color: #666;
+            line-height: 1.4;
+        }
+        .package-price {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #5a26c4;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Sistema de encuestas impulsado por IA</h1>
+            <p>Encuesta, aprende, mejora y crece</p>
+        </div>
+        <div class="content">
+            <ul class="benefit-list">
+                <li class="benefit-item">
+                    <div class="benefit-icon">
+                        <svg viewBox="0 0 24 24" width="24" height="24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zM11 15h2v-4h-2v4zm0-6h2V7h-2v2z"/>
+                        </svg>
+                    </div>
+                    <div class="benefit-text">
+                        <h3>Analisis que Evoluciona</h3>
+                        <p>Analiza el resultado de tus servicios, analiza la opinion de tus clientes, aplica y evoluciona</p>
+                    </div>
+                </li>
+                <li class="benefit-item">
+                    <div class="benefit-icon">
+                        <svg viewBox="0 0 24 24" width="24" height="24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15.5c-2.48 0-4.5-2.02-4.5-4.5S9.52 8.5 12 8.5s4.5 2.02 4.5 4.5-2.02 4.5-4.5 4.5zm-1.5-4.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5-.67-1.5-1.5-1.5-1.5.67-1.5 1.5z"/>
+                        </svg>
+                    </div>
+                    <div class="benefit-text">
+                        <h3>Retroalimentación oportuna</h3>
+                        <p>Cada encuesta es capaz de retroalimentar con los datos mas importantes y en el momento justo</p>
+                    </div>
+                </li>
+                <li class="benefit-item">
+                    <div class="benefit-icon">
+                        <svg viewBox="0 0 24 24" width="24" height="24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.07c-2.82-.44-5-2.94-5-6.07 0-3.31 2.69-6 6-6s6 2.69 6 6-2.69 6-6 6z"/>
+                        </svg>
+                    </div>
+                    <div class="benefit-text">
+                        <h3>Liberación de Recursos</h3>
+                        <p>Ahorra hasta 16 horas quincenales a tu equipo para enfocarse en vender, no en administrar.</p>
+                    </div>
+                </li>
+            </ul>
+
+            <h2 class="packages-title">Paquetes Disponibles</h2>
+
+            <div class="package-card">
+                <div class="package-info">
+                    <h4>Implementación y Puesta en Marcha</h4>
+                    <p class="subtitle">Inversión única</p>
+                    <p class="description">Análisis, construcción del flujo, despliegue en servidor y sesión de formación.</p>
+                </div>
+                <div class="package-price">$400</div>
+            </div>
+
+            <div class="package-card">
+                <div class="package-info">
+                    <h4>Plan de Soporte y Operaciones</h4>
+                    <p class="subtitle">Suscripción mensual</p>
+                    <p class="description">Mantenimiento, costes de servidor, consumo de APIs y soporte técnico prioritario.</p>
+                </div>
+                <div class="package-price">150$/mes</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

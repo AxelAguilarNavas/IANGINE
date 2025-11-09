@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encuesta de Satisfacción - IANGINE</title>
+    <!-- Favicon -->
+    <link rel="icon" href="https://res.cloudinary.com/doivgytwg/image/upload/v1754073056/Logo_IANgine_Negro_y7shtd.png"
+      type="image/png">
+    <link rel="shortcut icon"
+      href="https://res.cloudinary.com/doivgytwg/image/upload/v1754073056/Logo_IANgine_Negro_y7shtd.png" type="image/png">
+    <link rel="apple-touch-icon"
+      href="https://res.cloudinary.com/doivgytwg/image/upload/v1754073056/Logo_IANgine_Negro_y7shtd.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+        }
+        .form-radio {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            display: inline-block;
+            position: relative;
+            background-color: #fff;
+            color: #1e40af;
+            border: 1px solid #d1d5db;
+            border-radius: 50%;
+            cursor: pointer;
+            height: 1.25rem;
+            width: 1.25rem;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        .form-radio:checked {
+            border-color: #1e40af;
+            background-color: #1e40af;
+        }
+        .form-radio:checked::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+            background: white;
+        }
+        .loader {
+            border-top-color: #1e40af;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* --- Animación del botón --- */
+        .button-loader {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            height: 24px; /* Altura fija para el contenedor de la animación */
+        }
+        .loader-bar {
+            width: 4px;
+            height: 100%;
+            background-color: white;
+            border-radius: 2px;
+            animation: loading-wave 1.2s infinite ease-in-out;
+        }
+        .loader-bar:nth-child(2) { animation-delay: 0.1s; }
+        .loader-bar:nth-child(3) { animation-delay: 0.2s; }
+        .loader-bar:nth-child(4) { animation-delay: 0.3s; }
+        .loader-bar:nth-child(5) { animation-delay: 0.4s; }
+
+        @keyframes loading-wave {
+            0%, 100% { transform: scaleY(0.2); }
+            50% { transform: scaleY(1); }
+        }
+        .footer-logo {
+            filter: invert(40%);
+            opacity: 0.8;
+        }
+        .header-bg {
+            background-image: url('https://res.cloudinary.com/doivgytwg/image/upload/v1757466886/Pega_Print_gijzxv.jpg');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <main id="main-container" class="w-full max-w-2xl bg-white rounded-xl shadow-lg transition-opacity duration-500 opacity-0">
+        <!-- Loader -->
+        <div id="loader" class="flex flex-col items-center justify-center p-12">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mb-4"></div>
+            <p class="text-lg font-medium text-gray-600">Cargando encuesta...</p>
+        </div>
+
+        <!-- Survey Content -->
+        <div id="survey-content" class="hidden">
+            <header class="header-bg text-white p-6 rounded-t-xl text-center">
+                <div class="absolute inset-0 bg-gray-800 opacity-70 rounded-t-xl"></div>
+                <div class="relative z-10">
+                    <img id="company-logo" src="https://res.cloudinary.com/doivgytwg/image/upload/v1715711577/logo-cisolution_pxpovd.png" alt="Logo de la Empresa" class="h-16 mx-auto mb-4"
+                    onerror="this.onerror=null;this.src='https://placehold.co/200x80/000000/FFFFFF?text=Logo';"
+                    >
+                    <h1 id="survey-title" class="text-2xl font-bold">Encuesta de Satisfacción</h1>
+                </div>
+            </header>
+            
+            <div class="text-center px-8 pt-8 pb-2">
+                 <h2 id="company-name" class="text-3xl font-bold text-gray-800"></h2>
+                 <div class="mt-1">
+                    <p class="text-lg font-bold text-gray-700">¡Queremos escucharte!</p>
+                    <p class="text-md text-gray-500 mt-2 max-w-xl mx-auto">Tu opinión es clave para nosotros. Con esta breve encuesta buscamos conocer cómo ha sido tu experiencia y cómo podemos seguir mejorando para ti.</p>
+                </div>
+            </div>
+
+            <form id="survey-form" class="p-8 pt-6 space-y-8">
+                <div id="questions-container" class="space-y-6">
+                    <!-- Las preguntas se insertarán aquí dinámicamente -->
+                </div>
+                <button type="submit" class="relative w-full bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 px-4 rounded-lg transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-700 flex items-center justify-center h-12">
+                    <span class="button-text">Enviar Respuestas</span>
+                    <div class="button-loader hidden absolute">
+                        <span class="loader-bar"></span>
+                        <span class="loader-bar"></span>
+                        <span class="loader-bar"></span>
+                        <span class="loader-bar"></span>
+                        <span class="loader-bar"></span>
+                    </div>
+                </button>
+            </form>
+        </div>
+
+        <!-- Thank You Message -->
+        <div id="thank-you-message" class="hidden p-12 text-center">
+             <svg class="mx-auto h-16 w-16 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h2 class="mt-4 text-3xl font-extrabold text-gray-800">¡Gracias por tu tiempo!</h2>
+            <p class="mt-2 text-lg text-gray-600">Tus respuestas han sido enviadas exitosamente. Valoramos mucho tu opinión.</p>
+        </div>
+        
+        <!-- Error Message -->
+        <div id="error-message" class="hidden p-12 text-center">
+            <svg class="mx-auto h-16 w-16 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+            </svg>
+            <h2 id="error-title" class="mt-4 text-2xl font-bold text-gray-800">Ha ocurrido un error</h2>
+            <p id="error-text" class="mt-2 text-gray-600"></p>
+        </div>
+
+        <footer class="text-center pb-6 pt-2">
+            <a href="https://www.iangine.com" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 text-gray-500 hover:text-gray-700 transition-colors duration-300 text-xs">
+                <span>Desarrollado por <strong>IANGINE</strong></span>
+                <img src="https://res.cloudinary.com/doivgytwg/image/upload/v1755851728/Logo_IANgine_blanco_fondo_transparente_prfzsc.png" alt="IANGINE Logo" class="h-4 footer-logo">
+            </a>
+        </footer>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const mainContainer = document.getElementById('main-container');
+            const loader = document.getElementById('loader');
+            const surveyContent = document.getElementById('survey-content');
+            const thankYouMessage = document.getElementById('thank-you-message');
+            const errorMessage = document.getElementById('error-message');
+            const errorTitle = document.getElementById('error-title');
+            const errorText = document.getElementById('error-text');
+            const surveyForm = document.getElementById('survey-form');
+            const questionsContainer = document.getElementById('questions-container');
+            const companyLogo = document.getElementById('company-logo');
+            const companyName = document.getElementById('company-name');
+            const surveyTitle = document.getElementById('survey-title');
+
+            let surveyData = null;
+
+            // Muestra el contenedor principal con una transición
+            mainContainer.classList.remove('opacity-0');
+
+            const getApiClientId = () => {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get('id_cliente');
+            };
+
+            const showError = (title, message) => {
+                loader.classList.add('hidden');
+                surveyContent.classList.add('hidden');
+                thankYouMessage.classList.add('hidden');
+                errorTitle.textContent = title;
+                errorText.textContent = message;
+                errorMessage.classList.remove('hidden');
+            };
+
+            const fetchSurvey = async (clientId) => {
+                if (!clientId) {
+                    showError('ID de Cliente no encontrado', 'Por favor, asegúrate de que el enlace de la encuesta sea correcto. Falta el parámetro "id_cliente".');
+                    return;
+                }
+
+                try {
+                    const getUrl = `https://n8n.srv902776.hstgr.cloud/webhook/0705098a-f8a3-4ef0-99f3-766ddded91b8?id_cliente=${clientId}`;
+                    const response = await fetch(getUrl);
+                    
+                    if (!response.ok) {
+                        throw new Error(`Error en la solicitud: ${response.status} ${response.statusText}`);
+                    }
+                    
+                    const data = await response.json();
+
+                    if (!data || data.length === 0 || !data[0].Preguntas) {
+                         showError('Encuesta no disponible', 'No se pudo cargar la información de la encuesta. Es posible que el ID del cliente no sea válido o la encuesta no esté activa.');
+                        return;
+                    }
+                    
+                    surveyData = data[0];
+                    buildForm();
+
+                } catch (error) {
+                    console.error('Error al obtener la encuesta:', error);
+                    showError('Error de Conexión', 'No se pudo cargar la encuesta. Por favor, verifica tu conexión a internet e inténtalo de nuevo.');
+                }
+            };
+            
+            const buildForm = () => {
+                companyLogo.src = surveyData.logo_url;
+                companyName.textContent = `¡Bienvenido, ${surveyData.nombre}!`;
+                surveyTitle.textContent = surveyData.descripcion_encuesta;
+
+                surveyData.Preguntas.sort((a, b) => a.orden - b.orden).forEach(pregunta => {
+                    const questionBlock = document.createElement('div');
+                    questionBlock.className = 'border-t border-gray-200 pt-6';
+                    
+                    let requiredIndicator = pregunta.obligatorio ? '<span class="text-red-500 ml-1">*</span>' : '';
+                    let questionLabel = `<label class="block text-md font-semibold text-gray-800 mb-4">${pregunta.descripcion} ${requiredIndicator}</label>`;
+                    
+                    let inputHtml = '';
+                    switch (pregunta.pregunta_config) {
+                        case 'radio':
+                            inputHtml = `<div class="space-y-3">${pregunta.Opciones.map(opcion => `
+                                <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                                    <input type="${pregunta.pregunta_config}" name="pregunta_${pregunta.id_pregunta}" value="${opcion.id_opcion}" class="form-radio mr-4" ${pregunta.obligatorio ? 'required' : ''} data-texto="${opcion.descripcion_opcion}" data-valor="${opcion.valor_opcion}">
+                                    <span class="text-gray-700">${opcion.descripcion_opcion}</span>
+                                </label>`).join('')}</div>`;
+                            break;
+
+                        case 'textarea':
+                            inputHtml = `<textarea name="pregunta_${pregunta.id_pregunta}" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" rows="4" placeholder="Escribe tu respuesta aquí..." ${pregunta.obligatorio ? 'required' : ''} data-id-opcion="${pregunta.Opciones[0]?.id_opcion || ''}"></textarea>`;
+                            break;
+
+                        // Se pueden agregar más tipos de input aquí (text, number, date, etc.)
+                        default:
+                            inputHtml = `<input type="${pregunta.pregunta_config || 'text'}" name="pregunta_${pregunta.id_pregunta}" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" ${pregunta.obligatorio ? 'required' : ''} data-id-opcion="${pregunta.Opciones[0]?.id_opcion || ''}">`;
+                    }
+                    
+                    questionBlock.innerHTML = questionLabel + inputHtml;
+                    questionsContainer.appendChild(questionBlock);
+                });
+                
+                loader.classList.add('hidden');
+                surveyContent.classList.remove('hidden');
+            };
+
+            const handleSubmit = async (event) => {
+                event.preventDefault();
+
+                const submitButton = surveyForm.querySelector('button[type="submit"]');
+                const buttonText = submitButton.querySelector('.button-text');
+                const buttonLoader = submitButton.querySelector('.button-loader');
+
+                const postUrl = 'https://n8n.srv902776.hstgr.cloud/webhook/0705098a-f8a3-4ef0-99f3-766ddded91b8';
+                const formData = new FormData(surveyForm);
+                
+                const fechaRespuesta = new Date().toISOString().split('T')[0];
+
+                const respuestas_detalle = surveyData.Preguntas.map(pregunta => {
+                    const inputName = `pregunta_${pregunta.id_pregunta}`;
+                    const element = surveyForm.elements[inputName];
+                    let valorTexto = '';
+                    let valorNumero = null;
+                    let idOpcion = null;
+
+                    if (pregunta.pregunta_config === 'radio') {
+                        const checkedOption = element ? document.querySelector(`input[name="${inputName}"]:checked`) : null;
+                        if(checkedOption){
+                            valorTexto = checkedOption.dataset.texto;
+                            valorNumero = checkedOption.dataset.valor;
+                            idOpcion = checkedOption.value;
+                        }
+                    } else { // textarea, text, etc.
+                        if(element){
+                           valorTexto = element.value;
+                           idOpcion = element.dataset.idOpcion;
+                        }
+                    }
+
+                    return {
+                        id_asignacion: surveyData.id_asignacion.toString(),
+                        id_pregunta: pregunta.id_pregunta.toString(),
+                        id_opcion: idOpcion,
+                        valor_texto: valorTexto,
+                        valor_numero: valorNumero || "",
+                        valor_fecha: fechaRespuesta,
+                        pregunta_descripcion: pregunta.descripcion
+                    };
+                });
+                
+                const payload = {
+                    id_encuesta: surveyData.id_encuesta.toString(),
+                    id_cliente: surveyData.id_cliente.toString(),
+                    id_asignacion: surveyData.id_asignacion.toString(),
+                    fecha_respuesta: fechaRespuesta,
+                    canal: 'web',
+                    respuestas_detalle: respuestas_detalle
+                };
+
+                try {
+                    // Iniciar animación y deshabilitar botón
+                    submitButton.disabled = true;
+                    submitButton.classList.add('opacity-75', 'cursor-not-allowed');
+                    buttonText.classList.add('hidden');
+                    buttonLoader.classList.remove('hidden');
+
+
+                    const response = await fetch(postUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Error en el envío: ${response.statusText}`);
+                    }
+                    
+                    surveyContent.classList.add('hidden');
+                    thankYouMessage.classList.remove('hidden');
+
+                } catch (error) {
+                    console.error('Error al enviar el formulario:', error);
+                    showError('Error al Enviar', 'No se pudieron guardar tus respuestas. Por favor, inténtalo de nuevo más tarde.');
+                } finally {
+                    // Detener animación y rehabilitar botón
+                    submitButton.disabled = false;
+                    submitButton.classList.remove('opacity-75', 'cursor-not-allowed');
+                    buttonText.classList.remove('hidden');
+                    buttonLoader.classList.add('hidden');
+                }
+            };
+            
+            surveyForm.addEventListener('submit', handleSubmit);
+
+            const clientId = getApiClientId();
+            fetchSurvey(clientId);
+        });
+    </script>
+</body>
+</html>
+

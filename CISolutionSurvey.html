@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="auto">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+   <!-- Favicon -->
+  <link rel="icon" href="https://res.cloudinary.com/doivgytwg/image/upload/v1754073056/Logo_IANgine_Negro_y7shtd.png" type="image/png">
+  <link rel="shortcut icon" href="https://res.cloudinary.com/doivgytwg/image/upload/v1754073056/Logo_IANgine_Negro_y7shtd.png" type="image/png">
+  <link rel="apple-touch-icon" href="https://res.cloudinary.com/doivgytwg/image/upload/v1754073056/Logo_IANgine_Negro_y7shtd.png">
+  
+  <title>CISolution · Encuesta</title>
+  <link rel="preconnect" href="https://res.cloudinary.com" />
+  <style>
+    /* =========================
+       Tokens de diseño (Light)
+       ========================= */
+    :root{
+      --brand-blue-900:#0d2f6b;
+      --brand-blue-700:#1f4fa2;
+      --brand-blue:#2b69c5;
+      --brand-orange:#ff6a00;
+      --brand-orange-700:#e75e00;
+      --neutral-950:#0b0e12;
+      --neutral-900:#101418;
+      --neutral-800:#1b2028;
+      --neutral-700:#2b2f36;
+      --neutral-600:#475066;
+      --neutral-500:#6a7280;
+      --neutral-400:#98a1b3;
+      --neutral-300:#c8ced8;
+      --neutral-200:#e4e9f2;
+      --neutral-150:#eef2f7;
+      --neutral-100:#f5f7fb;
+      --white:#ffffff;
+      --error:#d7263d;
+      --success:#208a3c;
+      --radius:14px;
+      --shadow-sm:0 4px 16px rgba(0,0,0,.06);
+      --shadow:0 8px 30px rgba(0,0,0,.08);
+      --grad:linear-gradient(90deg,var(--brand-orange) 0%, var(--brand-blue) 100%);
+      --grad-soft:linear-gradient(180deg,#ffffff, #fcfdff);
+    }
+
+    /* Tema Oscuro */
+    html[data-theme="dark"]{
+      --neutral-950:#0a0c10;
+      --neutral-900:#0e1117;
+      --neutral-800:#141922;
+      --neutral-700:#1b2230;
+      --neutral-600:#2a3447;
+      --neutral-500:#4e5a73;
+      --neutral-400:#7b88a1;
+      --neutral-300:#a5b0c6;
+      --neutral-200:#c7d1e6;
+      --neutral-150:#dce6ff1a; /* overlay */
+      --neutral-100:#111827;
+      --white:#0e1117;
+      --shadow-sm:0 4px 16px rgba(0,0,0,.4);
+      --shadow:0 8px 30px rgba(0,0,0,.55);
+      --grad-soft:linear-gradient(180deg,#121624, #0e1117);
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--neutral-900);
+      background:linear-gradient(180deg,var(--white),#f9fbff 40%, #f7f9fc 100%);
+    }
+    html[data-theme="dark"] body{background:linear-gradient(180deg,#0b1020,#0a0e1a)}
+
+    .container{width:min(1100px,92%); margin:0 auto}
+
+    /* Header */
+    .topbar{background:var(--grad); color:#fff}
+    .topbar-inner{display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 0}
+    .brand{display:flex; align-items:center; gap:14px}
+    .brand img{height:36px}
+    .brand h1{margin:0; font-size:1.05rem; font-weight:600; letter-spacing:.3px}
+
+    /* Toggle de tema */
+    .theme-toggle{display:inline-flex; align-items:center; gap:10px}
+    .toggle-btn{display:inline-flex; align-items:center; gap:8px; color:#fff; background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.25); border-radius:999px; padding:8px 12px; cursor:pointer; font-weight:600; letter-spacing:.2px}
+    .toggle-btn:focus{outline:3px solid rgba(255,255,255,.4); outline-offset:2px}
+    .toggle-icon{width:18px; height:18px; display:inline-block}
+
+    /* Card */
+    .card{background:var(--white); border-radius:var(--radius); box-shadow:var(--shadow); padding:24px; margin-top:-12px}
+    html[data-theme="dark"] .card{background:#0f1527}
+
+    .survey-head{display:flex; justify-content:space-between; align-items:center; gap:16px; border-bottom:1px solid var(--neutral-150); padding-bottom:14px; margin-bottom:18px}
+    .survey-title{margin:0; font-size:1.4rem; font-weight:800; color:var(--brand-blue-700)}
+    html[data-theme="dark"] .survey-title{color:#e3ecff}
+    .company-badge{background:linear-gradient(90deg,#ffe3d1, #e9f0ff); color:var(--brand-blue-900); padding:8px 12px; border-radius:999px; font-size:.9rem; white-space:nowrap}
+    html[data-theme="dark"] .company-badge{background:rgba(255,255,255,.08); color:#e6efff}
+
+    /* Estado */
+    .state{display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:12px; margin:10px 0 18px; background:var(--neutral-150); color:var(--neutral-500); font-size:.95rem}
+    .state.error{background:#ffe9ec; color:var(--error)}
+    html[data-theme="dark"] .state{background:#111a2b; color:#a8b3cf}
+    html[data-theme="dark"] .state.error{background:#3a0e17; color:#ff94a4}
+    .state.success{background:#e9f8ee; color:var(--success)}
+    html[data-theme="dark"] .state.success{background:#11321e; color:#8be3a4}
+
+    /* Preguntas */
+    .questions{display:grid; gap:16px}
+    .question{border:1px solid var(--neutral-150); border-radius:12px; padding:16px; transition:border-color .2s ease, background .2s ease; background:var(--grad-soft)}
+    html[data-theme="dark"] .question{border-color:#1e2740}
+    .question.invalid{border-color:var(--error); background:linear-gradient(180deg,#fff5f6,#fff)}
+    html[data-theme="dark"] .question.invalid{background:#2a0f17}
+    .q-head{display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:10px}
+    .q-text{font-weight:700; color:var(--neutral-900)}
+    html[data-theme="dark"] .q-text{color:#e6ecff}
+    .required{color:var(--brand-orange-700); background:#fff1e8; border:1px solid #ffd6bf; font-size:.78rem; padding:3px 8px; border-radius:999px; white-space:nowrap}
+    html[data-theme="dark"] .required{background:#2c1c12; border-color:#4b2a17; color:#ffb184}
+
+    .q-answer{display:block}
+    .error-text{margin-top:8px; font-size:.85rem; color:var(--error); display:none}
+    .question.invalid .error-text{display:block}
+
+    /* Grupo de opciones como "chips" con íconos */
+    .chip-group{display:flex; flex-wrap:wrap; gap:10px}
+    .chip{position:relative; display:inline-flex; align-items:center}
+    .chip input{appearance:none; position:absolute; inset:0; margin:0; opacity:0; cursor:pointer}
+    .chip-content{display:inline-flex; align-items:center; gap:8px; border:1px solid var(--neutral-300); border-radius:999px; padding:9px 12px; line-height:1; cursor:pointer; user-select:none; transition:all .2s ease; font-size:.95rem; color:var(--neutral-900); background:#fff}
+    html[data-theme="dark"] .chip-content{background:#0f1527; color:#e6ecff; border-color:#2a3350}
+    .chip .chip-icon{width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; color:var(--neutral-600)}
+    html[data-theme="dark"] .chip .chip-icon{color:#9fb2ff}
+    .chip input:focus + .chip-content{box-shadow:0 0 0 3px rgba(43,105,197,.25)}
+    .chip input:checked + .chip-content{border-color:var(--brand-blue); background:linear-gradient(90deg,#eaf1ff,#fff); box-shadow:0 0 0 2px rgba(43,105,197,.12) inset; font-weight:700}
+    html[data-theme="dark"] .chip input:checked + .chip-content{background:linear-gradient(90deg,#0e1b3a,#0f1527)}
+
+    /* Inputs */
+    textarea, select, input[type="text"], input[type="range"], input[type="number"], input[type="date"], input[type="email"], input[type="file"]{width:100%; border:1px solid var(--neutral-300); border-radius:10px; padding:10px 12px; font:inherit; outline:none; transition:border-color .2s ease, box-shadow .2s ease; background:#fff; color:var(--neutral-900)}
+    html[data-theme="dark"] textarea, html[data-theme="dark"] select, html[data-theme="dark"] input[type="text"], html[data-theme="dark"] input[type="range"], html[data-theme="dark"] input[type="number"], html[data-theme="dark"] input[type="date"], html[data-theme="dark"] input[type="email"], html[data-theme="dark"] input[type="file"]{background:#0f1527; color:#e6ecff; border-color:#2a3350}
+    textarea:focus, select:focus, input[type="text"]:focus, input[type="range"]:focus, input[type="number"]:focus, input[type="date"]:focus, input[type="email"]:focus, input[type="file"]:focus{border-color:var(--brand-blue); box-shadow:0 0 0 3px rgba(43,105,197,.15)}
+    textarea{min-height:120px; resize:vertical}
+    .range-wrap{display:grid; gap:8px}
+    .range-scale{display:flex; justify-content:space-between; font-size:.8rem; color:var(--neutral-500)}
+
+    /* CTA */
+    .actions{display:flex; align-items:center; justify-content:flex-end; gap:12px; margin-top:22px}
+    .btn{border:0; border-radius:12px; padding:12px 18px; cursor:pointer; font-weight:800; letter-spacing:.2px; transition:transform .05s ease, box-shadow .2s ease, background .2s ease}
+    .btn:active{transform:translateY(1px)}
+    .btn-primary{color:#fff; background:var(--grad); box-shadow:0 8px 18px rgba(255,106,0,.2)}
+    .btn-primary:hover{box-shadow:0 12px 22px rgba(43,105,197,.25)}
+    .btn-disabled{opacity:.5; pointer-events:none}
+
+    /* Loader */
+    .spinner{width:16px; height:16px; border-radius:50%; border:3px solid rgba(255,255,255,.4); border-top-color:#fff; animation:spin .9s linear infinite; display:inline-block; vertical-align:middle}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* Footer */
+    footer{margin-top:28px; padding:28px 0 40px; color:#dce6ff; background:linear-gradient(90deg,var(--brand-blue-900), var(--brand-blue-700))}
+    .powered{display:inline-flex; align-items:center; gap:10px; color:#dce6ff; text-decoration:none; font-size:.92rem; opacity:.9}
+    .powered:hover{opacity:1}
+    .powered img{height:18px}
+
+    /* Íconos (SVG) estilo línea, heredan currentColor) */
+    .icon{width:18px; height:18px; display:inline-block}
+    .icon svg{width:100%; height:100%; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+
+    @media (max-width:640px){
+      .survey-head{flex-direction:column; align-items:flex-start}
+    }
+  
+    /* Preserva saltos de línea en el estado/mensajes */
+    .state{white-space:pre-line}
+  
+    /* Banner promocional/visual dentro de la tarjeta */
+    .promo{border:1px solid var(--neutral-150); border-radius:12px; overflow:hidden; background:#fff; box-shadow:var(--shadow-sm); margin:10px 0 18px}
+    html[data-theme="dark"] .promo{background:#0f1527; border-color:#1e2740}
+    .promo img{display:block; width:100%; height:auto; max-height:280px; object-fit:cover}
+    @media (max-width:640px){ .promo img{max-height:220px} }
+  
+    /* Nota sutil post-CTA */
+    .fineprint{margin-top:6px; font-size:.86rem; color:var(--neutral-500); opacity:.9; text-align:center; white-space:pre-line}
+    html[data-theme="dark"] .fineprint{color:#a8b3cf; opacity:.75}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand">
+        <img src="https://res.cloudinary.com/doivgytwg/image/upload/v1757115177/logo-cisolution_pxpovd.png" alt="CISolution" />
+        <h1>Encuestas de Satisfacción</h1>
+      </div>
+      <div class="theme-toggle">
+        <button id="themeBtn" class="toggle-btn" type="button" aria-pressed="false" title="Cambiar tema">
+          <span class="toggle-icon" aria-hidden="true">
+            <!-- Icono cambia en JS -->
+            <span id="themeIcon" class="icon"></span>
+          </span>
+          <span id="themeText">Tema: Automático</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card" id="card">
+      <div class="survey-head">
+        <h2 class="survey-title" id="surveyTitle">Encuesta</h2>
+        <div class="company-badge" id="companyBadge" hidden>Empresa</div>
+      </div>
+
+      <div class="promo" aria-label="Mensaje visual de la encuesta">
+        <img src="https://res.cloudinary.com/doivgytwg/image/upload/v1757466886/Pega_Print_gijzxv.jpg" alt="¡Tu opinión es importante! Imagen informativa de encuesta de satisfacción" loading="lazy" decoding="async" />
+      </div>
+
+      <div id="state" class="state" hidden></div>
+      <div class="questions" id="questions"></div>
+
+      <div class="actions">
+        <button id="submitBtn" class="btn btn-primary btn-disabled" disabled>
+          Finalizar encuesta
+        </button>
+      </div>
+      <p class="fineprint" aria-live="polite">En PEGAPRINT trabajamos día a día para ofrecerte la mejor experiencia, productos de calidad y un servicio que te haga sentir respaldado en cada momento.
+Nos comprometemos a que cada experiencia contigo sea excelente!</p>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <a class="powered" href="https://www.iangine.com" target="_blank" rel="noopener">
+        Impulsado por iangine.com
+        <img src="https://res.cloudinary.com/doivgytwg/image/upload/v1755851728/Logo_IANgine_blanco_fondo_transparente_prfzsc.png" alt="IANgine" />
+      </a>
+    </div>
+  </footer>
+
+  <script>
+    (function(){
+      "use strict";
+
+      const API_BASE = "https://n8n.srv902776.hstgr.cloud/webhook/Surveys?SurveyId=";
+
+      const qs = new URLSearchParams(window.location.search);
+      const surveyId = qs.get("SurveyId");
+
+      const $ = (id)=>document.getElementById(id);
+      const $state = $("state");
+      const $questions = $("questions");
+      const $submit = $("submitBtn");
+      const $title = $("surveyTitle");
+      const $companyBadge = $("companyBadge");
+
+      const $themeBtn = $("themeBtn");
+      const $themeText = $("themeText");
+      const $themeIcon = $("themeIcon");
+
+      let surveyData = [];
+      let empresa = "";
+
+      // ====== Tema: light/dark/auto ======
+      const THEME_KEY = "cisurvey-theme"; // 'light' | 'dark' | 'auto'
+
+      function systemPrefersDark(){
+        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      }
+
+      function applyTheme(mode){
+        const html = document.documentElement;
+        if(mode === 'light'){
+          html.setAttribute('data-theme','light');
+          $themeText.textContent = 'Tema: Claro';
+          $themeBtn.setAttribute('aria-pressed','false');
+        } else if(mode === 'dark'){
+          html.setAttribute('data-theme','dark');
+          $themeText.textContent = 'Tema: Oscuro';
+          $themeBtn.setAttribute('aria-pressed','true');
+        } else {
+          html.setAttribute('data-theme', systemPrefersDark() ? 'dark' : 'light');
+          $themeText.textContent = 'Tema: Automático';
+          $themeBtn.setAttribute('aria-pressed', systemPrefersDark() ? 'true' : 'false');
+        }
+        $themeIcon.innerHTML = iconTheme(mode);
+        localStorage.setItem(THEME_KEY, mode);
+      }
+
+      function cycleTheme(){
+        const current = localStorage.getItem(THEME_KEY) || 'auto';
+        const next = current === 'auto' ? 'light' : current === 'light' ? 'dark' : 'auto';
+        applyTheme(next);
+      }
+
+      function iconTheme(mode){
+        if(mode === 'light') return svgSun();
+        if(mode === 'dark') return svgMoon();
+        return svgAuto();
+      }
+
+      $themeBtn.addEventListener('click', cycleTheme);
+      if(window.matchMedia){
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>{
+          const mode = localStorage.getItem(THEME_KEY) || 'auto';
+          if(mode === 'auto') applyTheme('auto');
+        });
+      }
+
+      // ====== App init ======
+      init();
+
+      async function init(){
+        // Tema inicial
+        applyTheme(localStorage.getItem(THEME_KEY) || 'auto');
+
+        if(!surveyId){
+          showState('Encuesta invalida', 'error');
+          disableSubmit();
+          return;
+        }
+        showState('Cargando encuesta…', '');
+        try{
+          const res = await fetch(API_BASE + encodeURIComponent(surveyId), { method: 'GET' });
+          if(!res.ok) throw new Error('No se pudo recuperar la encuesta');
+          surveyData = await res.json();
+
+          if(!Array.isArray(surveyData) || surveyData.length === 0){
+            showState('Encuesta invalida', 'error');
+            disableSubmit();
+            return;
+          }
+
+          empresa = surveyData[0]?.Empresa || '—';
+          $title.textContent = `Encuesta de satisfacción · ${empresa}`;
+          $companyBadge.textContent = empresa;
+          $companyBadge.hidden = false;
+
+          const enabled = surveyData.filter(q => (q.Estado || '').toLowerCase() === 'enabled');
+          renderQuestions(enabled);
+
+          let successfullMessage = `¡Queremos escucharte!.\n\nTu opinión es clave para nosotros, Con esta breve encuesta buscamos conocer como ha sido tu experiencia y como podemos seguir mejorando para ti.`;
+          showState(successfullMessage, 'success');
+          enableSubmit();
+        }catch(err){
+          console.error(err);
+          showState('Ocurrió un problema al cargar la encuesta.', 'error');
+          disableSubmit();
+        }
+      }
+
+      function renderQuestions(list){
+        $questions.innerHTML = '';
+        list.forEach(q => {
+          const qId = (q.idPreguna || q.idPregunta || q.IdPregunta || '').toString();
+          const isRequired = Boolean(q.Obligatorio);
+          const tipo = normalizaTipo((q.TipoRespuesta || '').toLowerCase());
+
+          const wrap = document.createElement('div');
+          wrap.className = 'question';
+          wrap.dataset.idPregunta = qId;
+          wrap.dataset.tipoRespuesta = tipo; // tipo normalizado
+
+          const head = document.createElement('div');
+          head.className = 'q-head';
+
+          const qText = document.createElement('div');
+          qText.className = 'q-text';
+          qText.textContent = q.Pregunta || 'Pregunta';
+          head.appendChild(qText);
+
+          if(isRequired){
+            const req = document.createElement('span');
+            req.className = 'required';
+            req.textContent = 'Obligatoria';
+            head.appendChild(req);
+          }
+
+          const answer = document.createElement('div');
+          answer.className = 'q-answer';
+
+          if((tipo === 'radio' || tipo === 'select') && Array.isArray(q.OpcionesRespuestas) && q.OpcionesRespuestas.length){
+            const group = document.createElement('div');
+            group.className = 'chip-group';
+            group.role = 'group';
+            group.ariaLabel = q.Pregunta;
+            q.OpcionesRespuestas.forEach(opt => {
+              const label = document.createElement('label');
+              label.className = 'chip';
+              const input = document.createElement('input');
+              input.type = 'radio';
+              input.name = 'q-' + qId; input.value = String(opt.opcion);
+              input.dataset.descripcion = opt.Descripcion;
+              const content = document.createElement('span'); content.className = 'chip-content';
+              const iconWrap = document.createElement('span'); iconWrap.className = 'chip-icon icon'; iconWrap.innerHTML = iconFor(opt.Descripcion);
+              const text = document.createElement('span'); text.className = 'chip-label'; text.textContent = opt.Descripcion;
+              content.appendChild(iconWrap); content.appendChild(text);
+              label.appendChild(input); label.appendChild(content);
+              group.appendChild(label);
+            });
+            answer.appendChild(group);
+
+          } else if(tipo === 'checkbox' && Array.isArray(q.OpcionesRespuestas) && q.OpcionesRespuestas.length){
+            const group = document.createElement('div'); group.className = 'chip-group';
+            q.OpcionesRespuestas.forEach(opt => {
+              const label = document.createElement('label'); label.className = 'chip';
+              const input = document.createElement('input'); input.type = 'checkbox';
+              input.name = 'q-' + qId; input.value = String(opt.opcion); input.dataset.descripcion = opt.Descripcion;
+              const content = document.createElement('span'); content.className = 'chip-content';
+              const iconWrap = document.createElement('span'); iconWrap.className = 'chip-icon icon'; iconWrap.innerHTML = svgCheck();
+              const text = document.createElement('span'); text.className = 'chip-label'; text.textContent = opt.Descripcion;
+              content.appendChild(iconWrap); content.appendChild(text);
+              label.appendChild(input); label.appendChild(content);
+              group.appendChild(label);
+            });
+            answer.appendChild(group);
+
+          } else if(tipo === 'textarea'){
+            const ta = document.createElement('textarea'); ta.name = 'q-' + qId; ta.placeholder = 'Escriba su comentario…';
+            answer.appendChild(ta);
+
+          } else if(tipo === 'range'){
+            const vals = Array.isArray(q.OpcionesRespuestas) && q.OpcionesRespuestas.length ? q.OpcionesRespuestas.map(o => Number(o.opcion)).filter(v => !isNaN(v)) : [];
+            const min = vals.length ? Math.min(...vals) : 1; const max = vals.length ? Math.max(...vals) : 5; const step = 1;
+            const wrapRange = document.createElement('div'); wrapRange.className = 'range-wrap';
+            const inp = document.createElement('input'); inp.type = 'range'; inp.min = String(min); inp.max = String(max); inp.step = String(step); inp.value = String(min); inp.name = 'q-' + qId;
+            const scale = document.createElement('div'); scale.className = 'range-scale';
+            const labels = (q.OpcionesRespuestas||[]).length ? q.OpcionesRespuestas : [{opcion:min, Descripcion:String(min)},{opcion:max, Descripcion:String(max)}];
+            const left = document.createElement('span'); left.textContent = labels[0].Descripcion || String(min);
+            const right = document.createElement('span'); right.textContent = labels[labels.length-1].Descripcion || String(max);
+            scale.appendChild(left); scale.appendChild(right);
+            wrapRange.appendChild(inp); wrapRange.appendChild(scale);
+            answer.appendChild(wrapRange);
+
+          } else if(['number','email','date','time','datetime-local'].includes(tipo)){
+            const inp = document.createElement('input'); inp.type = tipo; inp.name = 'q-' + qId; answer.appendChild(inp);
+
+          } else if(['file','img','image'].includes(tipo)){
+            const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; inp.name = 'q-' + qId; answer.appendChild(inp);
+
+          } else { // text u otros
+            const inp = document.createElement('input'); inp.type = 'text'; inp.name = 'q-' + qId; inp.placeholder = 'Escriba su respuesta…';
+            answer.appendChild(inp);
+          }
+
+          const err = document.createElement('div'); err.className = 'error-text'; err.textContent = 'Este campo es obligatorio.'; answer.appendChild(err);
+
+          wrap.appendChild(head); wrap.appendChild(answer); $questions.appendChild(wrap);
+        });
+      }
+
+      function validate(){
+        const blocks = [...document.querySelectorAll('.question')];
+        let firstInvalid = null;
+        blocks.forEach(block => {
+          block.classList.remove('invalid');
+          const id = block.dataset.idPregunta;
+          const qObj = surveyData.find(x => String(x.idPreguna||x.idPregunta) === String(id));
+          const required = Boolean(qObj?.Obligatorio);
+          if(!required) return;
+
+          const tipo = (block.dataset.tipoRespuesta || '').toLowerCase();
+          let valid = true;
+
+          if(tipo === 'select' || tipo === 'radio'){
+            const checked = block.querySelector('input[type="radio"]:checked');
+            valid = Boolean(checked);
+          }else if(tipo === 'checkbox'){
+            const checked = block.querySelectorAll('input[type="checkbox"]:checked');
+            valid = checked.length > 0;
+          }else if(tipo === 'textarea'){
+            const val = (block.querySelector('textarea')?.value || '').trim();
+            valid = val.length > 0;
+          }else if(tipo === 'email'){
+            const val = (block.querySelector('input[type="email"]')?.value || '').trim();
+            valid = /.+@.+\..+/.test(val);
+          }else if(tipo === 'number'){
+            const val = block.querySelector('input[type="number"]')?.value;
+            valid = val !== '' && val !== null;
+          }else if(['date','time','datetime-local'].includes(tipo)){
+            const val = (block.querySelector(`input[type="${tipo}"]`)?.value || '').trim();
+            valid = val.length > 0;
+          }else if(['file','img','image'].includes(tipo)){
+            const f = block.querySelector('input[type="file"]').files || [];
+            valid = f.length > 0;
+          }else if(tipo === 'range'){
+            const val = block.querySelector('input[type="range"]')?.value;
+            valid = val !== '' && val !== null;
+          }else { // text
+            const val = (block.querySelector('input[type="text"]')?.value || '').trim();
+            valid = val.length > 0;
+          }
+
+          if(!valid){
+            block.classList.add('invalid');
+            if(!firstInvalid){ firstInvalid = block; }
+          }
+        });
+
+        if(firstInvalid){
+          firstInvalid.scrollIntoView({behavior:'smooth', block:'center'});
+          return false;
+        }
+        return true;
+      }
+
+      function buildPayload(){
+        const preguntas = [];
+
+        surveyData
+          .filter(q => (q.Estado || '').toLowerCase() === 'enabled')
+          .forEach(q => {
+            const id = String(q.idPreguna || q.idPregunta);
+            const block = document.querySelector(`.question[data-id-pregunta="${id}"]`);
+            if(!block) return;
+
+            const tipo = (block.dataset.tipoRespuesta || '').toLowerCase();
+
+            let codigo = '';
+            let descripcion = '';
+
+            if(tipo === 'select' || tipo === 'radio'){
+              const checked = block.querySelector('input[type="radio"]:checked');
+              codigo = checked ? (checked.value || '') : '';
+              descripcion = checked ? (checked.dataset.descripcion || '') : '';
+            }else if(tipo === 'checkbox'){
+              const checks = [...block.querySelectorAll('input[type="checkbox"]:checked')];
+              codigo = checks.map(c => c.value).join(',');
+              descripcion = checks.map(c => c.dataset.descripcion || '').join(', ');
+            }else if(tipo === 'textarea'){
+              const val = block.querySelector('textarea')?.value || '';
+              descripcion = val;
+            }else if(tipo === 'range'){
+              const val = block.querySelector('input[type="range"]')?.value || '';
+              codigo = String(val);
+              const match = (q.OpcionesRespuestas||[]).find(o => String(o.opcion) === String(val));
+              descripcion = match ? (match.Descripcion || String(val)) : String(val);
+            }else if(['number','email','date','time','datetime-local','text'].includes(tipo)){
+              const sel = tipo === 'text' ? 'input[type="text"]' : `input[type="${tipo}"]`;
+              const val = block.querySelector(sel)?.value || '';
+              descripcion = val;
+            }else if(['file','img','image'].includes(tipo)){
+              const input = block.querySelector('input[type="file"]');
+              const file = input && input.files && input.files[0];
+              descripcion = file ? `Archivo: ${file.name}` : '';
+            }else{
+              const val = block.querySelector('input, textarea, select')?.value || '';
+              descripcion = val;
+            }
+
+            preguntas.push({
+              IdPregunta: String(q.idPreguna || q.idPregunta),
+              Pregunta: q.Pregunta || '',
+              TipoRespuesta: q.TipoRespuesta || tipo,
+              CodigoRespuesta: String(codigo),
+              DescripcionRespuesta: descripcion,
+              Obligatorio: String(Boolean(q.Obligatorio))
+            });
+          });
+
+        return { surveyId: String(surveyId), Empresa: empresa || '', Preguntas: preguntas };
+      }
+
+      function disableSubmit(){ $submit.classList.add('btn-disabled'); $submit.disabled = true; }
+      function enableSubmit(){ $submit.classList.remove('btn-disabled'); $submit.disabled = false; }
+
+      function showState(msg, kind){
+        $state.textContent = msg;
+        $state.hidden = false;
+        $state.className = 'state';
+        if(kind === 'error') $state.classList.add('error');
+        if(kind === 'success') $state.classList.add('success');
+      }
+
+      $submit.addEventListener('click', async () => {
+        if(!validate()) return;
+        const payload = buildPayload();
+        const original = $submit.innerHTML;
+        $submit.innerHTML = '<span class="spinner" aria-hidden="true"></span> &nbsp;Enviando…';
+        disableSubmit();
+        try{
+          const url = API_BASE + encodeURIComponent(surveyId);
+          const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+          if(!res.ok) throw new Error('Error al enviar la encuesta');
+          showState(`Su encuesta ha sido completada. 
+          Gracias por tu tiempo y confianza.`, 'success');
+          // Ocultar preguntas y botón al finalizar
+          if ($questions) $questions.style.display = 'none';
+          const actionsEl = document.querySelector('.actions');
+          if (actionsEl) actionsEl.style.display = 'none';
+          const fine = document.querySelector('.fineprint');
+          if (fine) fine.style.display = 'none';
+        }catch(err){
+          console.error(err);
+          showState('No se pudo enviar la encuesta. Intente nuevamente.', 'error');
+          enableSubmit();
+        }finally{
+          $submit.innerHTML = original;
+        }
+      });
+
+      // ====== Íconos y utilidades ======
+      function normalizaTipo(str){
+        const s = String(str || '').toLowerCase();
+        if(s === 'testaria' || s === 'textaria' || s === 'textarea') return 'textarea';
+        if(s === 'texto' || s === 'text') return 'text';
+        if(s === 'radio') return 'radio';
+        if(s === 'select') return 'select';
+        if(s === 'range') return 'range';
+        if(s === 'numero' || s === 'number') return 'number';
+        if(s === 'correo' || s === 'email') return 'email';
+        if(s === 'fecha' || s === 'date') return 'date';
+        if(s === 'hora' || s === 'time') return 'time';
+        if(s === 'datetime' || s === 'datetime-local') return 'datetime-local';
+        if(s === 'checkbox' || s === 'multi' || s === 'multiselect') return 'checkbox';
+        if(s === 'img' || s === 'image' || s === 'archivo' || s === 'file') return 'file';
+        return s || 'text';
+      }
+
+      function iconFor(desc=''){
+        const d = String(desc || '').toLowerCase();
+        if(d.includes('muy insatisfecho')) return svgFace(1);
+        if(d.includes(' insatisfecho')) return svgFace(2);
+        if(d.includes('neutro')) return svgFace(3);
+        if(d.includes('muy satisfecho')) return svgFace(5);
+        if(d.includes('satisfecho')) return svgFace(4);
+        return svgCheck();
+      }
+
+      function svgFace(level){
+        const mouthMap = { 1: 'M7 13 Q10 10 13 13', 2: 'M7.5 13 Q10 12 12.5 13', 3: 'M7 12.5 L13 12.5', 4: 'M7 12 Q10 14 13 12', 5: 'M7 12 Q10 15 13 12'};
+        const mouth = mouthMap[level] || 'M7 12.5 L13 12.5';
+        const extras = level === 5 ? '<path d="M4.8 5.2 l1 .3 l.3 1 l.3-1 l1-.3 l-1-.3 l-.3-1 l-.3 1 z"/><path d="M13.6 5.2 l1 .3 l.3 1 l.3-1 l1-.3 l-1-.3 l-.3-1 l-.3 1 z"/>' : '';
+        return (
+          '<svg viewBox="0 0 20 20" aria-hidden="true">' +
+            '<circle cx="10" cy="10" r="7.5"/>' +
+            '<circle cx="7.5" cy="8.5" r=".9"/>' +
+            '<circle cx="12.5" cy="8.5" r=".9"/>' +
+            '<path d="' + mouth + '"/>' +
+            extras +
+          '</svg>'
+        );
+      }
+
+      function svgCheck(){ return '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10.5 7.5 15 17 5.5"/></svg>'; }
+      function svgSun(){ return '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M4.93 4.93 6.34 6.34M17.66 17.66 19.07 19.07M4.93 19.07 6.34 17.66M17.66 6.34 19.07 4.93"/></svg>'; }
+      function svgMoon(){ return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>'; }
+      function svgAuto(){ return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18"/><path d="M6 16l6-12 6 12"/></svg>'; }
+    })();
+  </script>
+</body>
+</html>
