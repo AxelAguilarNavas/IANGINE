@@ -331,7 +331,7 @@
           const enabled = surveyData.filter(q => (q.Estado || '').toLowerCase() === 'enabled');
           renderQuestions(enabled);
 
-          let successfullMessage = `¡Queremos escucharte!.\n\nTu opinión es clave para nosotros, Con esta breve encuesta buscamos conocer como ha sido tu experiencia y como podemos seguir mejorando para ti.`;
+          let successfullMessage = `¡Queremos escucharte!.\n\nTu opinión es importante.`;
           showState(successfullMessage, 'success');
           enableSubmit();
         }catch(err){
