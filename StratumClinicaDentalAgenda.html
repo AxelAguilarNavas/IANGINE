@@ -435,7 +435,7 @@
           if(calCont){ calCont.innerHTML=''; }
         });
         // Helpers para POST al finalizar
-        const getDate = (d)=> (d?.startTime || d?.start_time || d?.start || d?.date || null);
+        const getDate = (d)=> (d?.startTime || null);
         const getReason = (d)=>{
           try{
             const raw = d?.booking?.responses?.notes;
