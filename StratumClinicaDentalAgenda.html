@@ -405,7 +405,7 @@
         Cal.ns['clinica-odontologica']('ui', {hideEventTypeDetails:false, layout:'month_view'});
 
         // Agradecimiento al finalizar la reserva
-        function formatDateTime(iso){ try{ return iso ? new Date(iso).toLocaleString(undefined,{dateStyle:'full', timeStyle:'short'}) : ''; }catch(e){ return ''; } }
+        function formatDateTime(iso){ try{ return iso ? new Date(iso).toLocaleString(undefined,{dateStyle:'full', timeStyle:'full'}) : ''; }catch(e){ return ''; } }
         function showThanks(data, isReschedule){
           const overlay = document.getElementById('thanksOverlay');
           const title = document.getElementById('thanksTitle');
