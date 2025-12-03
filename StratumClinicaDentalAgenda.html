@@ -457,7 +457,7 @@
         };
 
         //Cal.ns['clinica-odontologica']('on', { action: 'bookingSuccessfulV2', callback: (e)=> { const d = e?.detail?.data || {}; const reason = getReason(d); postBooking(getDate(d), reason); showThanks(d, false); } });
-        Cal.ns['clinica-odontologica']('on', { action: 'bookingSuccessful', callback: (e)=> { const d = e?.detail?.data || {}; const reason = getReason(d); postBooking(getDate(d), reason); showThanks(d, false); } });
+        Cal.ns['clinica-odontologica']('on', { action: 'bookingSuccessful', callback: (e)=> { const d = e?.detail?.data || {}; const reason = getReason(d); postBooking(d.startTime, reason); showThanks(d, false); } });
         Cal.ns['clinica-odontologica']('on', { action: 'rescheduleBookingSuccessfulV2', callback: (e)=> { const d = e?.detail?.data || {}; const reason = getReason(d); postBooking(getDate(d), reason); showThanks(d, true); } });
 
         // UX: ocultar barra fija cuando el calendario esté a la vista (sólo si botones visibles)
