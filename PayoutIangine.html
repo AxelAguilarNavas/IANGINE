@@ -1108,7 +1108,7 @@
                         .then(async function (detalles) {
                             //console.log(detalles);
                             try {
-                                await postApproveToWebhook(data);
+                                await postApproveToWebhook(detalles);
                             } catch (err) {
                                 console.error("Error notificando webhook:", err);
                             }
