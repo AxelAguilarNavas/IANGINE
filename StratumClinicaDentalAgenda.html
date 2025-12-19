@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Clínica odontológica moderna. Agenda tu cita online, tratamientos de calidad, atención personalizada." />
+  <meta name="theme-color" content="#e8f2ff" />
+  <link rel="preconnect" href="https://app.cal.com" />
+  <link rel="dns-prefetch" href="https://app.cal.com" />
+  <link rel="preconnect" href="https://n8n.srv902776.hstgr.cloud" />
+  <link rel="dns-prefetch" href="https://n8n.srv902776.hstgr.cloud" />
+  <title>Clínica Odontológica | Sonríe con confianza</title>
+  <style>
+    :root{
+      --brand-50:#f0f7ff; /* fondo muy claro */
+      --brand-100:#e8f2ff;
+      --brand-200:#d6e8ff;
+      --brand-300:#b7d6ff;
+      --brand-400:#89bbff;
+      --brand-500:#4f97ff; /* primario */
+      --brand-600:#2f80ed; /* primario oscuro */
+      --accent-500:#00c2a8; /* acento menta */
+      --ink-900:#0e1a2a;  /* texto principal */
+      --ink-600:#4b5563;
+      --ink-400:#8a94a6;
+      --surface:#ffffff;
+      --shadow: 0 10px 30px rgba(47,128,237,.12);
+      --radius-xl: 20px;
+    }
+
+    /* --- Reset/Globals --- */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--ink-900); background:linear-gradient(180deg,var(--brand-50),#fff)}
+    img{max-width:100%; display:block}
+    a{color:inherit; text-decoration:none}
+    .container{width:min(1100px,92%); margin-inline:auto}
+
+    /* Elementos que requieren parámetros en querystring */
+    .requires-auth{display:none !important}
+
+    /* --- Header --- */
+    header{position:sticky; top:0; z-index:50; backdrop-filter:saturate(180%) blur(10px);
+      background:rgba(255,255,255,.7); border-bottom:1px solid #eef2ff;}
+    .nav{display:flex; align-items:center; justify-content:space-between; padding:14px 0}
+    .logo{display:flex; align-items:center; gap:10px; font-weight:700}
+    .logo .mark{width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg,var(--brand-500),var(--accent-500));
+      box-shadow:var(--shadow); display:grid; place-items:center; color:#fff; font-weight:800}
+    nav ul{display:flex; gap:20px; list-style:none; margin:0; padding:0}
+    nav a{padding:8px 12px; border-radius:10px; color:var(--ink-600)}
+    nav a:hover{background:var(--brand-100); color:var(--ink-900)}
+
+    .cta{display:flex; gap:10px; align-items:center}
+    .btn{appearance:none; border:none; cursor:pointer; padding:12px 18px; border-radius:14px; font-weight:700;
+      box-shadow: var(--shadow); transition: transform .15s ease, box-shadow .15s ease}
+    .btn:active{transform: translateY(1px)}
+    .btn.primary{background:linear-gradient(135deg,var(--brand-600),var(--brand-500)); color:#fff}
+    .btn.ghost{background:#fff; border:1px solid #e6ecff; color:var(--ink-900)}
+
+    /* --- Hero --- */
+    .hero{position:relative; padding: clamp(48px,8vw,96px) 0; overflow:hidden}
+    .hero .grid{display:grid; grid-template-columns: 1.1fr .9fr; gap:40px; align-items:center}
+    .hero h1{font-size: clamp(28px,4.4vw,44px); line-height:1.1; margin:0 0 14px}
+    .hero p{font-size:clamp(16px,1.4vw,18px); color:var(--ink-600); margin:0 0 22px}
+    .hero .pill{display:inline-flex; gap:10px; align-items:center; padding:8px 12px; border-radius:999px;
+      background:#fff; border:1px solid #eaf0ff; color:var(--ink-600); margin-bottom:14px}
+    .hero .card{background:var(--surface); border:1px solid #eef2ff; border-radius: var(--radius-xl); padding:22px; box-shadow: var(--shadow)}
+    .hero ul{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px 16px; margin:0; padding:0; list-style:none}
+    .chip{display:inline-flex; gap:8px; align-items:center; padding:10px 12px; border-radius:12px; background:var(--brand-100); color:var(--ink-900)}
+
+    .blob{position:absolute; inset:auto -120px -160px auto; width:460px; height:460px; background: radial-gradient(closest-side, rgba(79,151,255,.25), rgba(0,0,0,0)); filter: blur(10px); pointer-events:none}
+
+    /* --- Sections --- */
+    section{padding: clamp(40px,7vw,88px) 0}
+    .section-title{font-size: clamp(22px,3vw,32px); margin:0 0 16px; text-align:center}
+    .section-sub{color:var(--ink-600); text-align:center; margin:0 auto 28px; max-width:780px}
+
+    .grid-cards{display:grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap:18px}
+    .card{background:var(--surface); border:1px solid #eef2ff; border-radius: var(--radius-xl); padding:20px; box-shadow: var(--shadow)}
+    .card h3{margin:0 0 8px}
+    .card p{margin:0; color:var(--ink-600)}
+
+    .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:18px}
+    .stat{background:linear-gradient(180deg,#fff,var(--brand-50)); border:1px solid #eaf0ff; border-radius:16px; padding:16px; text-align:center}
+    .stat strong{display:block; font-size:clamp(20px,3.2vw,32px)}
+    .stat span{color:var(--ink-600); font-size:14px}
+
+    /* --- Cal embed (priority) --- */
+    .calendar-wrapper{height:clamp(560px, 78vh, 820px); border-radius: var(--radius-xl); border:1px solid #eaf0ff; background:#fff; overflow:hidden; box-shadow:var(--shadow)}
+    .note{color:var(--ink-600); margin-bottom:18px}
+
+    /* --- Thank You Modal --- */
+    #thanksOverlay{position:fixed; inset:0; background:rgba(14,26,42,.45); display:none; place-items:center; z-index:80; padding:20px}
+    #thanksOverlay.show{display:grid}
+    #thanksCard{background:#fff; border:1px solid #eaf0ff; border-radius:20px; padding:24px; max-width:520px; width:min(520px,92%); box-shadow:var(--shadow); text-align:center}
+    #thanksCard h3{margin:0 0 6px; font-size:clamp(20px,3vw,26px)}
+    #thanksCard p{color:var(--ink-600); margin:6px 0 16px}
+    #thanksClose{display:inline-block; border:0; padding:10px 14px; border-radius:12px; background:linear-gradient(135deg,var(--brand-600),var(--brand-500)); color:#fff; font-weight:700; cursor:pointer}
+    @media (prefers-reduced-motion: reduce){ #thanksOverlay{transition:none} }
+
+    /* --- FAQ --- */
+    .faq{max-width:900px; margin-inline:auto}
+    details{border:1px solid #eaf0ff; background:#fff; border-radius:14px; padding:14px 16px; margin-bottom:10px}
+    summary{cursor:pointer; font-weight:600}
+    details p{color:var(--ink-600)}
+
+    /* --- Footer --- */
+    footer{background:#fff; border-top:1px solid #eef2ff; padding:24px 0; color:var(--ink-600)}
+    .footer-grid{display:grid; grid-template-columns:1.2fr .8fr .8fr; gap:20px}
+    .muted{color:var(--ink-400)}
+
+    /* --- Sticky CTA (mobile-first) --- */
+    .sticky-cta{position:fixed; left:0; right:0; bottom:16px; display:none; justify-content:center; z-index:60}
+    .sticky-cta .bar{display:inline-block; font-weight:700; padding:12px 18px; border-radius:999px; background:linear-gradient(135deg,var(--brand-600),var(--brand-500)); color:#fff; box-shadow:var(--shadow)}
+    @media (max-width: 900px){ .sticky-cta{display:flex} }
+
+    /* --- Responsive --- */
+    .menu-btn{display:none}
+    @media (max-width: 900px){
+      .hero .grid{grid-template-columns:1fr}
+      .grid-cards{grid-template-columns:1fr 1fr}
+      .stats{grid-template-columns:repeat(2,1fr)}
+      .footer-grid{grid-template-columns:1fr 1fr}
+    }
+    @media (max-width: 640px){
+      nav ul{display:none}
+      .menu-btn{display:inline-flex}
+      .grid-cards{grid-template-columns:1fr}
+      .stats{grid-template-columns:1fr 1fr}
+      .footer-grid{grid-template-columns:1fr}
+    }
+
+    /* Motion reduction */
+    @media (prefers-reduced-motion: reduce){
+      .btn{transition:none}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <a href="#" class="logo" aria-label="Inicio">
+        <span class="mark" aria-hidden>🦷</span>
+        <span>Clínica Sonríe+</span>
+      </a>
+      <nav>
+        <button class="btn ghost menu-btn" id="menuBtn" aria-expanded="false" aria-controls="menuItems">Menú</button>
+        <ul id="menuItems" aria-label="Navegación principal">
+          <li><a href="#servicios">Servicios</a></li>
+          <li><a href="#equipo">Equipo</a></li>
+          <li><a href="#agenda">Agenda</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </nav>
+      <div class="cta">
+        <a id="btnHeaderReserva" href="#agenda" class="btn primary requires-auth">Reservar cita</a>
+      </div>
+    </div>
+  </header>
+
+<!-- Hero -->
+  <section class="hero" id="hero">
+    <div class="container grid">
+      <div>
+        <span class="pill">Sonrisas saludables · Atención humana</span>
+        <h1>Odontología moderna con un trato cercano</h1>
+        <p>Prevención, estética y rehabilitación con tecnología de última generación. Agenda online en segundos y recibe una atención clara, honesta y sin sorpresas.</p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin:18px 0 26px">
+          <span class="chip">✔️ Primera evaluación</span>
+          <span class="chip">🪥 Limpieza y profilaxis</span>
+          <span class="chip">🦷 Ortodoncia</span>
+          <span class="chip">✨ Estética dental</span>
+        </div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap">
+          <a id="btnHeroAgendar" class="btn primary requires-auth" href="#agenda">Agendar ahora</a>
+          <a class="btn ghost" href="tel:+50400000000" aria-label="Llamar a la clínica">Llamar a la clínica</a>
+        </div>
+      </div>
+    </div>
+    <div class="blob" aria-hidden="true"></div>
+  </section>
+
+<!-- Agenda principal: justo después del header -->
+  <section id="agenda" class="requires-auth" style="padding: clamp(24px,5vw,48px) 0; scroll-margin-top:84px">
+    <div class="container">
+      <h2 id="agendaTitle" class="section-title" style="margin-bottom:8px">Agenda tu cita online</h2>
+      <p class="note">Elige el día y la hora que más te convengan. Confirmación inmediata.</p>
+      <div class="calendar-wrapper" aria-label="Calendario de citas">
+        <!-- Cal inline embed code begins -->
+        <div style="width:100%;height:100%;overflow:scroll" id="my-cal-inline-clinica-odontologica"></div>
+        
+        <!-- Cal inline embed code ends -->
+        <p id="calFallback" class="muted" hidden>Si el calendario tarda en cargar, <a href="https://cal.com/axl-aguilar/clinica-odontologica" target="_blank" rel="noopener">abre la agenda aquí</a>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Servicios -->
+  <section id="servicios">
+    <div class="container">
+      <h2 class="section-title">Tratamientos principales</h2>
+      <p class="section-sub">Cuidamos tu salud oral con protocolos basados en evidencia y equipos de última generación.</p>
+      <div class="grid-cards">
+        <div class="card">
+          <h3>Profilaxis & Preventivos</h3>
+          <p>Limpiezas profundas, sellantes, flúor y educación para mantener tu sonrisa sana.</p>
+        </div>
+        <div class="card">
+          <h3>Estética dental</h3>
+          <p>Blanqueamiento, resinas estéticas y carillas para una sonrisa armónica y luminosa.</p>
+        </div>
+        <div class="card">
+          <h3>Ortodoncia</h3>
+          <p>Brackets y alineadores transparentes. Planes cómodos y seguimiento digital.</p>
+        </div>
+        <div class="card">
+          <h3>Odontopediatría</h3>
+          <p>Atención amable y lúdica para los más pequeños. Prevención desde temprano.</p>
+        </div>
+        <div class="card">
+          <h3>Endodoncia</h3>
+          <p>Tratamientos de conducto con magnificación y técnicas indoloras.</p>
+        </div>
+        <div class="card">
+          <h3>Implantes</h3>
+          <p>Reemplazo de piezas con implantes guiados para función y estética superiores.</p>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><strong>+1,500</strong><span>Pacientes atendidos</span></div>
+        <div class="stat"><strong>4.9/5</strong><span>Satisfacción promedio</span></div>
+        <div class="stat"><strong>24–72h</strong><span>Citas disponibles</span></div>
+        <div class="stat"><strong>0% interés</strong><span>Planes de pago</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Equipo -->
+  <section id="equipo">
+    <div class="container">
+      <h2 class="section-title">Nuestro equipo</h2>
+      <p class="section-sub">Profesionales empáticos y en formación continua.</p>
+      <div class="grid-cards">
+        <div class="card">
+          <h3>Dra. María Pérez</h3>
+          <p>Rehabilitación oral y estética. Mi objetivo: tratamientos conservadores y resultados naturales.</p>
+        </div>
+        <div class="card">
+          <h3>Dr. Juan López</h3>
+          <p>Ortodoncia y alineadores. Planes personalizados con seguimiento digital.</p>
+        </div>
+        <div class="card">
+          <h3>Dra. Sofía Ramírez</h3>
+          <p>Odontopediatría. Experiencias positivas para que los niños amen cuidarse.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- FAQ -->
+  <section id="faq">
+    <div class="container">
+      <h2 class="section-title">Preguntas frecuentes</h2>
+      <div class="faq">
+        <details>
+          <summary>¿Atienden emergencias?</summary>
+          <p>Sí. Llámanos al <a href="tel:+50400000000">+504 0000 0000</a> y te daremos prioridad.</p>
+        </details>
+        <details>
+          <summary>¿Trabajan con aseguradoras?</summary>
+          <p>Emitimos facturas detalladas y formatos requeridos por la mayoría de aseguradoras.</p>
+        </details>
+        <details>
+          <summary>¿Hay opciones de pago?</summary>
+          <p>Contamos con planes sin interés y descuentos por pago anticipado.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <div id="thanksOverlay" role="dialog" aria-modal="true" aria-labelledby="thanksTitle" aria-hidden="true">
+    <div id="thanksCard" class="card">
+      <h3 id="thanksTitle">¡Gracias!</h3>
+      <p id="thanksText">Tu cita ha sido agendada. Te enviamos un correo con los detalles.</p>
+      <button id="thanksClose">Listo</button>
+    </div>
+  </div>
+
+  <div class="sticky-cta requires-auth" aria-hidden="true">
+    <a class="bar" href="#agenda">Agendar cita</a>
+  </div>
+
+  <footer>
+    <div class="container footer-grid">
+      <div>
+        <div class="logo" style="margin-bottom:10px">
+          <span class="mark" aria-hidden>🦷</span>
+          <strong>Clínica Sonríe+</strong>
+        </div>
+        <p class="muted">© <span id="year"></span> Todos los derechos reservados.</p>
+      </div>
+      <div>
+        <strong>Contacto</strong>
+        <p class="muted">Tel: <a href="tel:+50400000000">+504 0000 0000</a><br>Email: <a href="mailto:info@clinica.com">info@clinica.com</a></p>
+      </div>
+      <div>
+        <strong>Ubicación</strong>
+        <p class="muted">Blvd. Principal, Local 101<br>Ciudad · Honduras</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Menú móvil
+    const menuBtn = document.getElementById('menuBtn');
+    const menuItems = document.getElementById('menuItems');
+    if(menuBtn){
+      menuBtn.addEventListener('click',()=>{
+        const open = menuItems.style.display === 'flex';
+        menuItems.style.display = open ? 'none' : 'flex';
+        menuItems.style.flexDirection = 'column';
+        menuBtn.setAttribute('aria-expanded', String(!open));
+      });
+    }
+
+    // Scroll suave
+    document.querySelectorAll('a[href^="#"]').forEach(a=>{
+      a.addEventListener('click', (e)=>{
+        const target = document.querySelector(a.getAttribute('href'));
+        if(target){
+          e.preventDefault();
+          target.scrollIntoView({behavior:'smooth', block:'start'});
+        }
+      });
+    });
+
+    // Año en footer
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+  <script>
+    // Gating por querystring + validación vía webhook (con timeout, no-cache y logs)
+    (function(){
+      const log = (...a)=>{ try{ console.log('[Landing]', ...a);}catch(e){} };
+
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      const session = params.get('Session');
+
+      // Si no hay parámetros, no mostramos botones ni agenda
+      if(!(id && session)) { log('Faltan parámetros', {id, session}); return; }
+
+      const webhook = new URL('https://stratumn8n.goiangine.com/webhook/5a7db169-ad8b-44cf-9cfa-0a49f8367a32');
+      webhook.search = new URLSearchParams({ id, Session: session, t: Date.now().toString() }).toString();
+
+      const ctrl = new AbortController();
+      const timeoutId = setTimeout(()=> ctrl.abort(), 10000); // 10s timeout
+
+      fetch(webhook.toString(), {
+        method: 'GET',
+        mode: 'cors',
+        credentials: 'omit',
+        cache: 'no-store',
+        referrerPolicy: 'no-referrer',
+        signal: ctrl.signal
+      })
+      .then(async (res) => {
+        clearTimeout(timeoutId);
+        log('Webhook status', res.status);
+        if(!res.ok) throw new Error('HTTP '+res.status);
+        const text = await res.text();
+        try { return JSON.parse(text); } catch (e) { throw new Error('JSON inválido: '+ text.slice(0,160)); }
+      })
+      .then((data) => {
+        log('Webhook data', data);
+        const enabled = (String(data.Enabled).toLowerCase() === 'true' || data.Enabled === true);
+        const name = data.Name || data.name;
+        window.CLIENT_NAME = name;
+
+        // Agenda: visible solo si Enabled === true
+        const agenda = document.getElementById('agenda');
+        if (enabled && agenda) { agenda.classList.remove('requires-auth'); } else { agenda?.classList.add('requires-auth'); }
+
+        // Personalizar título con el nombre
+        const title = document.getElementById('agendaTitle');
+        if (title && name) {
+          title.textContent = `Hola, ${name}. Agenda tu cita online`;
+        }
+
+        // Botones: sólo si Enabled === true
+        if (enabled) {
+          document.getElementById('btnHeaderReserva')?.classList.remove('requires-auth');
+          document.getElementById('btnHeroAgendar')?.classList.remove('requires-auth');
+          document.querySelector('.sticky-cta')?.classList.remove('requires-auth');
+        }
+
+        if (!enabled) { return; }
+        // Cargar Cal.com
+        (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement('script')).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === 'string'){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, ['initNamespace', namespace]);} else p(cal, ar); return;} p(cal, ar); }; })(window, 'https://app.cal.com/embed/embed.js', 'init');
+        Cal('init', 'clinica-odontologica', {origin:'https://app.cal.com'});
+        Cal.ns['clinica-odontologica']('inline', {
+          elementOrSelector:'#my-cal-inline-clinica-odontologica',
+          config: {layout:'month_view'},
+          calLink: 'axl-aguilar/clinica-odontologica',
+        });
+        Cal.ns['clinica-odontologica']('ui', {hideEventTypeDetails:false, layout:'month_view'});
+
+        // Agradecimiento al finalizar la reserva
+        function formatDateTime(iso){ try{ return iso ? new Date(iso).toLocaleString(undefined,{dateStyle:'full', timeStyle:'short'}) : ''; }catch(e){ return ''; } }
+        function showThanks(data, isReschedule){
+          const overlay = document.getElementById('thanksOverlay');
+          const title = document.getElementById('thanksTitle');
+          const textEl = document.getElementById('thanksText');
+          const who = window.CLIENT_NAME ? `, ${window.CLIENT_NAME}` : '';
+          const when = formatDateTime(data?.startTime || data?.date);
+          title.textContent = isReschedule ? `¡Listo${who}!` : `¡Gracias${who}!`;
+          const actionText = isReschedule ? 'actualizada' : 'agendada';
+          textEl.innerHTML = `Tu cita ha sido <strong>${actionText}</strong>${when ? ' para <strong>' + when + '</strong>' : ''}. Te enviamos un correo con los detalles.`;
+          overlay.classList.add('show');
+          overlay.setAttribute('aria-hidden','false');
+        }
+        document.getElementById('thanksClose')?.addEventListener('click',()=>{
+          const overlay = document.getElementById('thanksOverlay');
+          overlay.classList.remove('show');
+          overlay.setAttribute('aria-hidden','true');
+          // Ocultar botones y agenda tras cerrar el agradecimiento
+          ['btnHeaderReserva','btnHeroAgendar'].forEach(id=>{
+            const el = document.getElementById(id);
+            if(el){ el.classList.add('requires-auth'); }
+          });
+          const sticky = document.querySelector('.sticky-cta');
+          if(sticky){ sticky.classList.add('requires-auth'); }
+          const agendaSec = document.getElementById('agenda');
+          if(agendaSec){ agendaSec.classList.add('requires-auth'); }
+          const calCont = document.getElementById('my-cal-inline-clinica-odontologica');
+          if(calCont){ calCont.innerHTML=''; }
+        });
+        // Helpers para POST al finalizar
+        const getDate = (d)=> (d?.startTime || d?.start_time || d?.start || d?.date || null);
+        const getReason = (d)=>{
+          try{
+            console.log(d);
+            const raw = d?.booking?.responses?.notes;
+            if(raw === undefined || raw === null) return '';
+            return (typeof raw === 'string') ? raw.trim() : String(raw);
+          }catch(e){ return ''; }
+        };
+        const postBooking = (dateIso, reason)=>{
+          try{
+            const ctrl2 = new AbortController();
+            setTimeout(()=> ctrl2.abort(), 10000);
+            fetch('https://stratumn8n.goiangine.com/webhook/5a7db169-ad8b-44cf-9cfa-0a49f8367a32',{
+              method:'POST', mode:'cors', credentials:'omit',
+              headers:{'Content-Type':'application/json'},
+              body: JSON.stringify({ id, Session: session, date: dateIso, Reason: (reason || '') }),
+              keepalive:true, signal: ctrl2.signal
+            }).then(r=>log('Booking POST status', r.status)).catch(err=>console.error('Booking POST error', err));
+          }catch(err){ console.error('Booking POST error', err); }
+        };
+
+        //Cal.ns['clinica-odontologica']('on', { action: 'bookingSuccessfulV2', callback: (e)=> { const d = e?.detail?.data || {}; const reason = getReason(d); postBooking(getDate(d), reason); showThanks(d, false); } });
+        Cal.ns['clinica-odontologica']('on', { action: 'bookingSuccessful', callback: (e)=> { const d = e?.detail?.data || {}; const reason = getReason(d); postBooking(getDate(d), reason); showThanks(d, false); } });
+        Cal.ns['clinica-odontologica']('on', { action: 'rescheduleBookingSuccessfulV2', callback: (e)=> { const d = e?.detail?.data || {}; const reason = getReason(d); postBooking(getDate(d), reason); showThanks(d, true); } });
+
+        // UX: ocultar barra fija cuando el calendario esté a la vista (sólo si botones visibles)
+        const sticky = document.querySelector('.sticky-cta');
+        const calEl = document.getElementById('my-cal-inline-clinica-odontologica');
+        if(enabled && sticky && calEl && 'IntersectionObserver' in window){
+          const io = new IntersectionObserver(([entry])=>{
+            sticky.style.display = entry.isIntersecting ? 'none' : '';
+          }, {threshold: .3});
+          io.observe(calEl);
+        }
+
+        // Fallback si el embed tarda
+        setTimeout(()=>{
+          const cont = document.getElementById('my-cal-inline-clinica-odontologica');
+          const fb = document.getElementById('calFallback');
+          if(cont && fb && cont.childElementCount === 0){ fb.hidden = false; }
+        }, 4000);
+      })
+      .catch((err) => {
+        // Si falla el webhook, mantener todo oculto para seguridad
+        console.error('Webhook error', err);
+      });
+    })();
+  </script>
+</body>
+</html>

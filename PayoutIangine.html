@@ -1,0 +1,1218 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>IANGINE — Factura</title>
+    <meta name="description" content="Factura — IANGINE" />
+
+    <script
+        src="https://www.paypal.com/sdk/js?client-id=AWILv-6CtkM65iSGrkJsyEpynKZ1ZBY-SpDZ4v4OYrKngdgs0c4nv8yhToQ2ycxpGpC6vnX8LneScGWQ&buyer-country=US&currency=USD&components=buttons&disable-funding=venmo,paylater,card" data-sdk-integration-source="developer-studio"></script>
+
+    <style>
+        :root {
+            --bg: #0b0b0c;
+            --panel: rgba(255, 255, 255, .04);
+            --panel-2: rgba(255, 255, 255, .06);
+            --text: rgba(255, 255, 255, .92);
+            --muted: rgba(255, 255, 255, .62);
+            --border: rgba(255, 255, 255, .12);
+            --border-2: rgba(255, 255, 255, .18);
+
+            --radius: 16px;
+            --shadow: 0 18px 50px rgba(0, 0, 0, .45);
+
+            --max: 980px;
+            --pad: 24px;
+
+            --btn-bg: #ffffff;
+            --btn-fg: #0b0b0c;
+            --btn-bg-hover: rgba(255, 255, 255, .9);
+            --btn-line: rgba(255, 255, 255, .18);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            background:
+                radial-gradient(1200px 600px at 20% 5%, rgba(255, 255, 255, .06), transparent 65%),
+                radial-gradient(900px 500px at 80% 20%, rgba(255, 255, 255, .04), transparent 55%),
+                var(--bg);
+            color: var(--text);
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.55;
+            letter-spacing: .2px;
+        }
+
+        body.modal-open {
+            overflow: hidden;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        .wrap {
+            max-width: var(--max);
+            margin: 0 auto;
+            padding: clamp(18px, 3.2vw, 44px) var(--pad);
+        }
+
+        /* Status message (webhook) */
+        .status {
+            display: none;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, .03);
+            color: var(--muted);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+            margin: 0 0 14px;
+        }
+
+        .status.ok {
+            display: block;
+        }
+
+        .status.error {
+            display: block;
+            border-color: rgba(255, 120, 120, .35);
+            background: rgba(255, 60, 60, .08);
+            color: rgba(255, 210, 210, .92);
+        }
+
+        /* Invoice shell */
+        .invoice {
+            border: 1px solid var(--border);
+            background: linear-gradient(to bottom, rgba(255, 255, 255, .07), rgba(255, 255, 255, .03));
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .invoice-inner {
+            padding: 18px 18px 16px;
+        }
+
+        @media (min-width: 860px) {
+            .invoice-inner {
+                padding: 22px 22px 18px;
+            }
+        }
+
+        .invoice-top {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        @media (min-width: 860px) {
+            .invoice-top {
+                grid-template-columns: 1fr .9fr;
+                align-items: start;
+            }
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            width: fit-content;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02));
+        }
+
+        .brand img {
+            width: 34px;
+            height: 34px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .brand small {
+            color: var(--muted);
+            font-size: 12px;
+            margin-left: 2px;
+        }
+
+        .headline {
+            margin-top: 12px;
+            display: grid;
+            gap: 6px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(26px, 3.2vw, 34px);
+            line-height: 1.12;
+            letter-spacing: .3px;
+        }
+
+        .subline {
+            margin: 0;
+            color: var(--muted);
+            max-width: 78ch;
+            font-size: 14px;
+        }
+
+        .meta {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: rgba(255, 255, 255, .03);
+            padding: 12px 12px;
+            display: grid;
+            gap: 8px;
+        }
+
+        .meta-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, .08);
+        }
+
+        .meta-row:last-child {
+            border-bottom: 0;
+        }
+
+        .meta-row .k {
+            color: var(--muted);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
+
+        .meta-row .v {
+            font-weight: 800;
+            font-size: 13px;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 10px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, .03);
+            border-radius: 999px;
+            font-size: 12px;
+            color: var(--muted);
+            width: fit-content;
+            white-space: nowrap;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .actions.bottom {
+            justify-content: flex-end;
+            padding-top: 14px;
+            border-top: 1px solid rgba(255, 255, 255, .08);
+            margin-top: 16px;
+        }
+
+        .btn {
+            appearance: none;
+            border: 1px solid var(--btn-line);
+            background: transparent;
+            color: var(--text);
+            padding: 10px 14px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: transform .08s ease, background .12s ease, border-color .12s ease, opacity .12s ease;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, .06);
+            border-color: var(--border-2);
+            text-decoration: none;
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn.primary {
+            background: var(--btn-bg);
+            color: var(--btn-fg);
+            border-color: transparent;
+        }
+
+        .btn.primary:hover {
+            background: var(--btn-bg-hover);
+        }
+
+        .block {
+            padding-top: 16px;
+        }
+
+        .grid2 {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        @media (min-width: 860px) {
+            .grid2 {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .panel {
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, .03);
+            border-radius: 14px;
+            padding: 12px 12px;
+        }
+
+        .panel h2 {
+            margin: 0 0 8px;
+            font-size: 13px;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, .75);
+        }
+
+        .panel p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .panel .strong {
+            color: var(--text);
+            font-weight: 800;
+        }
+
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .invoice-table th,
+        .invoice-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        .invoice-table th {
+            text-align: left;
+            color: var(--muted);
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
+
+        .invoice-table td.num,
+        .invoice-table th.num {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .line-desc {
+            font-weight: 800;
+            margin: 0;
+        }
+
+        .line-sub {
+            margin: 2px 0 0;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .totals {
+            margin-top: 12px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            align-items: start;
+        }
+
+        @media (min-width: 860px) {
+            .totals {
+                grid-template-columns: 1fr .9fr;
+            }
+
+            .totals .total-box[aria-label="Totales"] {
+                grid-column: 2;
+            }
+        }
+
+        .total-box {
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, .03);
+            border-radius: 14px;
+            padding: 12px 12px;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, .08);
+            gap: 12px;
+            font-size: 14px;
+        }
+
+        .total-row:last-child {
+            border-bottom: 0;
+        }
+
+        .total-row .k {
+            color: var(--muted);
+        }
+
+        .total-row .v {
+            font-weight: 900;
+        }
+
+        .grand {
+            font-size: 16px;
+        }
+
+        .paypal-slot {
+            border: 1px dashed rgba(255, 255, 255, .25);
+            border-radius: 14px;
+            background: rgba(255, 255, 255, .02);
+            padding: 14px;
+        }
+
+        .paypal-slot .hint {
+            margin: 0 0 8px;
+            color: rgba(255, 255, 255, .75);
+            font-weight: 900;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
+
+        .paypal-slot .note {
+            margin: 0;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        /* Tabla (mobile-first) */
+        .invoice-table-wrapper {
+            position: relative;
+        }
+
+        .invoice-table {
+            min-width: 100%;
+        }
+
+        @media (max-width: 780px) {
+            .invoice-table {
+                border-collapse: separate;
+                border-spacing: 0;
+            }
+
+            .invoice-table thead {
+                display: none;
+            }
+
+            .invoice-table tbody {
+                display: grid;
+                gap: 10px;
+            }
+
+            .invoice-table tr {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 6px 12px;
+                padding: 12px;
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                background: rgba(255, 255, 255, .02);
+            }
+
+            .invoice-table td {
+                border: 0;
+                padding: 4px 0;
+                display: flex;
+                align-items: baseline;
+                gap: 10px;
+            }
+
+            .invoice-table td::before {
+                content: attr(data-label);
+                text-transform: uppercase;
+                letter-spacing: .08em;
+                color: var(--muted);
+                font-weight: 700;
+                font-size: 11px;
+                min-width: 90px;
+            }
+
+            .invoice-table td.num {
+                justify-content: flex-end;
+                text-align: right;
+            }
+
+            .invoice-table td[colspan] {
+                display: block;
+                text-align: left;
+                padding: 4px 0;
+            }
+
+            .invoice-table td[colspan]::before {
+                content: none;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .invoice-table tr {
+                grid-template-columns: 1fr;
+            }
+
+            .invoice-table td {
+                justify-content: space-between;
+            }
+        }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            background: rgba(0, 0, 0, .68);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 999;
+        }
+
+        .overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            position: relative;
+            width: min(760px, calc(100vw - 32px));
+            max-height: calc(100vh - 32px);
+            overflow: auto;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, .08), rgba(255, 255, 255, .03));
+            box-shadow: var(--shadow);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, .10);
+            background: rgba(255, 255, 255, .03);
+        }
+
+        .modal-title {
+            font-weight: 900;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            font-size: 12px;
+            color: rgba(255, 255, 255, .78);
+            margin: 0;
+        }
+
+        .modal-close {
+            appearance: none;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, .03);
+            color: var(--text);
+            border-radius: 999px;
+            width: 34px;
+            height: 34px;
+            cursor: pointer;
+            font-weight: 900;
+            line-height: 1;
+            display: grid;
+            place-items: center;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, .06);
+            border-color: var(--border-2);
+        }
+
+        .modal-body {
+            padding: 16px;
+        }
+
+        footer {
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        @media print {
+            body {
+                background: #ffffff !important;
+                color: #111111 !important;
+            }
+
+            .wrap {
+                padding: 0;
+            }
+
+            .invoice {
+                box-shadow: none;
+                border: 1px solid #e5e5e5;
+            }
+
+            .brand {
+                border-color: #e5e5e5;
+                background: #fff;
+            }
+
+            .panel,
+            .meta,
+            .total-box {
+                background: #fff;
+                border-color: #e5e5e5;
+            }
+
+            .invoice-table th,
+            .invoice-table td {
+                border-bottom-color: #eaeaea;
+            }
+
+            .meta-row {
+                border-bottom-color: #f0f0f0;
+            }
+
+            .status,
+            .actions,
+            .overlay {
+                display: none !important;
+            }
+
+            .pill {
+                border-color: #e5e5e5;
+                color: #333;
+                background: #fff;
+            }
+
+            a {
+                text-decoration: none;
+                color: inherit;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="wrap">
+        <div id="status" class="status" aria-live="polite"></div>
+
+        <div class="invoice" role="document" aria-label="Factura">
+            <div class="invoice-inner">
+                <div class="invoice-top">
+                    <div>
+                        <div class="brand" aria-label="IANGINE">
+                            <img src="https://res.cloudinary.com/doivgytwg/image/upload/v1755851728/Logo_IANgine_blanco_fondo_transparente_prfzsc.png"
+                                alt="Logo IANGINE" loading="lazy" />
+                            <div>
+                                <div style="font-weight:900; letter-spacing:.3px;">IANGINE</div>
+                                <small>Inteligencia Artificial</small>
+                            </div>
+                        </div>
+
+                        <div class="headline">
+                            <h1>Factura</h1>
+                            <p class="subline">Detalle de servicios y costos. La información se carga desde
+                                <strong>?id=</strong> y se consulta al webhook.
+                            </p>
+                            <span class="pill" id="pill-client">Cliente: —</span>
+                        </div>
+
+                        <div class="actions" aria-label="Acciones">
+                            <button class="btn" type="button" id="btnPrint">Imprimir / Guardar PDF</button>
+                            <button class="btn primary" type="button" id="btnPay">Pagar ahora</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="meta" aria-label="Metadatos de factura">
+                            <div class="meta-row">
+                                <span class="k">Factura</span>
+                                <span class="v" id="invoice-number">—</span>
+                            </div>
+                            <div class="meta-row">
+                                <span class="k">Fecha</span>
+                                <span class="v" id="invoice-date">—</span>
+                            </div>
+                            <div class="meta-row">
+                                <span class="k">Moneda</span>
+                                <span class="v">USD</span>
+                            </div>
+                            <div class="meta-row">
+                                <span class="k">Estado</span>
+                                <span class="v" id="invoice-status">Pendiente</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="grid2">
+                        <div class="panel">
+                            <h2>Facturar a</h2>
+                            <p class="strong" id="billto-name">—</p>
+                            <p id="billto-company">—</p>
+                        </div>
+                        <div class="panel">
+                            <h2>Emitido por</h2>
+                            <p class="strong">IANGINE</p>
+                            <p>Soluciones de Inteligencia Artificial e Integraciones</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="grid2">
+                        <div class="panel">
+                            <h2>Objetivo del proyecto</h2>
+                            <p id="objetivo-value">—</p>
+                        </div>
+                        <div class="panel">
+                            <h2>Nuestro enfoque</h2>
+                            <p id="enfoque-value">—</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="panel" style="padding: 12px 12px 8px;">
+                        <h2>Detalle</h2>
+                        <div class="invoice-table-wrapper">
+                            <table class="invoice-table" aria-label="Tabla de factura">
+                                <thead>
+                                    <tr>
+                                        <th>Descripción</th>
+                                        <th class="num" style="width: 12%;">Cant.</th>
+                                        <th class="num" style="width: 18%;">Unitario</th>
+                                        <th class="num" style="width: 18%;">Importe</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="invoice-items">
+                                    <tr>
+                                        <td colspan="4" class="line-sub" style="padding:14px 8px;">Cargando conceptos...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="totals">
+                        <div class="total-box" aria-label="Pago (resumen)" style="display: none;">
+                            <div class="total-row" style="padding-bottom:12px; border-bottom: 1px solid rgba(255,255,255,.10);">
+                                <span class="k">Pago</span>
+                                <span class="pill">PayPal</span>
+                            </div>
+                            <p class="line-sub" style="margin:10px 0 0;">Completa el pago de forma segura con PayPal.</p>
+                            <p class="line-sub" style="margin:10px 0 0;">Total a pagar: <strong id="pay-preview-total">$0</strong></p>
+                            <div style="margin-top: 12px; display:flex; gap:10px; flex-wrap:wrap;">
+                                <button class="btn primary" type="button" id="btnPayInline">Abrir pago</button>
+                            </div>
+                        </div>
+
+                        <div class="total-box" aria-label="Totales">
+                            <div class="total-row">
+                                <span class="k">Subtotal</span>
+                                <span class="v" id="subtotal-value">$0</span>
+                            </div>
+                            <div class="total-row">
+                                <span class="k">Impuestos</span>
+                                <span class="v" id="taxes-value">$0</span>
+                            </div>
+                            <div class="total-row">
+                                <span class="k">Descuento</span>
+                                <span class="v" id="discount-value">$0</span>
+                            </div>
+                            <div class="total-row grand">
+                                <span class="k">Total</span>
+                                <span class="v" id="total-value">$0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="actions bottom" aria-label="Acciones de pago">
+                        <button class="btn primary" type="button" id="btnPayBottom">Pagar ahora</button>
+                    </div>
+                </div>
+
+                <footer>
+                    <span>© IANGINE.com — Todos los derechos reservados</span>
+                </footer>
+            </div>
+        </div>
+    </main>
+
+    <div class="overlay" id="payOverlay" aria-hidden="true">
+        <div class="modal" role="dialog" aria-modal="true" aria-label="Pago con PayPal">
+            <div class="modal-header">
+                <p class="modal-title">Pago</p>
+                <button class="modal-close" type="button" id="btnClosePay" aria-label="Cerrar">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="paypal-slot" id="pago" role="region" aria-label="Pago">
+                    <p class="hint">Pago (PayPal)</p>
+                    <p class="note">Inserta aquí el contenedor y el script de PayPal.</p>
+                    <p class="note" style="margin-top:10px;">Total a pagar: <strong id="paypal-total">$0</strong></p>
+                    <div id="paypal-widget" style="margin-top:12px; min-height: 70px;">
+                        <div id="paypal-button-container" class="paypal-button-container"></div>
+                        <p id="result-message"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const WEBHOOK_URL = "https://n8n.srv902776.hstgr.cloud/webhook/9c0e1cf7-9746-4311-95e1-0a35a7d9bce9";
+
+        window.facturaState = window.facturaState || { id: null, total: 0, currency: "USD", paymentStatus: null };
+
+        (function () {
+            const $ = (id) => document.getElementById(id);
+
+            function setStatus(message, kind) {
+                const el = $("status");
+                if (!el) return;
+                el.textContent = message || "";
+                el.classList.remove("ok", "error");
+                if (kind) el.classList.add(kind);
+                else el.style.display = "none";
+            }
+
+            function money(value) {
+                const n = typeof value === "number" ? value : Number(value || 0);
+                const safe = Number.isFinite(n) ? n : 0;
+                const rounded = Math.round(safe * 100) / 100;
+                const str = Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2);
+                return `$${str}`;
+            }
+
+            function safeText(v, fallback = "—") {
+                const s = (v ?? "").toString().trim();
+                return s.length ? s : fallback;
+            }
+
+            function setInvoiceMeta(id) {
+                const num = $("invoice-number");
+                if (num) num.textContent = id ? `#${id}` : "—";
+
+                const date = $("invoice-date");
+                if (date) {
+                    try {
+                        date.textContent = new Date().toLocaleDateString("es-ES", { year: "numeric", month: "short", day: "2-digit" });
+                    } catch {
+                        date.textContent = new Date().toISOString().slice(0, 10);
+                    }
+                }
+
+                if (id) document.title = `IANGINE — Factura #${id}`;
+            }
+
+            function renderItems(productos) {
+                const tbody = $("invoice-items");
+                if (!tbody) return;
+                tbody.innerHTML = "";
+
+                const items = Array.isArray(productos) ? productos : [];
+                if (!items.length) {
+                    tbody.innerHTML = "<tr><td colspan=\"4\" class=\"line-sub\" style=\"padding:14px 8px;\">No hay conceptos en esta factura.</td></tr>";
+                    return;
+                }
+
+                items.forEach((p) => {
+                    const nombre = safeText(p?.nombre, "Servicio");
+                    const unit = p?.costo ?? 0;
+                    const qty = 1;
+                    const lineTotal = unit * qty;
+
+                    const tr = document.createElement("tr");
+
+                    const tdDesc = document.createElement("td");
+                    tdDesc.setAttribute("data-label", "Descripción");
+                    tdDesc.innerHTML = `<p class=\"line-desc\">${escapeHtml(nombre)}</p><p class=\"line-sub\">Incluido en el alcance.</p>`;
+
+                    const tdQty = document.createElement("td");
+                    tdQty.className = "num";
+                    tdQty.setAttribute("data-label", "Cant.");
+                    tdQty.textContent = String(qty);
+
+                    const tdUnit = document.createElement("td");
+                    tdUnit.className = "num";
+                    tdUnit.setAttribute("data-label", "Unitario");
+                    tdUnit.textContent = money(unit);
+
+                    const tdLine = document.createElement("td");
+                    tdLine.className = "num";
+                    tdLine.style.fontWeight = "900";
+                    tdLine.setAttribute("data-label", "Importe");
+                    tdLine.textContent = money(lineTotal);
+
+                    tr.appendChild(tdDesc);
+                    tr.appendChild(tdQty);
+                    tr.appendChild(tdUnit);
+                    tr.appendChild(tdLine);
+
+                    tbody.appendChild(tr);
+                });
+            }
+
+            function renderFactura(inv, id) {
+                setInvoiceMeta(id);
+
+                const pillClient = $("pill-client");
+                if (pillClient) pillClient.textContent = `Cliente: ${safeText(inv?.nombreCliente)}`;
+
+                const billName = $("billto-name");
+                if (billName) billName.textContent = safeText(inv?.nombreCliente);
+
+                const billCompany = $("billto-company");
+                if (billCompany) billCompany.textContent = safeText(inv?.nombreEmpresa);
+
+                const obj = $("objetivo-value");
+                if (obj) obj.textContent = safeText(inv?.objetivoProyecto);
+
+                const enf = $("enfoque-value");
+                if (enf) enf.textContent = safeText(inv?.nuestroEnfoque);
+
+                const subTotal = inv?.subTotal ?? sumItems(inv?.productos);
+                const total = Number(inv?.total ?? subTotal) || 0;
+
+                const subEl = $("subtotal-value");
+                if (subEl) subEl.textContent = money(subTotal);
+
+                const totalEl = $("total-value");
+                if (totalEl) totalEl.textContent = money(total);
+
+                const paypalTotal = $("paypal-total");
+                if (paypalTotal) paypalTotal.textContent = money(total);
+
+                const previewTotal = $("pay-preview-total");
+                if (previewTotal) previewTotal.textContent = money(total);
+
+                window.facturaState.total = total;
+            }
+
+            function sumItems(productos) {
+                const items = Array.isArray(productos) ? productos : [];
+                return items.reduce((acc, p) => acc + Number(p?.costo || 0), 0);
+            }
+
+            function currentPageExampleUrl() {
+                const url = new URL(window.location.href);
+                url.searchParams.set("id", "1");
+                return url.toString();
+            }
+
+            function escapeHtml(str) {
+                return String(str)
+                    .replaceAll("&", "&amp;")
+                    .replaceAll("<", "&lt;")
+                    .replaceAll(">", "&gt;")
+                    .replaceAll('"', "&quot;")
+                    .replaceAll("'", "&#039;");
+            }
+
+            function openPayModal() {
+                const overlay = $("payOverlay");
+                if (!overlay) return;
+                overlay.classList.add("open");
+                overlay.setAttribute("aria-hidden", "false");
+                document.body.classList.add("modal-open");
+                const closeBtn = $("btnClosePay");
+                if (closeBtn) closeBtn.focus();
+            }
+
+            function closePayModal() {
+                const overlay = $("payOverlay");
+                if (!overlay) return;
+                overlay.classList.remove("open");
+                overlay.setAttribute("aria-hidden", "true");
+                document.body.classList.remove("modal-open");
+            }
+
+            async function loadInvoice() {
+                const params = new URLSearchParams(window.location.search);
+                const id = params.get("id");
+
+                if (!id) {
+                    setInvoiceMeta("");
+                    setStatus(`Falta el parámetro ?id=. Ejemplo: ${currentPageExampleUrl()}`, "error");
+                    return;
+                }
+
+                window.facturaState.id = id;
+
+                setStatus("Cargando información de la factura...", "ok");
+                setInvoiceMeta(id);
+
+                try {
+                    const url = new URL(WEBHOOK_URL);
+                    url.searchParams.set("id", id);
+
+                    const controller = new AbortController();
+                    const timeout = setTimeout(() => controller.abort(), 15000);
+
+                    const res = await fetch(url.toString(), {
+                        method: "GET",
+                        headers: { Accept: "application/json" },
+                        cache: "no-store",
+                        signal: controller.signal,
+                    });
+
+                    clearTimeout(timeout);
+
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+                    const data = await res.json();
+                    if (!Array.isArray(data) || !data.length) {
+                        throw new Error("Respuesta vacía del webhook");
+                    }
+
+                    const inv = data[0] || {};
+                    renderItems(inv?.productos);
+                    renderFactura(inv, id);
+
+                    const paymentStatus = String(inv?.Payment_Status ?? inv?.payment_status ?? inv?.paymentStatus ?? "").trim();
+                    window.facturaState.paymentStatus = paymentStatus || null;
+
+                    if (paymentStatus && paymentStatus.toUpperCase() !== "PENDING") {
+                        // Ocultar SIEMPRE (sin depender de funciones definidas en otro <script>)
+                        ["btnPay", "btnPayInline", "btnPayBottom"].forEach((btnId) => {
+                            const el = document.getElementById(btnId);
+                            if (el) {
+                                el.style.display = "none";
+                                el.hidden = true;
+                                el.disabled = true;
+                                el.setAttribute("aria-hidden", "true");
+                            }
+                        });
+                        const paypalWrap = document.getElementById("paypal-widget");
+                        if (paypalWrap) {
+                            paypalWrap.style.display = "none";
+                            paypalWrap.hidden = true;
+                            paypalWrap.setAttribute("aria-hidden", "true");
+                        }
+
+                        // Cerrar popup si estuviera abierto
+                        const overlay = document.getElementById("payOverlay");
+                        if (overlay) {
+                            overlay.classList.remove("open");
+                            overlay.setAttribute("aria-hidden", "true");
+                        }
+                        document.body.classList.remove("modal-open");
+
+                        const invStatus = document.getElementById("invoice-status");
+                        if (invStatus) invStatus.textContent = "Pagada";
+
+                        setStatus("¡Gracias! Tu pago fue recibido correctamente.", "ok");
+                    } else {
+                        setStatus("Factura cargada correctamente.", "ok");
+                    }
+                } catch (err) {
+                    console.error(err);
+                    const msg = err?.name === "AbortError" ? "Tiempo de espera agotado." : (err?.message || "Error desconocido.");
+                    setStatus(`No se pudo cargar la factura. ${msg}`, "error");
+
+                    const tbody = $("invoice-items");
+                    if (tbody) {
+                        tbody.innerHTML = "<tr><td colspan=\"4\" class=\"line-sub\" style=\"padding:14px 8px;\">No se pudo cargar el detalle.</td></tr>";
+                    }
+                }
+            }
+
+            document.addEventListener("DOMContentLoaded", () => {
+                const btnPrint = $("btnPrint");
+                if (btnPrint) btnPrint.addEventListener("click", () => window.print());
+
+                const btnPay = $("btnPay");
+                const btnPayInline = $("btnPayInline");
+                const btnPayBottom = $("btnPayBottom");
+                [btnPay, btnPayInline, btnPayBottom].forEach((b) => {
+                    if (!b) return;
+                    b.addEventListener("click", openPayModal);
+                });
+
+                const btnClosePay = $("btnClosePay");
+                if (btnClosePay) btnClosePay.addEventListener("click", closePayModal);
+
+                const overlay = $("payOverlay");
+                if (overlay) {
+                    overlay.addEventListener("click", (e) => {
+                        if (e.target === overlay) closePayModal();
+                    });
+                }
+
+                document.addEventListener("keydown", (e) => {
+                    if (e.key === "Escape") closePayModal();
+                });
+
+                loadInvoice();
+            });
+        })();
+    </script>
+
+    <script>
+        const getFacturaData = () => {
+            const params = new URLSearchParams(window.location.search);
+            const id = window.facturaState?.id ?? params.get("id");
+            const total = Number(window.facturaState?.total ?? 0) || 0;
+            return { id, total };
+        };
+
+        function resultMessage(message) {
+            const container = document.querySelector("#result-message");
+            if (container) container.textContent = message;
+        }
+
+        async function postApproveToWebhook(data) {
+            const url = new URL(WEBHOOK_URL);
+            const factura = getFacturaData();
+            if (factura?.id) url.searchParams.set("id", factura.id);
+
+            const res = await fetch(url.toString(), {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (!res.ok) throw new Error(`Webhook POST HTTP ${res.status}`);
+            return res;
+        }
+
+        function hidePayPopup() {
+            const overlay = document.getElementById("payOverlay");
+            if (overlay) {
+                overlay.classList.remove("open");
+                overlay.setAttribute("aria-hidden", "true");
+            }
+            document.body.classList.remove("modal-open");
+        }
+
+        function hideAllPayButtons() {
+            ["btnPay", "btnPayInline", "btnPayBottom"].forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = "none";
+            });
+            const paypalWrap = document.getElementById("paypal-widget");
+            if (paypalWrap) paypalWrap.style.display = "none";
+        }
+
+        function showThankYouMessage() {
+            const status = document.getElementById("status");
+            if (!status) return;
+            status.textContent = "¡Gracias! Tu pago fue recibido correctamente.";
+            status.classList.remove("error");
+            status.classList.add("ok");
+        }
+
+        function markInvoicePaid() {
+            const s = document.getElementById("invoice-status");
+            if (s) s.textContent = "Pagada";
+        }
+
+        function finalizePaidUI() {
+            showThankYouMessage();
+            markInvoicePaid();
+            hidePayPopup();
+            hideAllPayButtons();
+        }
+
+        if (window.paypal?.Buttons) {
+            paypal.Buttons({
+                style: {
+                    shape: "rect",
+                    layout: "vertical",
+                    color: "gold",
+                    label: "paypal",
+                },
+                createOrder: function (_data, actions) {
+                    const factura = getFacturaData();
+                    if (!factura.total || factura.total <= 0) {
+                        resultMessage("No se puede crear la orden: total inválido.");
+                        return Promise.reject(new Error("Total inválido"));
+                    }
+                    return actions.order.create({
+                        purchase_units: [{
+                            amount: {
+                                value: factura.total.toFixed(2)
+                            }
+                        }]
+                    });
+                },
+                onApprove: function (data, actions) {
+                    return actions.order.capture()
+                        .then(async function (detalles) {
+                            //console.log(detalles);
+                            try {
+                                await postApproveToWebhook(detalles);
+                            } catch (err) {
+                                console.error("Error notificando webhook:", err);
+                            }
+                            finalizePaidUI();
+                            //alert("¡Gracias! Pago confirmado.");
+                        })
+                        .catch((err) => {
+                            console.error(err);
+                            resultMessage("No se pudo completar el pago.");
+                        });
+                },
+                onCancel: function () {
+                    resultMessage("Pago cancelado.");
+                }
+            }).render('#paypal-button-container');
+        } else {
+            resultMessage("PayPal SDK no está disponible.");
+        }
+    </script>
+
+</body>
+
+</html>

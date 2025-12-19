@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Resumen de Respuestas de Encuesta (Vertical → Horizontal)</title>
+  <meta name="color-scheme" content="dark light" />
+  <style>
+    :root{
+      --bg:#0b0f16; --card:#101827; --muted:#8aa0b6; --text:#e8f0ff;
+      --stroke:rgba(255,255,255,.10); --stroke2:rgba(255,255,255,.16);
+      --accent:#7dd3fc; --accent2:#a78bfa; --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+      --shadow: 0 24px 60px rgba(0,0,0,.35);
+      --radius: 18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      background:
+        radial-gradient(1000px 500px at 15% 0%, rgba(125,211,252,.18), transparent 55%),
+        radial-gradient(1000px 500px at 85% 0%, rgba(167,139,250,.16), transparent 55%),
+        linear-gradient(#080b12, #0b0f16);
+      color:var(--text);
+    }
+    .wrap{max-width:1200px;margin:0 auto;padding:28px 18px 44px}
+    header{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;margin-bottom:18px}
+    h1{font-size:22px;margin:0;letter-spacing:.2px}
+    .sub{margin:6px 0 0;color:var(--muted);font-size:13px;line-height:1.35;max-width:68ch}
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--stroke);
+      box-shadow:var(--shadow);
+      border-radius:var(--radius);
+      overflow:hidden;
+    }
+    .top{
+      padding:16px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+    }
+    .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:10px 12px;border-radius:999px;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--stroke);
+    }
+    .pill strong{font-size:12px;color:rgba(232,240,255,.9);font-weight:650}
+    .pill span{font-size:12px;color:var(--muted)}
+    .btn{
+      appearance:none;border:1px solid var(--stroke2);
+      background:rgba(125,211,252,.10);
+      color:var(--text); padding:10px 12px;border-radius:12px;
+      cursor:pointer;font-weight:650; letter-spacing:.15px;
+      transition:transform .06s ease, background .15s ease, border-color .15s ease;
+      display:inline-flex;align-items:center;gap:8px;
+    }
+    .btn:hover{background:rgba(125,211,252,.14);border-color:rgba(125,211,252,.35)}
+    .btn:active{transform:translateY(1px)}
+    .btn.secondary{background:rgba(255,255,255,.05)}
+    .btn.secondary:hover{border-color:rgba(255,255,255,.25)}
+    .btn:disabled{opacity:.45;cursor:not-allowed}
+    .input{
+      background:rgba(0,0,0,.20);
+      border:1px solid var(--stroke);
+      color:var(--text); padding:10px 12px;border-radius:12px;
+      outline:none; min-width:220px;
+    }
+    .input::placeholder{color:rgba(138,160,182,.7)}
+    .label{font-size:12px;color:var(--muted);margin-right:6px}
+    .drop{
+      position:relative;
+      padding:16px;border-radius:16px;
+      border:1px dashed rgba(255,255,255,.20);
+      background:rgba(0,0,0,.18);
+      display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap;
+    }
+    .drop strong{display:block;font-size:13px}
+    .drop small{display:block;color:var(--muted);margin-top:3px}
+    .drop input[type=file]{display:none}
+    .hint{font-family:var(--mono);font-size:12px;color:rgba(232,240,255,.75)}
+    .toggles{display:flex;flex-wrap:wrap;gap:10px}
+    .toggle{
+      display:flex;align-items:center;gap:8px;
+      padding:9px 12px;border-radius:12px;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--stroke);
+      user-select:none;
+      font-size:12px;color:rgba(232,240,255,.85);
+    }
+    .toggle input{accent-color: var(--accent)}
+    .meta{
+      display:flex;flex-wrap:wrap;gap:10px;align-items:center
+    }
+    .progress{
+      height:10px;border-radius:999px;overflow:hidden;
+      border:1px solid var(--stroke);
+      background:rgba(0,0,0,.20);
+      margin-top:10px;display:none;
+    }
+    .bar{
+      height:100%;
+      background:linear-gradient(90deg, rgba(125,211,252,.9), rgba(167,139,250,.9));
+      width:0%;
+      transition:width .16s ease;
+    }
+    .status{margin-top:10px;color:var(--muted);font-size:12px}
+    .tableWrap{
+      border-top:1px solid var(--stroke);
+      padding:0;
+    }
+    .tableTools{
+      display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;
+      padding:12px 14px;
+      border-bottom:1px solid var(--stroke);
+      background:rgba(0,0,0,.10);
+    }
+    .tableTools .left, .tableTools .right{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+    .kpi{
+      font-family:var(--mono);
+      font-size:12px;
+      padding:8px 10px;border-radius:12px;
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.04);
+      color:rgba(232,240,255,.88);
+    }
+    .tableScroll{
+      overflow:auto;
+      max-height: 70vh;
+    }
+    table{
+      width:max(100%, 900px);
+      border-collapse:separate;
+      border-spacing: 0;
+      font-size:12.5px;
+      line-height:1.25;
+    }
+    thead th{
+      position:sticky; top:0; z-index:3;
+      background:rgba(16,24,39,.92);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid var(--stroke2);
+      text-align:left;
+      padding:10px 12px;
+      white-space:nowrap;
+      max-width: 380px;
+    }
+    tbody td{
+      border-bottom:1px solid rgba(255,255,255,.06);
+      padding:10px 12px;
+      vertical-align:top;
+      max-width: 380px;
+      color:rgba(232,240,255,.92);
+    }
+    tbody tr:hover td{background:rgba(255,255,255,.03)}
+    th.stickyLeft, td.stickyLeft{
+      position:sticky; left:0; z-index:4;
+      background:rgba(16,24,39,.96);
+      border-right:1px solid rgba(255,255,255,.10);
+      font-family:var(--mono);
+      white-space:nowrap;
+      min-width: 160px;
+    }
+    td.missing{color:rgba(138,160,182,.75)}
+    code{font-family:var(--mono)}
+    .footerNote{padding:14px;color:var(--muted);font-size:12px}
+    @media (min-width: 960px){
+      .top{grid-template-columns: 1.3fr 1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Resumen de encuesta (vertical → horizontal)</h1>
+        <p class="sub">
+          Sube un <b>Excel/CSV</b> con los campos: <code>idSurveyResponse</code>, <code>Pregunta</code>, <code>DescripciónRespuesta</code> (o <code>CodigoRespuesta</code).
+          Al dar clic en <b>Generar resumen</b>, se crea una tabla donde cada fila es un <code>idSurveyResponse</code> y cada columna una pregunta.
+        </p>
+      </div>
+      <div class="pill" title="Funciona 100% en tu navegador (no sube datos a un servidor).">
+        <strong>Modo local</strong><span>sin servidor</span>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="top">
+        <div class="drop" id="dropZone">
+          <div>
+            <strong>1) Selecciona o arrastra tu archivo aquí</strong>
+            <small>Soporta .xlsx, .xls, .csv. Se procesará en el navegador.</small>
+            <div class="hint" id="fileHint">Ningún archivo seleccionado.</div>
+          </div>
+          <div class="row">
+            <label class="btn secondary" for="fileInput">Seleccionar archivo</label>
+            <input id="fileInput" type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" />
+          </div>
+        </div>
+
+        <div>
+          <div class="row">
+            <span class="label">Hoja</span>
+            <select id="sheetSelect" class="input" disabled>
+              <option value="">—</option>
+            </select>
+
+            <span class="label">Encuesta</span>
+            <select id="surveySelect" class="input" disabled>
+              <option value="__ALL__">Todas</option>
+            </select>
+
+            <button class="btn" id="btnGenerate" disabled>
+              Generar resumen
+            </button>
+          </div>
+
+          <div class="toggles">
+            <label class="toggle">
+              <input type="checkbox" id="chkPrefixSurvey" checked />
+              Prefijar columnas con “Encuesta X”
+            </label>
+            <label class="toggle">
+              <input type="checkbox" id="chkPrefixIdPregunta" checked />
+              Prefijar columnas con “idPregunta”
+            </label>
+            <label class="toggle">
+              <input type="checkbox" id="chkJoinDuplicates" checked />
+              Si hay varias respuestas, unirlas
+            </label>
+          </div>
+
+          <div class="progress" id="progress">
+            <div class="bar" id="bar"></div>
+          </div>
+          <div class="status" id="status">Listo para cargar un documento.</div>
+        </div>
+      </div>
+
+      <div class="tableWrap">
+        <div class="tableTools">
+          <div class="left">
+            <input id="search" class="input" placeholder="Buscar (idSurveyResponse, preguntas o respuestas)..." disabled />
+            <span class="kpi" id="kpi">—</span>
+          </div>
+          <div class="right">
+            <button class="btn secondary" id="btnCopy" disabled>Copiar tabla</button>
+            <button class="btn secondary" id="btnCSV" disabled>Descargar CSV</button>
+          </div>
+        </div>
+        <div class="tableScroll" id="tableScroll">
+          <div class="footerNote" id="emptyState">
+            Sube un archivo y presiona <b>Generar resumen</b>.
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- SheetJS (XLSX) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    const state = {
+      file: null,
+      wb: null,
+      rows: [],
+      sheetName: null,
+      table: null,
+      pivot: null, // { responses: Map, questions: [], responseIds: [] }
+    };
+
+    function normKey(s){
+      return String(s ?? "")
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, " ");
+    }
+
+    function setStatus(msg){
+      $("status").textContent = msg;
+    }
+
+    function setProgress(p){
+      const el = $("progress");
+      el.style.display = "block";
+      $("bar").style.width = `${Math.max(0, Math.min(100, p))}%`;
+      if(p >= 100) setTimeout(() => { el.style.display = "none"; }, 400);
+    }
+
+    function escapeHTML(s){
+      return String(s ?? "").replace(/[&<>\"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;', "'":'&#39;'}[c]));
+    }
+
+    function getCellAnswer(row){
+      const a = row.descripcionrespuesta ?? row.descripcionsrespuesta ?? row.descripcionrespuesta_ ?? row.descripcion_respuesta;
+      // fallback to CodigoRespuesta
+      const b = row.codigorespuesta ?? row.codigorespuesta;
+      const val = (a !== undefined && a !== null && String(a).trim() !== "") ? a : b;
+      return (val === undefined || val === null) ? "" : String(val).trim();
+    }
+
+    function readWorkbookFromFile(file){
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error("No se pudo leer el archivo"));
+        reader.onload = (e) => {
+          try{
+            const data = new Uint8Array(e.target.result);
+            const wb = XLSX.read(data, { type: "array" });
+            resolve(wb);
+          }catch(err){
+            reject(err);
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      });
+    }
+
+    function sheetToRows(wb, sheetName){
+      const ws = wb.Sheets[sheetName];
+      if(!ws) return [];
+      // defval: "" to keep empty cells
+      const raw = XLSX.utils.sheet_to_json(ws, { defval: "" });
+      // normalize keys
+      return raw.map(obj => {
+        const out = {};
+        Object.keys(obj).forEach(k => out[normKey(k)] = obj[k]);
+        return out;
+      });
+    }
+
+    function uniquePreserveOrder(arr){
+      const seen = new Set();
+      const out = [];
+      for(const v of arr){
+        if(!seen.has(v)){
+          seen.add(v);
+          out.push(v);
+        }
+      }
+      return out;
+    }
+
+    function buildQuestionKey(row, opts){
+      const pregunta = String(row.pregunta ?? "").trim().replace(/\s+/g, " ");
+      const idPregunta = (row.idpregunta ?? "").toString().trim();
+      const idEncuesta = (row.idencuesta ?? "").toString().trim();
+      let key = pregunta;
+
+      // prefijos opcionales para evitar colisiones (p.ej. múltiples encuestas mezcladas)
+      if(opts.prefixIdPregunta && idPregunta) key = `${idPregunta}. ${key}`;
+      if(opts.prefixSurvey && idEncuesta) key = `Encuesta ${idEncuesta} — ${key}`;
+      return key.trim();
+    }
+
+    function pivotRows(rows, opts){
+      // Estructura final: responseId -> { questionKey -> answerText }
+      const responses = new Map();
+      const questionOrder = [];
+      const responseIdsSet = new Set();
+
+      let dropped = 0;
+
+      for(const r of rows){
+        const idEncuesta = (r.idencuesta ?? "").toString().trim();
+        if(opts.surveyFilter !== "__ALL__" && idEncuesta !== String(opts.surveyFilter)) continue;
+
+        const responseIdRaw = r.idsurveyresponse ?? r.id_survey_response ?? r.surveyresponseid;
+        const responseId = (responseIdRaw ?? "").toString().trim();
+        const pregunta = (r.pregunta ?? "").toString().trim();
+
+        if(!responseId || !pregunta){
+          dropped++;
+          continue;
+        }
+
+        const qKey = buildQuestionKey(r, opts);
+        const ans = getCellAnswer(r);
+
+        if(!responses.has(responseId)) responses.set(responseId, {});
+        const bucket = responses.get(responseId);
+
+        if(bucket[qKey] && opts.joinDuplicates){
+          const prev = String(bucket[qKey]);
+          const next = String(ans);
+          if(next && !prev.split(/\s*\|\s*|\n/).includes(next)){
+            bucket[qKey] = prev ? (prev + " | " + next) : next;
+          }
+        }else{
+          bucket[qKey] = ans;
+        }
+
+        questionOrder.push(qKey);
+        responseIdsSet.add(responseId);
+      }
+
+      const questions = uniquePreserveOrder(questionOrder);
+
+      // Ordena ids: numérico si aplica
+      const responseIds = Array.from(responseIdsSet);
+      const allNumeric = responseIds.every(x => /^\d+(\.\d+)?$/.test(x));
+      responseIds.sort((a,b) => {
+        if(allNumeric) return Number(a) - Number(b);
+        return String(a).localeCompare(String(b), "es");
+      });
+
+      return { responses, questions, responseIds, dropped };
+    }
+
+    function renderTable(pivot){
+      const { responses, questions, responseIds } = pivot;
+
+      // Create table
+      const table = document.createElement("table");
+
+      // HEAD
+      const thead = document.createElement("thead");
+      const trh = document.createElement("tr");
+
+      const th0 = document.createElement("th");
+      th0.textContent = "idSurveyResponse";
+      th0.className = "stickyLeft";
+      trh.appendChild(th0);
+
+      for(const q of questions){
+        const th = document.createElement("th");
+        th.innerHTML = escapeHTML(q);
+        trh.appendChild(th);
+      }
+      thead.appendChild(trh);
+      table.appendChild(thead);
+
+      // BODY
+      const tbody = document.createElement("tbody");
+      const frag = document.createDocumentFragment();
+
+      for(const rid of responseIds){
+        const tr = document.createElement("tr");
+        const td0 = document.createElement("td");
+        td0.textContent = rid;
+        td0.className = "stickyLeft";
+        tr.appendChild(td0);
+
+        const bucket = responses.get(rid) || {};
+        for(const q of questions){
+          const td = document.createElement("td");
+          const v = bucket[q];
+          if(v === undefined || v === null || String(v).trim() === ""){
+            td.textContent = "";
+            td.className = "missing";
+          }else{
+            td.textContent = String(v);
+          }
+          tr.appendChild(td);
+        }
+        frag.appendChild(tr);
+      }
+
+      tbody.appendChild(frag);
+      table.appendChild(tbody);
+
+      return table;
+    }
+
+    function kpiText(pivot){
+      const responsesCount = pivot.responseIds.length;
+      const questionsCount = pivot.questions.length;
+
+      // missing count
+      let missing = 0;
+      for(const rid of pivot.responseIds){
+        const bucket = pivot.responses.get(rid) || {};
+        for(const q of pivot.questions){
+          const v = bucket[q];
+          if(v === undefined || v === null || String(v).trim() === "") missing++;
+        }
+      }
+      const total = responsesCount * questionsCount;
+      const pct = total ? Math.round((1 - missing/total) * 1000) / 10 : 0;
+      return `${responsesCount} respuestas · ${questionsCount} preguntas · completitud ${pct}%`;
+    }
+
+    function applySearch(){
+      if(!state.table) return;
+      const q = $("search").value.trim().toLowerCase();
+      const tbody = state.table.querySelector("tbody");
+      const rows = Array.from(tbody.querySelectorAll("tr"));
+      let shown = 0;
+
+      for(const tr of rows){
+        if(!q){
+          tr.style.display = "";
+          shown++;
+          continue;
+        }
+        const text = tr.innerText.toLowerCase();
+        const ok = text.includes(q);
+        tr.style.display = ok ? "" : "none";
+        if(ok) shown++;
+      }
+      $("kpi").textContent = `${kpiText(state.pivot)} · mostrando ${shown}`;
+    }
+
+    function tableToCSV(table){
+      const rows = Array.from(table.querySelectorAll("tr"));
+      const csv = rows.map(tr => {
+        const cells = Array.from(tr.querySelectorAll("th,td")).map(el => {
+          const s = (el.textContent ?? "").replace(/\r?\n/g, " ").trim();
+          // CSV escaping
+          if(/[\",\n]/.test(s)) return `"${s.replace(/"/g,'""')}"`;
+          return s;
+        });
+        return cells.join(",");
+      }).join("\n");
+      return csv;
+    }
+
+    async function copyTableToClipboard(){
+      if(!state.table) return;
+      const csv = tableToCSV(state.table);
+      try{
+        await navigator.clipboard.writeText(csv);
+        setStatus("✅ Tabla copiada al portapapeles (formato CSV). ");
+      }catch{
+        setStatus("⚠️ No se pudo copiar automáticamente. Prueba descargar CSV.");
+      }
+    }
+
+    function downloadCSV(){
+      if(!state.table) return;
+      const csv = tableToCSV(state.table);
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `resumen_encuesta_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function populateSheetSelect(wb){
+      const select = $("sheetSelect");
+      select.innerHTML = "";
+      for(const name of wb.SheetNames){
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        select.appendChild(opt);
+      }
+      select.disabled = false;
+      state.sheetName = wb.SheetNames[0];
+      select.value = state.sheetName;
+    }
+
+    function populateSurveySelect(rows){
+      const values = uniquePreserveOrder(rows
+        .map(r => String(r.idencuesta ?? "").trim())
+        .filter(v => v !== "")
+      );
+      const select = $("surveySelect");
+      select.innerHTML = "";
+      const all = document.createElement("option");
+      all.value = "__ALL__";
+      all.textContent = "Todas";
+      select.appendChild(all);
+
+      for(const v of values){
+        const opt = document.createElement("option");
+        opt.value = v;
+        opt.textContent = v;
+        select.appendChild(opt);
+      }
+      select.disabled = false;
+      select.value = "__ALL__";
+    }
+
+    async function onFile(file){
+      state.file = file;
+      $("fileHint").textContent = `${file.name} (${Math.round(file.size/1024)} KB)`;
+      setStatus("Leyendo archivo…");
+      setProgress(15);
+
+      try{
+        const wb = await readWorkbookFromFile(file);
+        state.wb = wb;
+        populateSheetSelect(wb);
+
+        setProgress(45);
+        // Pre-carga la primera hoja para poblar encuestas
+        state.rows = sheetToRows(wb, state.sheetName);
+        populateSurveySelect(state.rows);
+
+        $("btnGenerate").disabled = false;
+        setProgress(100);
+        setStatus("Archivo listo. Selecciona hoja/encuesta y presiona “Generar resumen”.");
+      }catch(err){
+        console.error(err);
+        setProgress(100);
+        setStatus("❌ Error leyendo el archivo. Verifica que sea un Excel/CSV válido.");
+      }
+    }
+
+    async function generate(){
+      if(!state.wb) return;
+
+      $("btnGenerate").disabled = true;
+      $("search").disabled = true;
+      $("btnCSV").disabled = true;
+      $("btnCopy").disabled = true;
+      $("emptyState").style.display = "none";
+
+      setStatus("Preparando datos…");
+      setProgress(10);
+
+      // Load selected sheet
+      state.sheetName = $("sheetSelect").value;
+      const rows = sheetToRows(state.wb, state.sheetName);
+      state.rows = rows;
+      populateSurveySelect(rows);
+
+      setProgress(35);
+      setStatus("Generando tabla dinámica…");
+
+      const opts = {
+        prefixSurvey: $("chkPrefixSurvey").checked,
+        prefixIdPregunta: $("chkPrefixIdPregunta").checked,
+        joinDuplicates: $("chkJoinDuplicates").checked,
+        surveyFilter: $("surveySelect").value
+      };
+
+      // Pivot
+      const pivot = pivotRows(rows, opts);
+      state.pivot = pivot;
+
+      setProgress(60);
+      setStatus("Renderizando tabla…");
+
+      const table = renderTable(pivot);
+      state.table = table;
+
+      const container = $("tableScroll");
+      container.innerHTML = "";
+      container.appendChild(table);
+
+      $("kpi").textContent = kpiText(pivot);
+      $("search").disabled = false;
+      $("btnCSV").disabled = false;
+      $("btnCopy").disabled = false;
+
+      setProgress(100);
+      const extra = pivot.dropped ? ` (se omitieron ${pivot.dropped} filas incompletas)` : "";
+      setStatus(`✅ Listo: ${pivot.responseIds.length} respuestas × ${pivot.questions.length} preguntas${extra}.`);
+
+      $("btnGenerate").disabled = false;
+      applySearch();
+    }
+
+    // UI bindings
+    $("btnGenerate").addEventListener("click", generate);
+    $("search").addEventListener("input", applySearch);
+    $("btnCopy").addEventListener("click", copyTableToClipboard);
+    $("btnCSV").addEventListener("click", downloadCSV);
+
+    $("sheetSelect").addEventListener("change", () => {
+      if(!state.wb) return;
+      state.sheetName = $("sheetSelect").value;
+      state.rows = sheetToRows(state.wb, state.sheetName);
+      populateSurveySelect(state.rows);
+      setStatus("Hoja cambiada. Presiona “Generar resumen”.");
+    });
+
+    $("surveySelect").addEventListener("change", () => {
+      if(!state.wb) return;
+      setStatus("Filtro de encuesta cambiado. Presiona “Generar resumen”.");
+    });
+
+    $("fileInput").addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      if(file) onFile(file);
+    });
+
+    // Drag & drop
+    const dz = $("dropZone");
+    dz.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dz.style.borderColor = "rgba(125,211,252,.55)";
+      dz.style.background = "rgba(125,211,252,.06)";
+    });
+    dz.addEventListener("dragleave", () => {
+      dz.style.borderColor = "rgba(255,255,255,.20)";
+      dz.style.background = "rgba(0,0,0,.18)";
+    });
+    dz.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dz.style.borderColor = "rgba(255,255,255,.20)";
+      dz.style.background = "rgba(0,0,0,.18)";
+      const file = e.dataTransfer.files && e.dataTransfer.files[0];
+      if(file) onFile(file);
+    });
+  </script>
+</body>
+</html>
