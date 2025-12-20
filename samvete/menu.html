@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menú</title>
+    <style>
+        :root {
+            --bg: #0f1115;
+            --card: #171b22;
+            --accent: #4dabf7;
+            --text: #e9edf5;
+            --muted: #94a3b8;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background: radial-gradient(circle at 20% 20%, #1b2330, #0d0f14 45%), radial-gradient(circle at 80% 10%, #111a27, #0d0f14 40%), var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 32px 16px;
+        }
+        .panel {
+            width: min(1200px, 100%);
+            background: var(--card);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 28px 32px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+        }
+        h1 {
+            margin: 0 0 12px;
+            font-size: 28px;
+            letter-spacing: 0.4px;
+        }
+        p.subtitle {
+            margin: 0 0 20px;
+            color: var(--muted);
+        }
+        nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        nav a {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 14px;
+            border-radius: 10px;
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text);
+            border: 1px solid transparent;
+            transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+        }
+        nav a span {
+            color: var(--muted);
+            margin-left: 8px;
+            font-weight: 500;
+        }
+        nav a:hover {
+            transform: translateY(-1px);
+            border-color: rgba(77, 171, 247, 0.4);
+            background: rgba(77, 171, 247, 0.08);
+        }
+        nav a:active { transform: translateY(0); }
+    </style>
+</head>
+<body>
+    <main class="panel">
+        <h1>Menú de navegación</h1>
+        <p class="subtitle">Accede rápidamente a todas las páginas disponibles en <code>samvete</code>.</p>
+        <nav>
+            <a href="menu.html">Menú</a>
+
+            <a href="kalckerinstitute/en.kalckerinstitute.html">Kalcker Institute <span>English</span></a>
+            <a href="kalckerinstitute/es.kalckerinstitute.html">Kalcker Institute <span>Español</span></a>
+            <a href="kalckerinstitute/fr.kalckerinstitute.html">Kalcker Institute <span>Français</span></a>
+            <a href="kalckerinstitute/De.kalckerinstitute.html">Kalcker Institute <span>Deutsch</span></a>
+            <a href="kalckerinstitute/ml.kalckerinstitute.html">Kalcker Institute <span>Multi</span></a>
+            <a href="kalckerinstitute/ml.kalckerinstitute-home-pt.html">Kalcker Institute <span>Português (Home)</span></a>
+
+            <a href="voedia/voedia.lat.html">Voedia <span>Lat</span></a>
+            <a href="voedia/voedia.us.html">Voedia <span>US</span></a>
+            <a href="voedia/voedia.pt.html">Voedia <span>PT</span></a>
+            <a href="voedia/voedia.it.html">Voedia <span>IT</span></a>
+            <a href="voedia/voedia.de.html">Voedia <span>DE</span></a>
+            <a href="voedia/voedia.uk.html">Voedia <span>UK</span></a>
+            <a href="voedia/voedia.fr.html">Voedia <span>FR</span></a>
+            <a href="voedia/voedia.es.html">Voedia <span>ES</span></a>
+
+            <a href="medalab/medalab.es.html">Medalab <span>España</span></a>
+            <a href="medalab/medalab.mx.html">Medalab <span>México</span></a>
+            <a href="medalab/medalab.us.es.html">Medalab <span>US (ES)</span></a>
+        </nav>
+    </main>
+</body>
+</html>
