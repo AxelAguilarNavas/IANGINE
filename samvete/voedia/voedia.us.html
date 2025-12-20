@@ -9,6 +9,36 @@
 </head>
 
 <body>
+    <div id="samvete-menu-mount"></div>
+    <script>
+        (async function loadSamveteMenu() {
+            try {
+                const res = await fetch('../menu.html', { credentials: 'same-origin' });
+                if (!res.ok) return;
+                const html = await res.text();
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                const main = doc.querySelector('main');
+                const scripts = doc.querySelectorAll('script');
+                const mount = document.getElementById('samvete-menu-mount');
+                if (!mount || !main) return;
+                mount.innerHTML = main.outerHTML;
+                scripts.forEach(s => {
+                    if (s.textContent && s.textContent.trim()) {
+                        const copy = document.createElement('script');
+                        copy.textContent = s.textContent;
+                        document.body.appendChild(copy);
+                    } else if (s.src) {
+                        const copy = document.createElement('script');
+                        copy.src = s.src;
+                        document.body.appendChild(copy);
+                    }
+                });
+            } catch (err) {
+                console.error('Error loading menu:', err);
+            }
+        })();
+    </script>
+
 </body>
 <script>
     window.chatwootSettings = { "position": "right", "type": "standard", "launcherTitle": "Chat with us" };
