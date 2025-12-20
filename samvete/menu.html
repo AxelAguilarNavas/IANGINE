@@ -11,12 +11,13 @@
             --accent: #4dabf7;
             --text: #e9edf5;
             --muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.06);
         }
         * { box-sizing: border-box; }
         body {
             margin: 0;
             font-family: "Helvetica Neue", Arial, sans-serif;
-            background: radial-gradient(circle at 20% 20%, #1b2330, #0d0f14 45%), radial-gradient(circle at 80% 10%, #111a27, #0d0f14 40%), var(--bg);
+            background: transparent;
             color: var(--text);
             min-height: 100vh;
             display: grid;
@@ -26,7 +27,7 @@
         .panel {
             width: min(1200px, 100%);
             background: var(--card);
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border);
             border-radius: 16px;
             padding: 28px 32px;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
@@ -40,12 +41,13 @@
             margin: 0 0 20px;
             color: var(--muted);
         }
-        nav {
+        nav.horizontal {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
+            margin-top: 4px;
         }
-        nav a {
+        nav.horizontal a {
             display: inline-flex;
             align-items: center;
             padding: 10px 14px;
@@ -53,38 +55,43 @@
             text-decoration: none;
             background: rgba(255, 255, 255, 0.04);
             color: var(--text);
-            border: 1px solid transparent;
-            transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
-            font-weight: 600;
+            border: 1px solid var(--border);
+            transition: border-color 120ms ease, background 120ms ease, transform 120ms ease;
+            font-weight: 700;
             letter-spacing: 0.2px;
         }
-        nav a span {
+        nav.horizontal a span {
             color: var(--muted);
             margin-left: 8px;
             font-weight: 500;
         }
-        nav a:hover {
+        nav.horizontal a:hover {
             transform: translateY(-1px);
             border-color: rgba(77, 171, 247, 0.4);
             background: rgba(77, 171, 247, 0.08);
         }
-        nav a:active { transform: translateY(0); }
+        nav.horizontal a:active { transform: translateY(0); }
+        .section-label {
+            margin: 18px 0 6px;
+            font-weight: 700;
+            color: var(--muted);
+            letter-spacing: 0.2px;
+        }
     </style>
 </head>
 <body>
     <main class="panel">
         <h1>Menú de navegación</h1>
         <p class="subtitle">Accede rápidamente a todas las páginas disponibles en <code>samvete</code>.</p>
-        <nav>
+        <div class="section-label">Todas las páginas</div>
+        <nav class="horizontal">
             <a href="menu.html">Menú</a>
-
             <a href="kalckerinstitute/en.kalckerinstitute.html">Kalcker Institute <span>English</span></a>
             <a href="kalckerinstitute/es.kalckerinstitute.html">Kalcker Institute <span>Español</span></a>
             <a href="kalckerinstitute/fr.kalckerinstitute.html">Kalcker Institute <span>Français</span></a>
             <a href="kalckerinstitute/De.kalckerinstitute.html">Kalcker Institute <span>Deutsch</span></a>
             <a href="kalckerinstitute/ml.kalckerinstitute.html">Kalcker Institute <span>Multi</span></a>
             <a href="kalckerinstitute/ml.kalckerinstitute-home-pt.html">Kalcker Institute <span>Português (Home)</span></a>
-
             <a href="voedia/voedia.lat.html">Voedia <span>Lat</span></a>
             <a href="voedia/voedia.us.html">Voedia <span>US</span></a>
             <a href="voedia/voedia.pt.html">Voedia <span>PT</span></a>
@@ -93,7 +100,6 @@
             <a href="voedia/voedia.uk.html">Voedia <span>UK</span></a>
             <a href="voedia/voedia.fr.html">Voedia <span>FR</span></a>
             <a href="voedia/voedia.es.html">Voedia <span>ES</span></a>
-
             <a href="medalab/medalab.es.html">Medalab <span>España</span></a>
             <a href="medalab/medalab.mx.html">Medalab <span>México</span></a>
             <a href="medalab/medalab.us.es.html">Medalab <span>US (ES)</span></a>
