@@ -7,6 +7,9 @@
     <title>IANGINE — Factura</title>
     <meta name="description" content="Factura — IANGINE" />
 
+    <script
+        src="https://www.paypal.com/sdk/js?client-id=AWILv-6CtkM65iSGrkJsyEpynKZ1ZBY-SpDZ4v4OYrKngdgs0c4nv8yhToQ2ycxpGpC6vnX8LneScGWQ&buyer-country=US&currency=USD&components=buttons&disable-funding=venmo,paylater,card" data-sdk-integration-source="developer-studio"></script>
+
     <style>
         :root {
             --bg: #0b0b0c;
@@ -954,32 +957,6 @@
                     .replaceAll("'", "&#039;");
             }
 
-            function renderPaymentScript(scriptHtml) {
-                const container = document.getElementById("paypal-widget");
-                if (!container) return;
-
-                container.innerHTML = "";
-                const raw = (scriptHtml ?? "").toString().trim();
-                if (!raw) {
-                    container.innerHTML = "<p class=\"line-sub\">No hay pasarela de pago disponible.</p>";
-                    return;
-                }
-
-                const tmp = document.createElement("div");
-                tmp.innerHTML = raw;
-
-                tmp.childNodes.forEach((node) => {
-                    if (node.nodeType === Node.ELEMENT_NODE && node.tagName?.toLowerCase() === "script") {
-                        const script = document.createElement("script");
-                        [...node.attributes].forEach((attr) => script.setAttribute(attr.name, attr.value));
-                        script.textContent = node.textContent;
-                        container.appendChild(script);
-                    } else {
-                        container.appendChild(node.cloneNode(true));
-                    }
-                });
-            }
-
             function openPayModal() {
                 const overlay = $("payOverlay");
                 if (!overlay) return;
@@ -1039,16 +1016,40 @@
                     const inv = data[0] || {};
                     renderItems(inv?.productos);
                     renderFactura(inv, id);
-                    renderPaymentScript(inv?.Payment_Script ?? inv?.payment_script ?? inv?.paymentScript);
 
                     const paymentStatus = String(inv?.Payment_Status ?? inv?.payment_status ?? inv?.paymentStatus ?? "").trim();
                     window.facturaState.paymentStatus = paymentStatus || null;
 
                     if (paymentStatus && paymentStatus.toUpperCase() !== "PENDING") {
+                        // Ocultar SIEMPRE (sin depender de funciones definidas en otro <script>)
+                        ["btnPay", "btnPayInline", "btnPayBottom"].forEach((btnId) => {
+                            const el = document.getElementById(btnId);
+                            if (el) {
+                                el.style.display = "none";
+                                el.hidden = true;
+                                el.disabled = true;
+                                el.setAttribute("aria-hidden", "true");
+                            }
+                        });
+                        const paypalWrap = document.getElementById("paypal-widget");
+                        if (paypalWrap) {
+                            paypalWrap.style.display = "none";
+                            paypalWrap.hidden = true;
+                            paypalWrap.setAttribute("aria-hidden", "true");
+                        }
+
+                        // Cerrar popup si estuviera abierto
+                        const overlay = document.getElementById("payOverlay");
+                        if (overlay) {
+                            overlay.classList.remove("open");
+                            overlay.setAttribute("aria-hidden", "true");
+                        }
+                        document.body.classList.remove("modal-open");
+
                         const invStatus = document.getElementById("invoice-status");
                         if (invStatus) invStatus.textContent = "Pagada";
 
-                        setStatus("Factura registrada como pagada.", "ok");
+                        setStatus("¡Gracias! Tu pago fue recibido correctamente.", "ok");
                     } else {
                         setStatus("Factura cargada correctamente.", "ok");
                     }
@@ -1093,6 +1094,123 @@
                 loadInvoice();
             });
         })();
+    </script>
+
+    <script>
+        const getFacturaData = () => {
+            const params = new URLSearchParams(window.location.search);
+            const id = window.facturaState?.id ?? params.get("id");
+            const total = Number(window.facturaState?.total ?? 0) || 0;
+            return { id, total };
+        };
+
+        function resultMessage(message) {
+            const container = document.querySelector("#result-message");
+            if (container) container.textContent = message;
+        }
+
+        async function postApproveToWebhook(data) {
+            const url = new URL(WEBHOOK_URL);
+            const factura = getFacturaData();
+            if (factura?.id) url.searchParams.set("id", factura.id);
+
+            const res = await fetch(url.toString(), {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (!res.ok) throw new Error(`Webhook POST HTTP ${res.status}`);
+            return res;
+        }
+
+        function hidePayPopup() {
+            const overlay = document.getElementById("payOverlay");
+            if (overlay) {
+                overlay.classList.remove("open");
+                overlay.setAttribute("aria-hidden", "true");
+            }
+            document.body.classList.remove("modal-open");
+        }
+
+        function hideAllPayButtons() {
+            ["btnPay", "btnPayInline", "btnPayBottom"].forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = "none";
+            });
+            const paypalWrap = document.getElementById("paypal-widget");
+            if (paypalWrap) paypalWrap.style.display = "none";
+        }
+
+        function showThankYouMessage() {
+            const status = document.getElementById("status");
+            if (!status) return;
+            status.textContent = "¡Gracias! Tu pago fue recibido correctamente.";
+            status.classList.remove("error");
+            status.classList.add("ok");
+        }
+
+        function markInvoicePaid() {
+            const s = document.getElementById("invoice-status");
+            if (s) s.textContent = "Pagada";
+        }
+
+        function finalizePaidUI() {
+            showThankYouMessage();
+            markInvoicePaid();
+            hidePayPopup();
+            hideAllPayButtons();
+        }
+
+        if (window.paypal?.Buttons) {
+            paypal.Buttons({
+                style: {
+                    shape: "rect",
+                    layout: "vertical",
+                    color: "gold",
+                    label: "paypal",
+                },
+                createOrder: function (_data, actions) {
+                    const factura = getFacturaData();
+                    if (!factura.total || factura.total <= 0) {
+                        resultMessage("No se puede crear la orden: total inválido.");
+                        return Promise.reject(new Error("Total inválido"));
+                    }
+                    return actions.order.create({
+                        purchase_units: [{
+                            amount: {
+                                value: factura.total.toFixed(2)
+                            }
+                        }]
+                    });
+                },
+                onApprove: function (data, actions) {
+                    return actions.order.capture()
+                        .then(async function (detalles) {
+                            //console.log(detalles);
+                            try {
+                                await postApproveToWebhook(detalles);
+                            } catch (err) {
+                                console.error("Error notificando webhook:", err);
+                            }
+                            finalizePaidUI();
+                            //alert("¡Gracias! Pago confirmado.");
+                        })
+                        .catch((err) => {
+                            console.error(err);
+                            resultMessage("No se pudo completar el pago.");
+                        });
+                },
+                onCancel: function () {
+                    resultMessage("Pago cancelado.");
+                }
+            }).render('#paypal-button-container');
+        } else {
+            resultMessage("PayPal SDK no está disponible.");
+        }
     </script>
 
 </body>
