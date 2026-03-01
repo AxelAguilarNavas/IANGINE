@@ -8,19 +8,8 @@
 </head>
 
 <body>
-    <div id="sigmasurvs-iframe-container" style="width: 100%; min-height: 400px; overflow: hidden;">
-        <iframe id="sigmasurvs-iframe" src="https://sigmasurvs.com/embed-formulario.html?link=7b071cb146c6800d"
-            width="100%" height="600" frameborder="0"
-            style="border:none; border-radius:12px; transition: height 0.3s ease;">
-        </iframe>
-        <script>
-            window.addEventListener('message', function (e) {
-                if (e.data && e.data.type === 'sigmasurvs-resize') {
-                    document.getElementById('sigmasurvs-iframe').style.height = e.data.height + 'px';
-                }
-            });
-        </script>
-    </div>
+    <div id="sigmasurvs-embed" data-link-slug="7b071cb146c6800d"></div>
+    <script src="https://sigmasurvs.com/api/embed/script.js" defer></script>
 </body>
 
 </html>
