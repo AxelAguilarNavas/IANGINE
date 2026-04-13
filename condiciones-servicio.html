@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Condiciones de Servicio - IANGINE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body class="font-sans text-gray-900 bg-white">
+    <nav aria-label="Barra superior" class="fixed inset-x-0 top-0 z-50 bg-black bg-opacity-60 text-white backdrop-blur-sm">
+      <div class="w-full px-4 sm:px-6">
+        <div class="flex items-center h-12 justify-start">
+            <a href="index.html" class="flex items-center gap-2 text-sm font-medium hover:underline" aria-label="Volver al inicio">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 fill-current" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M3 11.5L12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-8.5z"/>
+              </svg>
+              <span>Volver al inicio</span>
+            </a>
+          </div>
+      </div>
+    </nav>
+    <!-- Hero -->
+    <header class="min-h-screen flex flex-col items-center justify-center text-white text-center px-4 sm:px-6 bg-cover bg-center relative hero-bg">
+      <div class="absolute inset-0 bg-black bg-opacity-60"></div>
+      <div class="relative z-10 flex flex-col items-center justify-center">
+        <img src="https://res.cloudinary.com/doivgytwg/image/upload/v1755851728/Logo_IANgine_blanco_fondo_transparente_prfzsc.png" alt="Logo IANGINE" class="w-28 sm:w-32 md:w-40 mb-6 animate-pulse" />
+        <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6 leading-tight drop-shadow-lg">IANGINE</h1>
+        <p class="text-base sm:text-xl md:text-2xl max-w-2xl leading-relaxed">
+          Potenciamos empresas, emprendedores y personas con soluciones de
+          Inteligencia Artificial para transformar la forma en que trabajan y
+          viven.
+        </p>
+        <button
+          onclick="document.getElementById('terms').scrollIntoView({behavior:'smooth'})"
+          class="mt-8 w-full sm:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-700 active:scale-95 rounded-xl shadow-xl transition transform duration-300"
+        >
+          Ver condiciones
+        </button>
+      </div>
+    </header>
+
+    <main id="terms" class="max-w-4xl mx-auto py-12 px-4 sm:px-6 text-gray-700 space-y-6">
+      <div class="max-w-3xl mx-auto prose prose-lg">
+        <h1 class="text-3xl md:text-4xl font-bold mb-2">Condiciones de Servicio</h1>
+        <p class="text-sm text-gray-500">Última actualización: 10 de noviembre de 2025</p>
+
+        <p>Estas Condiciones del Servicio regulan el uso de las soluciones de automatización ofrecidas por IANGINE a través de plataformas como WhatsApp Business API, Facebook Messenger, Instagram Messaging y n8n.</p>
+
+        <h2 class="text-2xl font-semibold mt-6">SECTION 01</h2>
+        <h3 class="text-xl font-semibold mt-2">1. Servicios ofrecidos</h3>
+        <p>IANGINE provee a empresas clientes:</p>
+        <ul class="list-disc pl-5 space-y-2">
+          <li>Automatización de bandejas de entrada de WhatsApp.</li>
+          <li>Chatbots para recordatorios de agendamientos, atención al cliente y flujos personalizados.</li>
+          <li>Integraciones con Meta APIs y plataformas de terceros como n8n.</li>
+          <li>Soporte técnico y documentación para la activación y operación de canales digitales.</li>
+        </ul>
+
+        <h2 class="text-2xl font-semibold mt-6">SECTION 02</h2>
+        <h3 class="text-xl font-semibold mt-2">2. Responsabilidades del cliente</h3>
+        <p>El cliente se compromete a:</p>
+        <ul class="list-disc pl-5 space-y-2">
+          <li>Proveer activos válidos (número de WhatsApp, página de Facebook, perfil de Instagram).</li>
+          <li>Mantener su portafolio comercial verificado en Meta Business Manager.</li>
+          <li>Usar los servicios conforme a las políticas de Meta y las leyes aplicables.</li>
+          <li>No enviar contenido prohibido, spam o mensajes no solicitados.</li>
+        </ul>
+
+        <h2 class="text-2xl font-semibold mt-6">SECTION 03</h2>
+        <h3 class="text-xl font-semibold mt-2">3. Responsabilidades de IANGINE</h3>
+        <p>IANGINE se compromete a:</p>
+        <ul class="list-disc pl-5 space-y-2">
+          <li>Configurar y operar los flujos técnicos de forma segura y segmentada.</li>
+          <li>Mantener la confidencialidad de tokens, credenciales y datos del cliente.</li>
+          <li>Proveer soporte técnico y documentación clara.</li>
+          <li>No usar los activos del cliente para fines distintos a los contratados.</li>
+        </ul>
+
+        <h2 class="text-2xl font-semibold mt-6">SECTION 04</h2>
+        <h3 class="text-xl font-semibold mt-2">4. Limitación de responsabilidad</h3>
+        <p>IANGINE no se hace responsable por:</p>
+        <ul class="list-disc pl-5 space-y-2">
+          <li>Suspensiones o bloqueos realizados por Meta.</li>
+          <li>Errores derivados de activos mal configurados por el cliente.</li>
+          <li>Pérdida de datos por uso indebido de la API fuera de los flujos autorizados.</li>
+        </ul>
+
+        <h2 class="text-2xl font-semibold mt-6">SECTION 05</h2>
+        <h3 class="text-xl font-semibold mt-2">5. Modificaciones</h3>
+        <p>Estas condiciones pueden actualizarse. Se notificará a los clientes por correo electrónico o a través del sitio web.</p>
+        <p>Para consultas o soporte, escríbenos a <a href="mailto:support@iangine.com" class="underline">support@iangine.com</a>.</p>
+
+        <p class="mt-4"><a href="/" class="underline hover:text-gray-900">Volver al inicio</a></p>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-6 px-4 text-center bg-black text-gray-400 text-sm sm:text-base">
+      <p>
+        © <span id="year"></span> IANGINE.com - Todos los derechos reservados — <a href="politica-privacidad.html" class="underline hover:text-white">Política de privacidad</a> — <a href="condiciones-servicio.html" class="underline hover:text-white">Condiciones de servicio</a> — <a href="eliminacion-datos.html" class="underline hover:text-white">Política de eliminación de datos</a>
+      </p>
+    </footer>
+
+    <script>
+      document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
+
+  </body>
+</html>

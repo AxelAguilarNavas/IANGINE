@@ -5,52 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>IANGINE - Inteligencia Artificial</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-      html {
-        scroll-behavior: smooth;
-      }
-      button, input, textarea, select {
-        touch-action: manipulation;
-      }
-      .ai-loader {
-        display: inline-block;
-        position: relative;
-        width: 24px;
-        height: 24px;
-      }
-      .ai-loader div {
-        position: absolute;
-        border: 3px solid #fff;
-        opacity: 1;
-        border-radius: 50%;
-        animation: ai-loader 1.5s cubic-bezier(0, 0.2, 0.8, 1) infinite;
-      }
-      .ai-loader div:nth-child(2) {
-        animation-delay: -0.75s;
-      }
-      @keyframes ai-loader {
-        0% {
-          top: 12px;
-          left: 12px;
-          width: 0;
-          height: 0;
-          opacity: 1;
-        }
-        100% {
-          top: -1px;
-          left: -1px;
-          width: 26px;
-          height: 26px;
-          opacity: 0;
-        }
-      }
-    </style>
+    <link rel="stylesheet" href="styles.css">
   </head>
   <body class="font-sans text-gray-900 bg-white">
     <!-- Hero -->
     <header
-      class="min-h-screen flex flex-col items-center justify-center text-white text-center px-4 sm:px-6 bg-cover bg-center relative"
-      style="background-image: url('https://res.cloudinary.com/doivgytwg/image/upload/v1755970919/ChatGPT_Image_23_ago_2025_11_39_47_a.m._p4uwmb.png');"
+      class="min-h-screen flex flex-col items-center justify-center text-white text-center px-4 sm:px-6 bg-cover bg-center relative hero-bg"
     >
       <div class="absolute inset-0 bg-black bg-opacity-60"></div>
       <div class="relative z-10 flex flex-col items-center justify-center">
@@ -283,7 +243,7 @@
     <!-- Footer -->
     <footer class="py-6 px-4 text-center bg-black text-gray-400 text-sm sm:text-base">
       <p>
-        © <span id="year"></span> IANGINE.com - Todos los derechos reservados
+        © <span id="year"></span> IANGINE.com - Todos los derechos reservados — <a href="politica-privacidad.html" class="underline hover:text-white">Política de privacidad</a> — <a href="condiciones-servicio.html" class="underline hover:text-white">Condiciones de servicio</a> — <a href="eliminacion-datos.html" class="underline hover:text-white">Política de eliminación de datos</a>
       </p>
     </footer>
 

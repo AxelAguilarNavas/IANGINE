@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Política de Eliminación de Datos - IANGINE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body class="font-sans text-gray-900 bg-white">
+    <nav aria-label="Barra superior" class="fixed inset-x-0 top-0 z-50 bg-black bg-opacity-60 text-white backdrop-blur-sm">
+      <div class="w-full px-4 sm:px-6">
+        <div class="flex items-center h-12 justify-start">
+          <a href="index.html" class="flex items-center gap-2 text-sm font-medium hover:underline" aria-label="Volver al inicio">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 fill-current" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M3 11.5L12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-8.5z"/>
+            </svg>
+            <span>Volver al inicio</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+    <!-- Hero -->
+    <header
+      class="min-h-screen flex flex-col items-center justify-center text-white text-center px-4 sm:px-6 bg-cover bg-center relative hero-bg"
+    >
+      <div class="absolute inset-0 bg-black bg-opacity-60"></div>
+      <div class="relative z-10 flex flex-col items-center justify-center">
+        <img src="https://res.cloudinary.com/doivgytwg/image/upload/v1755851728/Logo_IANgine_blanco_fondo_transparente_prfzsc.png" alt="Logo IANGINE" class="w-28 sm:w-32 md:w-40 mb-6 animate-pulse" />
+        <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6 leading-tight drop-shadow-lg">IANGINE</h1>
+        <p class="text-base sm:text-xl md:text-2xl max-w-2xl leading-relaxed">
+          Potenciamos empresas, emprendedores y personas con soluciones de
+          Inteligencia Artificial para transformar la forma en que trabajan y
+          viven.
+        </p>
+        <button
+          onclick="document.getElementById('policy').scrollIntoView({behavior:'smooth'})"
+          class="mt-8 w-full sm:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-700 active:scale-95 rounded-xl shadow-xl transition transform duration-300"
+        >
+          Ver política
+        </button>
+      </div>
+    </header>
+
+    <main id="policy" class="max-w-4xl mx-auto py-12 px-4 sm:px-6 text-gray-700 space-y-6">
+      <div class="max-w-3xl mx-auto prose prose-lg">
+        <h1 class="text-3xl md:text-4xl font-bold mb-2">LEGAL // DATA DELETION</h1>
+        <h2 class="text-2xl font-semibold mt-2">Eliminación de Datos de Usuario</h2>
+        <p class="text-sm text-gray-500">Última actualización: 10 de noviembre de 2025</p>
+
+        <p>IANGINE respeta el derecho de los usuarios y clientes a solicitar la eliminación de sus datos personales y técnicos.</p>
+
+        <h3 class="text-2xl font-semibold mt-6">SECTION 01</h3>
+        <h4 class="text-xl font-semibold mt-2">¿Qué datos pueden eliminarse?</h4>
+        <p>Entre los datos que pueden solicitarse para eliminación se incluyen:</p>
+        <ul class="list-disc pl-5 space-y-2">
+          <li>Tokens de acceso y credenciales API.</li>
+          <li>Logs de mensajes y actividad automatizada.</li>
+          <li>Datos de contacto y configuración de flujos.</li>
+        </ul>
+
+        <h3 class="text-2xl font-semibold mt-6">SECTION 02</h3>
+        <h4 class="text-xl font-semibold mt-2">¿Cómo solicitar la eliminación?</h4>
+        <p>El titular de los datos puede enviar una solicitud a <a href="mailto:support@iangine.com" class="underline">support@iangine.com</a> indicando:</p>
+        <ul class="list-disc pl-5 space-y-2">
+          <li>Nombre del negocio o cliente.</li>
+          <li>Activo vinculado (número de WhatsApp, página, etc.).</li>
+          <li>Tipo de datos que desea eliminar.</li>
+        </ul>
+        <p>La solicitud será atendida en un plazo máximo de 10 días hábiles.</p>
+
+        <h3 class="text-2xl font-semibold mt-6">SECTION 03</h3>
+        <h4 class="text-xl font-semibold mt-2">¿Qué ocurre tras la eliminación?</h4>
+        <ul class="list-disc pl-5 space-y-2">
+          <li>Se desactivan los flujos automatizados vinculados.</li>
+          <li>Se revocan tokens y accesos técnicos.</li>
+          <li>Se elimina la información de nuestros sistemas internos y backups.</li>
+        </ul>
+
+        <p class="mt-4"><a href="/" class="underline hover:text-gray-900">Volver al inicio</a></p>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <!-- Footer -->
+    <footer class="py-6 px-4 text-center bg-black text-gray-400 text-sm sm:text-base">
+      <p>
+        © <span id="year"></span> IANGINE.com - Todos los derechos reservados — <a href="politica-privacidad.html" class="underline hover:text-white">Política de privacidad</a> — <a href="condiciones-servicio.html" class="underline hover:text-white">Condiciones de servicio</a> — <a href="eliminacion-datos.html" class="underline hover:text-white">Política de eliminación de datos</a>
+      </p>
+    </footer>
+
+    <script>
+      document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
+
+  </body>
+</html>

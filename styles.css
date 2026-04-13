@@ -1,0 +1,52 @@
+/* Extracted custom styles from index.html */
+
+html {
+  scroll-behavior: smooth;
+}
+
+button, input, textarea, select {
+  touch-action: manipulation;
+}
+
+.ai-loader {
+  display: inline-block;
+  position: relative;
+  width: 24px;
+  height: 24px;
+}
+
+.ai-loader div {
+  position: absolute;
+  border: 3px solid #fff;
+  opacity: 1;
+  border-radius: 50%;
+  animation: ai-loader 1.5s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+
+.ai-loader div:nth-child(2) {
+  animation-delay: -0.75s;
+}
+
+@keyframes ai-loader {
+  0% {
+    top: 12px;
+    left: 12px;
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  100% {
+    top: -1px;
+    left: -1px;
+    width: 26px;
+    height: 26px;
+    opacity: 0;
+  }
+}
+
+/* Hero background — moved from inline style */
+.hero-bg {
+  background-image: url('https://res.cloudinary.com/doivgytwg/image/upload/v1755970919/ChatGPT_Image_23_ago_2025_11_39_47_a.m._p4uwmb.png');
+  background-size: cover;
+  background-position: center;
+}
