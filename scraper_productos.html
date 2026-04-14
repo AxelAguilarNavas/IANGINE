@@ -509,10 +509,30 @@
 
     function extractItemsFromResponse(payload) {
       if (Array.isArray(payload)) {
-        if (payload.length === 1 && payload[0] && typeof payload[0] === 'object' && Array.isArray(payload[0].items)) {
-          return payload[0].items;
+        if (payload.length === 1 && payload[0] && typeof payload[0] === 'object') {
+          if (payload[0].error && typeof payload[0].error === 'object') {
+            const err = payload[0].error;
+            throw new Error(
+              'HTTP ' + (err.status || '') +
+              (err.code ? ' ' + err.code : '') +
+              (err.message ? ' - ' + normalizeText(decodeHtmlEntities(String(err.message))) : '')
+            .trim());
+          }
+
+          if (Array.isArray(payload[0].items)) {
+            return payload[0].items;
+          }
         }
         return payload;
+      }
+
+      if (payload && payload.error && typeof payload.error === 'object') {
+        const err = payload.error;
+        throw new Error(
+          'HTTP ' + (err.status || '') +
+          (err.code ? ' ' + err.code : '') +
+          (err.message ? ' - ' + normalizeText(decodeHtmlEntities(String(err.message))) : '')
+        .trim());
       }
 
       if (payload && Array.isArray(payload.items)) return payload.items;
@@ -594,11 +614,21 @@
       }
 
       if (!response.ok) {
-        const httpMessage = responseJson && typeof responseJson === 'object'
-          ? (responseJson.message || responseJson.error || responseJson.errorMessage || '')
-          : responseText;
+        let httpMessage = '';
 
-        throw new Error('HTTP ' + response.status + ' ' + response.statusText + (httpMessage ? ' - ' + normalizeText(String(httpMessage)) : ''));
+        if (Array.isArray(responseJson) && responseJson.length > 0 && responseJson[0] && typeof responseJson[0] === 'object') {
+          const first = responseJson[0];
+          httpMessage = first.message || first.error || first.errorMessage || '';
+        } else if (responseJson && typeof responseJson === 'object') {
+          httpMessage = responseJson.message || responseJson.error || responseJson.errorMessage || '';
+        } else {
+          httpMessage = responseText;
+        }
+
+        throw new Error(
+          'HTTP ' + response.status + ' ' + response.statusText +
+          (httpMessage ? ' - ' + normalizeText(decodeHtmlEntities(String(httpMessage))) : '')
+        );
       }
 
       if (responseJson !== null) {
