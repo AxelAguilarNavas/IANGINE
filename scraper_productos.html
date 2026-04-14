@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scraper de Productos</title>
+  <style>
+    :root {
+      --bg: #f7f9fc;
+      --panel: #ffffff;
+      --panel-soft: #f8fbff;
+      --border: #d9e2ec;
+      --text: #102a43;
+      --muted: #627d98;
+      --accent: #2563eb;
+      --accent-soft: #e8f0ff;
+      --danger: #dc2626;
+      --danger-soft: #fee2e2;
+      --warning: #d97706;
+      --warning-soft: #fef3c7;
+      --success: #059669;
+      --success-soft: #d1fae5;
+      --shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      color: var(--text);
+    }
+
+    p.description {
+      margin: 0 0 20px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 18px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      font-weight: bold;
+      font-size: 14px;
+      color: #243b53;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      color: var(--text);
+      outline: none;
+      font-size: 15px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+      transform: translateY(-1px);
+    }
+
+    button {
+      padding: 14px 18px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #ffffff;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 15px;
+      min-width: 220px;
+      transition: transform 0.12s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 14px 24px rgba(37, 99, 235, 0.18);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:disabled { opacity: 0.8; cursor: not-allowed; transform: none; }
+
+    .button-spinner {
+      width: 18px;
+      height: 18px;
+      display: none;
+    }
+
+    .button-spinner .track {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.28);
+      stroke-width: 3;
+    }
+
+    .button-spinner .head {
+      fill: none;
+      stroke: #ffffff;
+      stroke-width: 3;
+      stroke-linecap: round;
+      transform-origin: center;
+      animation: spin 0.8s linear infinite;
+    }
+
+    button.loading .button-spinner {
+      display: block;
+    }
+
+    .loading-indicator {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      margin: 0 0 18px;
+      border-radius: 14px;
+      border: 1px solid #bfdbfe;
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    .loading-indicator.active {
+      display: flex;
+    }
+
+    .loading-indicator svg {
+      width: 34px;
+      height: 34px;
+      flex: 0 0 34px;
+    }
+
+    .loading-indicator .ring {
+      fill: none;
+      stroke: #bfdbfe;
+      stroke-width: 8;
+    }
+
+    .loading-indicator .arc {
+      fill: none;
+      stroke: #2563eb;
+      stroke-width: 8;
+      stroke-linecap: round;
+      transform-origin: center;
+      animation: spin 1s linear infinite;
+    }
+
+    .status {
+      margin: 12px 0 20px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--panel-soft);
+      color: var(--muted);
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+    }
+
+    .status.ok { border-color: #a7f3d0; background: var(--success-soft); color: #065f46; }
+    .status.error { border-color: #fecaca; background: var(--danger-soft); color: #991b1b; }
+    .status.warn { border-color: #fde68a; background: var(--warning-soft); color: #92400e; }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: #ffffff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 14px 16px;
+      border-bottom: 1px solid #e6edf5;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f8fbff;
+      font-size: 14px;
+      color: #334e68;
+    }
+
+    tbody tr:hover {
+      background: #f8fbff;
+    }
+
+    .muted { color: var(--muted); }
+
+    .pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: bold;
+      background: var(--accent-soft);
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.42);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 50;
+    }
+
+    .modal-backdrop.active {
+      display: flex;
+    }
+
+    .modal {
+      width: min(460px, 100%);
+      background: #ffffff;
+      border: 1px solid #fecaca;
+      border-radius: 20px;
+      box-shadow: 0 28px 60px rgba(15, 23, 42, 0.18);
+      padding: 22px;
+      animation: modalIn 0.2s ease;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .modal-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: var(--danger-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 56px;
+    }
+
+    .modal-icon svg {
+      width: 30px;
+      height: 30px;
+    }
+
+    .modal h2 {
+      margin: 0;
+      font-size: 20px;
+      color: #7f1d1d;
+    }
+
+    .modal p {
+      margin: 0;
+      color: #475569;
+      line-height: 1.6;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 18px;
+    }
+
+    .modal-close {
+      min-width: 120px;
+      box-shadow: none;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(8px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @media (max-width: 720px) {
+      .controls {
+        grid-template-columns: 1fr;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>Scraper de productos y precios</h1>
+      <p class="description">
+        Ingresa la URL de una página. El sistema validará la dirección y enviará la URL al webhook de n8n para ejecutar el scraping y mostrar los resultados en la tabla.
+      </p>
+
+      <div class="controls">
+        <div class="field">
+          <label for="urlInput">Dirección web</label>
+          <input
+            id="urlInput"
+            type="text"
+            placeholder="Ejemplo: https://tienda-ejemplo.com/categoria"
+            autocomplete="off"
+          />
+        </div>
+
+        <button id="startBtn" type="button">
+          <span class="button-label">Iniciar scraping</span>
+          <svg class="button-spinner" viewBox="0 0 24 24" aria-hidden="true">
+            <circle class="track" cx="12" cy="12" r="9"></circle>
+            <path class="head" d="M12 3a9 9 0 0 1 9 9"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="loading-indicator" id="loadingIndicator" aria-hidden="true">
+        <svg viewBox="0 0 48 48" aria-hidden="true">
+          <circle class="ring" cx="24" cy="24" r="18"></circle>
+          <path class="arc" d="M24 6a18 18 0 0 1 18 18"></path>
+        </svg>
+        <div>
+          <strong>Procesando solicitud</strong><br />
+          Consultando el webhook y preparando resultados...
+        </div>
+      </div>
+
+      <div id="status" class="status">Esperando una URL válida.</div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 70px;">#</th>
+              <th>Producto</th>
+              <th style="width: 180px;">Precio</th>
+              <th style="width: 160px;">Origen</th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody">
+            <tr>
+              <td colspan="4" class="muted">No hay resultados todavía.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="footer-note">
+        Esta versión envía la URL ingresada al webhook de n8n usando la variable <strong>url</strong>. El scraping real se ejecuta en n8n y la respuesta del webhook se muestra en esta tabla.
+      </div>
+    </div>
+  </div>
+
+  <div id="errorModal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalMessage">
+      <div class="modal-header">
+        <div class="modal-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 3L21 19H3L12 3Z" fill="#fecaca"></path>
+            <path d="M12 8V13" stroke="#dc2626" stroke-width="2" stroke-linecap="round"></path>
+            <circle cx="12" cy="17" r="1.4" fill="#dc2626"></circle>
+          </svg>
+        </div>
+        <div>
+          <h2 id="modalTitle">Error de validación</h2>
+          <p id="modalMessage">Debes ingresar una URL válida.</p>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button id="closeModalBtn" type="button" class="modal-close">Entendido</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.addEventListener('load', () => {
+    const urlInput = document.getElementById('urlInput');
+    const startBtn = document.getElementById('startBtn');
+    const statusBox = document.getElementById('status');
+    const resultsBody = document.getElementById('resultsBody');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const errorModal = document.getElementById('errorModal');
+    const modalMessage = document.getElementById('modalMessage');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const webhookUrl = 'https://n8n.srv902776.hstgr.cloud/webhook/af9a4e9b-db0c-44bf-8f1d-7879fbf76d59';
+
+    if (!urlInput || !startBtn || !statusBox || !resultsBody || !loadingIndicator || !errorModal || !modalMessage || !closeModalBtn) {
+      console.error('Faltan elementos requeridos del DOM para inicializar la interfaz.');
+      return;
+    }
+
+    function setStatus(message, type = '') {
+      statusBox.className = 'status';
+      if (type) {
+        statusBox.classList.add(type);
+      }
+      statusBox.textContent = message;
+    }
+
+    function setLoadingState(isLoading) {
+      startBtn.disabled = isLoading;
+      startBtn.classList.toggle('loading', isLoading);
+      loadingIndicator.classList.toggle('active', isLoading);
+      loadingIndicator.setAttribute('aria-hidden', isLoading ? 'false' : 'true');
+    }
+
+    function showErrorModal(message) {
+      modalMessage.textContent = message;
+      errorModal.classList.add('active');
+      errorModal.setAttribute('aria-hidden', 'false');
+      closeModalBtn.focus();
+    }
+
+    function hideErrorModal() {
+      errorModal.classList.remove('active');
+      errorModal.setAttribute('aria-hidden', 'true');
+    }
+
+    function clearResults() {
+      resultsBody.innerHTML = '<tr><td colspan="4" class="muted">No hay resultados todavía.</td></tr>';
+    }
+
+    function escapeHtml(text) {
+      return String(text ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function normalizeText(text) {
+      return String(text || '')
+        .split(String.fromCharCode(10)).join(' ')
+        .split(String.fromCharCode(13)).join(' ')
+        .split(String.fromCharCode(9)).join(' ')
+        .split('  ').join(' ')
+        .trim();
+    }
+
+    function isValidWebUrl(value) {
+      try {
+        const parsed = new URL(value);
+        return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+      } catch {
+        return false;
+      }
+    }
+
+    function pickFirst(item, keys) {
+      for (const key of keys) {
+        if (item && item[key] != null && String(item[key]).trim() !== '') {
+          return String(item[key]);
+        }
+      }
+      return '';
+    }
+
+    function extractItemsFromResponse(payload) {
+      if (Array.isArray(payload)) {
+        if (payload.length === 1 && payload[0] && typeof payload[0] === 'object' && Array.isArray(payload[0].items)) {
+          return payload[0].items;
+        }
+        return payload;
+      }
+
+      if (payload && Array.isArray(payload.items)) return payload.items;
+      if (payload && Array.isArray(payload.data)) return payload.data;
+      if (payload && Array.isArray(payload.results)) return payload.results;
+      if (payload && Array.isArray(payload.productos)) return payload.productos;
+
+      if (payload && typeof payload === 'object') {
+        const values = Object.values(payload);
+        for (const value of values) {
+          if (Array.isArray(value)) return value;
+        }
+      }
+
+      return [];
+    }
+
+    function decodeHtmlEntities(text) {
+      const textarea = document.createElement('textarea');
+      textarea.innerHTML = String(text ?? '');
+      return textarea.value;
+    }
+
+    function mapItems(items) {
+      return items
+        .map((item) => {
+          const name = normalizeText(decodeHtmlEntities(pickFirst(item, ['name', 'nombre', 'producto', 'title', 'product'])));
+          const price = normalizeText(decodeHtmlEntities(pickFirst(item, ['price', 'precio', 'valor', 'amount'])));
+          const source = normalizeText(decodeHtmlEntities(pickFirst(item, ['source', 'origen', 'url_producto', 'url', 'link']))) || 'n8n';
+          return { name, price, source };
+        })
+        .filter((item) => item.name || item.price);
+    }
+
+    function renderResults(items) {
+      if (!items.length) {
+        resultsBody.innerHTML = '<tr><td colspan="4" class="muted">No se encontraron productos con precio en la respuesta del webhook.</td></tr>';
+        return;
+      }
+
+      resultsBody.innerHTML = items.map((item, index) => {
+        return '<tr>' +
+          '<td>' + (index + 1) + '</td>' +
+          '<td>' + escapeHtml(item.name || '-') + '</td>' +
+          '<td><strong>' + escapeHtml(item.price || '-') + '</strong></td>' +
+          '<td><span class="pill">' + escapeHtml(item.source || 'n8n') + '</span></td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    async function sendUrlToWebhook(url) {
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json, text/plain, */*'
+        },
+        body: JSON.stringify({ url })
+      });
+
+      if (!response.ok) {
+        let errorText = '';
+        try {
+          errorText = await response.text();
+        } catch {
+          errorText = '';
+        }
+        throw new Error('El webhook respondió con error HTTP ' + response.status + (errorText ? ': ' + errorText : ''));
+      }
+
+      const contentType = response.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        return await response.json();
+      }
+
+      const text = await response.text();
+      try {
+        return JSON.parse(text);
+      } catch {
+        throw new Error('El webhook no devolvió JSON válido.');
+      }
+    }
+
+    async function handleScraping() {
+      hideErrorModal();
+      clearResults();
+      const url = urlInput.value.trim();
+
+      if (!url) {
+        setStatus('Debes ingresar una dirección web.', 'error');
+        showErrorModal('Debes ingresar una dirección web antes de iniciar el scraping.');
+        urlInput.focus();
+        return;
+      }
+
+      if (!isValidWebUrl(url)) {
+        setStatus('La dirección web no es válida.', 'error');
+        showErrorModal('La dirección web no es válida. Debe iniciar con http:// o https://');
+        urlInput.focus();
+        return;
+      }
+
+      setLoadingState(true);
+      setStatus('Enviando URL al webhook de n8n...', 'warn');
+
+      try {
+        const payload = await sendUrlToWebhook(url);
+        const rawItems = extractItemsFromResponse(payload);
+        const items = mapItems(rawItems);
+        renderResults(items);
+
+        if (items.length) {
+          setStatus('Proceso completado. El webhook devolvió ' + items.length + ' resultado(s).', 'ok');
+        } else {
+          setStatus('El webhook respondió correctamente, pero no devolvió productos utilizables.', 'warn');
+        }
+      } catch (error) {
+        const errorMessage = error && error.message
+          ? error.message
+          : 'Ocurrió un error al consultar el webhook.';
+        setStatus(errorMessage, 'error');
+        showErrorModal('No fue posible completar la consulta al webhook. ' + errorMessage);
+      } finally {
+        setLoadingState(false);
+      }
+    }
+
+    if (startBtn) {
+      startBtn.addEventListener('click', handleScraping);
+    }
+
+    if (closeModalBtn) {
+      closeModalBtn.addEventListener('click', () => {
+        hideErrorModal();
+        urlInput.focus();
+      });
+    }
+
+    if (errorModal) {
+      errorModal.addEventListener('click', (event) => {
+        if (event.target === errorModal) {
+          hideErrorModal();
+          urlInput.focus();
+        }
+      });
+    }
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && errorModal.classList.contains('active')) {
+        hideErrorModal();
+        urlInput.focus();
+      }
+    });
+
+    if (urlInput) {
+      urlInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          handleScraping();
+        }
+      });
+    }
+  });
+  </script>
+</body>
+</html>
