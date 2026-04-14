@@ -188,8 +188,21 @@
       background: var(--panel-soft);
       color: var(--muted);
       min-height: 48px;
-      display: flex;
-      align-items: center;
+      max-height: 180px;
+      display: block;
+      overflow-y: auto;
+      overflow-x: hidden;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
+
+    .status p {
+      margin: 0 0 6px;
+    }
+
+    .status p:last-child {
+      margin-bottom: 0;
     }
 
     .status.ok { border-color: #a7f3d0; background: var(--success-soft); color: #065f46; }
@@ -268,13 +281,17 @@
       box-shadow: 0 28px 60px rgba(15, 23, 42, 0.18);
       padding: 22px;
       animation: modalIn 0.2s ease;
+      max-height: min(520px, calc(100vh - 40px));
+      display: flex;
+      flex-direction: column;
     }
 
     .modal-header {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 14px;
       margin-bottom: 14px;
+      min-height: 0;
     }
 
     .modal-icon {
@@ -294,7 +311,7 @@
     }
 
     .modal h2 {
-      margin: 0;
+      margin: 0 0 8px;
       font-size: 20px;
       color: #7f1d1d;
     }
@@ -303,6 +320,24 @@
       margin: 0;
       color: #475569;
       line-height: 1.6;
+    }
+
+    .modal-content {
+      min-width: 0;
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .modal-message {
+      max-height: 250px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-right: 6px;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
     }
 
     .modal-actions {
@@ -412,9 +447,9 @@
             <circle cx="12" cy="17" r="1.4" fill="#dc2626"></circle>
           </svg>
         </div>
-        <div>
-          <h2 id="modalTitle">Error de validación</h2>
-          <p id="modalMessage">Debes ingresar una URL válida.</p>
+        <div class="modal-content">
+          <h2 id="modalTitle">Ocurrió un error</h2>
+          <p id="modalMessage" class="modal-message">Debes ingresar una URL válida.</p>
         </div>
       </div>
       <div class="modal-actions">
@@ -456,7 +491,7 @@
     }
 
     function showErrorModal(message) {
-      modalMessage.textContent = message;
+      modalMessage.textContent = summarizeErrorMessage(message);
       errorModal.classList.add('active');
       errorModal.setAttribute('aria-hidden', 'false');
       closeModalBtn.focus();
@@ -556,6 +591,90 @@
       return textarea.value;
     }
 
+    function summarizeErrorMessage(message) {
+      let text = decodeHtmlEntities(String(message ?? ''));
+      text = normalizeText(text);
+
+      if (/Access Denied/i.test(text)) {
+        return 'El sitio objetivo rechazó la solicitud. Acceso denegado.';
+      }
+
+      if (text.length > 180) {
+        return text.slice(0, 177).trim() + '...';
+      }
+
+      return text || 'Ocurrió un error.';
+    }
+
+    function extractErrorDetailsFromMessage(message) {
+      // If an object (Error with attached props or raw response object) is passed, prefer structured fields
+      if (message && typeof message === 'object') {
+        const obj = message;
+        const statusVal = obj.httpStatus || obj.status || obj.statusCode || '';
+        const status = statusVal ? String(statusVal) : '';
+        const code = obj.code || '';
+        let txt = '';
+        if (obj.payloadMessage) txt = String(obj.payloadMessage);
+        else if (obj.message && typeof obj.message === 'string') txt = obj.message;
+        else txt = String(obj.toString ? obj.toString() : '');
+
+        txt = decodeHtmlEntities(txt);
+        txt = normalizeText(txt);
+
+        let finalMsg = txt
+          .replace(/El webhook respondió con error HTTP\s*\d{3}[:\s-]*/i, '')
+          .replace(/HTTP\s*\d{3}[:\s-]*/i, '')
+          .replace(/\b(ERR_[A-Z0-9_]+)\b[:\s-]*/i, '')
+          .replace(/^Error[:\s-]*/i, '')
+          .trim();
+
+        return { error: status, code: code || '-', message: finalMsg || '-' };
+      }
+
+      const raw = String(message ?? '');
+      let text = decodeHtmlEntities(raw);
+      text = normalizeText(text);
+
+      // HTTP status
+      let status = '';
+      const httpMatch = /HTTP\s*(?:error\s*)?:?\s*(\d{3})/i.exec(text) || /\b(\d{3})\b/.exec(text);
+      if (httpMatch) {
+        const num = parseInt(httpMatch[1], 10);
+        if (!isNaN(num) && num >= 100 && num <= 599) {
+          status = String(num);
+        }
+      }
+
+      // Error code like ERR_SOMETHING
+      let code = '';
+      const codeMatch = /\b(ERR_[A-Z0-9_]+)\b/.exec(text) || /\b([A-Z]{2,}(?:_[A-Z0-9]+)+)\b/.exec(text);
+      if (codeMatch) {
+        const candidate = codeMatch[1];
+        if (candidate.toUpperCase() !== 'HTTP') code = candidate;
+      }
+
+      // Clean message: remove HTTP prefixes and common code prefixes
+      let finalMsg = text
+        .replace(/El webhook respondió con error HTTP\s*\d{3}[:\s-]*/i, '')
+        .replace(/HTTP\s*\d{3}[:\s-]*/i, '')
+        .replace(/\b(ERR_[A-Z0-9_]+)\b[:\s-]*/i, '')
+        .replace(/^Error[:\s-]*/i, '')
+        .trim();
+
+      return { error: status || '-', code: code || '-', message: finalMsg || '-' };
+    }
+
+    function setStatusErrorDetails(details) {
+      statusBox.className = 'status error';
+      const err = escapeHtml(String(details.error || '')) || '-';
+      const code = escapeHtml(String(details.code || '')) || '-';
+      const msg = escapeHtml(String(details.message || '')) || '-';
+      statusBox.innerHTML =
+        '<p><strong>Error:</strong> ' + err + '</p>' +
+        '<p><strong>Code:</strong> ' + code + '</p>' +
+        '<p><strong>Mensaje:</strong> ' + msg + '</p>';
+    }
+
     function mapItems(items) {
       return items
         .map((item) => {
@@ -615,20 +734,38 @@
 
       if (!response.ok) {
         let httpMessage = '';
+        let responseCodeFromJson = '';
+        let responseStatusFromJson = '';
 
         if (Array.isArray(responseJson) && responseJson.length > 0 && responseJson[0] && typeof responseJson[0] === 'object') {
           const first = responseJson[0];
           httpMessage = first.message || first.error || first.errorMessage || '';
+          responseCodeFromJson = first.code || '';
+          responseStatusFromJson = first.status || '';
         } else if (responseJson && typeof responseJson === 'object') {
           httpMessage = responseJson.message || responseJson.error || responseJson.errorMessage || '';
+          responseCodeFromJson = responseJson.code || '';
+          responseStatusFromJson = responseJson.status || '';
         } else {
           httpMessage = responseText;
         }
 
-        throw new Error(
+        const err = new Error(
           'HTTP ' + response.status + ' ' + response.statusText +
           (httpMessage ? ' - ' + normalizeText(decodeHtmlEntities(String(httpMessage))) : '')
         );
+        // attach structured details when available
+        try {
+          err.code = responseCodeFromJson || '';
+        } catch (e) {}
+        try {
+          err.httpStatus = responseStatusFromJson || String(response.status || '');
+        } catch (e) {}
+        try {
+          err.payloadMessage = httpMessage || '';
+        } catch (e) {}
+
+        throw err;
       }
 
       if (responseJson !== null) {
@@ -683,8 +820,9 @@
         const errorMessage = error && error.message
           ? error.message
           : 'Ocurrió un error al consultar el webhook.';
-        setStatus('Error al consultar el webhook: ' + errorMessage, 'error');
-        showErrorModal('No fue posible completar la consulta al webhook. ' + errorMessage);
+        const errorDetails = extractErrorDetailsFromMessage(error || errorMessage);
+        setStatusErrorDetails(errorDetails);
+        showErrorModal(errorMessage);
       } finally {
         setLoadingState(false);
       }
