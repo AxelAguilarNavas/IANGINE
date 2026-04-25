@@ -1139,6 +1139,7 @@
 
     function renderGenerar() {
       const clientes = getClientes().filter(c => c.estado === 'Activo');
+      const previewCode = nextPagareCode();
       $('module-generar').innerHTML = `
         <div class="grid two">
           <div class="card">
@@ -1160,13 +1161,13 @@
             </form>
           </div>
           <div id="lastPagarePreview" class="notice">
-            <h3>CODE128 con JsBarcode</h3>
-            <p>El valor codificado será el mismo identificador del pagaré, por ejemplo: PG-2026-000001. Este código podrá escanearse desde el módulo de cámara.</p>
+            <h3>Código de barra</h3>
+            <p>El valor codificado será el identificador único del pagaré. La vista inferior muestra el próximo código disponible: ${previewCode}. Al generar nuevos pagarés, el código cambia automáticamente.</p>
             <div class="barcode-box"><svg id="sampleBarcode"></svg></div>
           </div>
         </div>
       `;
-      setTimeout(() => safeBarcode('#sampleBarcode', 'PG-2026-000001'), 80);
+      setTimeout(() => safeBarcode('#sampleBarcode', previewCode), 80);
     }
 
     function fillNextMonth() {
@@ -1324,7 +1325,17 @@
       const p = getPagares().map(updateComputedStatus).find(x => x.id === id);
       const c = getClientes().find(x => x.id === p?.clienteId);
       if (!p) return;
-      const preview = `
+
+      currentModule = 'pagares';
+      document.querySelectorAll('.module').forEach(el => el.classList.remove('active'));
+      $('module-pagares').classList.add('active');
+      document.querySelectorAll('[data-nav]').forEach(btn => btn.classList.toggle('active', btn.dataset.nav === 'pagares'));
+      $('pageTitle').textContent = 'Pagarés';
+      $('pageSubtitle').textContent = 'Vista imprimible del pagaré seleccionado.';
+      toggleSidebar(false);
+      stopScanner(false);
+
+      $('module-pagares').innerHTML = `
         <div class="card">
           <div class="section-head no-print">
             <div><h2>Vista imprimible del pagaré</h2><p>Usa imprimir para guardar como PDF desde el navegador.</p></div>
@@ -1352,11 +1363,15 @@
             <p style="color:#475569;margin:0;line-height:1.5;">Este documento pertenece a un Demo funcional. En producción, el PDF debe generarse desde backend, con controles de seguridad, numeración protegida y auditoría inalterable.</p>
           </div>
         </div>
+        <div class="actions no-print">
+          <button class="btn secondary" onclick="renderPagares(); setTimeout(renderBarcodes, 80)">Volver al listado</button>
+          <button class="btn success" onclick="preparePayment('${p.codigo}', 'Ingreso manual')">Registrar pago</button>
+        </div>
       `;
-      $('module-pagares').innerHTML = preview + `<div class="actions no-print"><button class="btn secondary" onclick="renderPagares(); setTimeout(renderBarcodes, 80)">Volver al listado</button><button class="btn success" onclick="preparePayment('${p.codigo}', 'Ingreso manual')">Registrar pago</button></div>`;
-      openModule('pagares');
+
       setTimeout(() => safeBarcode('#printBarcode', p.codigo), 120);
       logAudit('Pagarés', 'Pagaré visualizado', `Se visualizó el pagaré ${p.codigo}.`);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function renderEscanear() {
