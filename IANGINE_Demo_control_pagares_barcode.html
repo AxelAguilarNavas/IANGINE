@@ -1,0 +1,1797 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Demo Control de Pagarés | IANGINE</title>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <script src="https://unpkg.com/@zxing/browser@latest"></script>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --surface: #ffffff;
+      --surface-2: #eef2f7;
+      --text: #111827;
+      --muted: #64748b;
+      --border: #dbe3ef;
+      --primary: #0f172a;
+      --primary-soft: #e2e8f0;
+      --accent: #2563eb;
+      --success: #16a34a;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --gray: #6b7280;
+      --shadow: 0 18px 40px rgba(15, 23, 42, 0.10);
+      --radius: 18px;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0b1120;
+      --surface: #111827;
+      --surface-2: #1f2937;
+      --text: #f8fafc;
+      --muted: #a3b1c6;
+      --border: #263244;
+      --primary: #f8fafc;
+      --primary-soft: #1f2937;
+      --accent: #60a5fa;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --gray: #9ca3af;
+      --shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    a { color: inherit; }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      border: 0;
+    }
+
+    .app-shell {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      width: 292px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 20px;
+      z-index: 50;
+      transform: translateX(-105%);
+      transition: transform .25s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .sidebar.open { transform: translateX(0); }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .brand strong {
+      font-size: 18px;
+      letter-spacing: -0.03em;
+    }
+
+    .brand span {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.3;
+    }
+
+    .sidebar nav {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .nav-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      width: 100%;
+      padding: 13px 14px;
+      border-radius: 14px;
+      background: transparent;
+      color: var(--text);
+      text-align: left;
+      border: 1px solid transparent;
+    }
+
+    .nav-btn:hover, .nav-btn.active {
+      background: var(--primary-soft);
+      border-color: var(--border);
+    }
+
+    .nav-btn small {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, .55);
+      z-index: 40;
+      display: none;
+    }
+
+    .overlay.show { display: block; }
+
+    .main {
+      width: 100%;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: color-mix(in srgb, var(--surface) 88%, transparent);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .hamburger, .icon-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: var(--surface-2);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--border);
+      font-size: 20px;
+      flex: 0 0 auto;
+    }
+
+    .page-title {
+      min-width: 0;
+    }
+
+    .page-title h1 {
+      margin: 0;
+      font-size: clamp(19px, 2vw, 28px);
+      letter-spacing: -0.04em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .page-title p {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .content {
+      padding: 22px;
+      width: min(1360px, 100%);
+      margin: 0 auto;
+    }
+
+    .module {
+      display: none;
+      animation: fade .18s ease;
+    }
+
+    .module.active { display: block; }
+
+    @keyframes fade {
+      from { opacity: .4; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .grid.cards { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .grid.two { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+    .grid.three { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: 0 8px 28px rgba(15, 23, 42, .05);
+    }
+
+    .card.compact { padding: 14px; }
+
+    .metric {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 128px;
+      justify-content: space-between;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .metric strong {
+      font-size: 30px;
+      letter-spacing: -0.05em;
+    }
+
+    .metric small {
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      margin: 0 0 16px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: 23px;
+      letter-spacing: -0.04em;
+    }
+
+    .section-head p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      line-height: 1.5;
+      max-width: 820px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .field label {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 13px;
+      outline: none;
+    }
+
+    textarea { min-height: 94px; resize: vertical; }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      background: var(--primary);
+      color: var(--bg);
+      font-weight: 800;
+      text-decoration: none;
+      border: 1px solid transparent;
+      min-height: 44px;
+    }
+
+    .btn.secondary {
+      background: var(--surface-2);
+      color: var(--text);
+      border-color: var(--border);
+    }
+
+    .btn.success { background: var(--success); color: white; }
+    .btn.warning { background: var(--warning); color: white; }
+    .btn.danger { background: var(--danger); color: white; }
+    .btn.accent { background: var(--accent); color: white; }
+
+    .btn.full { width: 100%; }
+
+    .list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .entity-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .entity-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .entity-title {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .entity-title strong {
+      font-size: 17px;
+      letter-spacing: -0.02em;
+    }
+
+    .entity-title span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px;
+    }
+
+    .detail {
+      background: var(--surface-2);
+      border-radius: 14px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+    }
+
+    .detail span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .detail strong {
+      font-size: 14px;
+      word-break: break-word;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+      border: 1px solid transparent;
+    }
+
+    .badge.pending { background: #fff7ed; color: #9a3412; border-color: #fed7aa; }
+    .badge.paid { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+    .badge.overdue { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+    .badge.void { background: #f3f4f6; color: #374151; border-color: #e5e7eb; }
+    .badge.info { background: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
+
+    [data-theme="dark"] .badge.pending { background: rgba(245, 158, 11, .15); color: #fbbf24; border-color: rgba(245, 158, 11, .25); }
+    [data-theme="dark"] .badge.paid { background: rgba(34, 197, 94, .15); color: #86efac; border-color: rgba(34, 197, 94, .25); }
+    [data-theme="dark"] .badge.overdue { background: rgba(239, 68, 68, .16); color: #fca5a5; border-color: rgba(239, 68, 68, .30); }
+    [data-theme="dark"] .badge.void { background: rgba(156, 163, 175, .12); color: #d1d5db; border-color: rgba(156, 163, 175, .22); }
+    [data-theme="dark"] .badge.info { background: rgba(96, 165, 250, .15); color: #bfdbfe; border-color: rgba(96, 165, 250, .28); }
+
+    .notice {
+      background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 14%, var(--surface)), var(--surface));
+      border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+      border-radius: var(--radius);
+      padding: 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .notice.warning {
+      background: linear-gradient(135deg, color-mix(in srgb, var(--warning) 14%, var(--surface)), var(--surface));
+      border-color: color-mix(in srgb, var(--warning) 30%, var(--border));
+    }
+
+    .notice.danger {
+      background: linear-gradient(135deg, color-mix(in srgb, var(--danger) 12%, var(--surface)), var(--surface));
+      border-color: color-mix(in srgb, var(--danger) 28%, var(--border));
+    }
+
+    .notice h3 {
+      margin: 0;
+      letter-spacing: -0.03em;
+    }
+
+    .notice p { margin: 0; color: var(--muted); line-height: 1.55; }
+
+    .barcode-box {
+      background: white;
+      border-radius: 14px;
+      padding: 12px;
+      border: 1px dashed #cbd5e1;
+      overflow-x: auto;
+      color: #111827;
+    }
+
+    .barcode-box svg {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .scanner-box {
+      display: grid;
+      gap: 14px;
+    }
+
+    #scannerVideo {
+      width: 100%;
+      min-height: 260px;
+      max-height: 440px;
+      object-fit: cover;
+      background: #020617;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    .scan-result {
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      background: var(--surface-2);
+    }
+
+    .toast-wrap {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 100;
+      display: grid;
+      gap: 10px;
+      max-width: min(420px, calc(100vw - 32px));
+    }
+
+    .toast {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 5px solid var(--accent);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      border-radius: 14px;
+      color: var(--text);
+      line-height: 1.45;
+    }
+
+    .toast.success { border-left-color: var(--success); }
+    .toast.warning { border-left-color: var(--warning); }
+    .toast.danger { border-left-color: var(--danger); }
+
+    .footer-cta {
+      margin-top: 22px;
+      padding: 20px;
+      border-radius: var(--radius);
+      background: var(--primary);
+      color: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .footer-cta p { margin: 4px 0 0; opacity: .82; line-height: 1.45; }
+
+    .footer-cta .btn {
+      background: var(--bg);
+      color: var(--primary);
+    }
+
+    .empty {
+      padding: 26px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .print-area {
+      background: white;
+      color: #111827;
+      border-radius: var(--radius);
+      border: 1px solid #d7dee8;
+      padding: 22px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .print-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid #d7dee8;
+      padding-bottom: 14px;
+    }
+
+    .print-header h2 { margin: 0; letter-spacing: -0.04em; }
+    .print-header p { margin: 4px 0 0; color: #475569; }
+
+    .print-total {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: -0.05em;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .bar-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .bar-item {
+      display: grid;
+      gap: 7px;
+    }
+
+    .bar-line {
+      height: 12px;
+      background: var(--surface-2);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      border-radius: 999px;
+    }
+
+    .hidden { display: none !important; }
+
+    @media (min-width: 980px) {
+      .sidebar {
+        position: sticky;
+        transform: none;
+        height: 100vh;
+        box-shadow: none;
+        flex: 0 0 292px;
+      }
+
+      .overlay, .sidebar .close-mobile { display: none !important; }
+      .app-shell { align-items: flex-start; }
+      .main { width: calc(100% - 292px); }
+      .hamburger { display: none; }
+    }
+
+    @media (max-width: 720px) {
+      .content { padding: 16px; }
+      .topbar { padding: 12px; }
+      .section-head { flex-direction: column; }
+      .entity-top { flex-direction: column; }
+      .actions .btn { width: 100%; }
+      .footer-cta .btn { width: 100%; }
+      .print-header { flex-direction: column; }
+    }
+
+    @media print {
+      body * { visibility: hidden !important; }
+      .print-area, .print-area * { visibility: visible !important; }
+      .print-area {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 28px;
+      }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <strong>Control de Pagarés</strong>
+          <span>Demo funcional con barcode + cámara</span>
+        </div>
+        <button class="icon-btn close-mobile" onclick="toggleSidebar(false)" aria-label="Cerrar menú">×</button>
+      </div>
+      <nav id="nav"></nav>
+      <div class="notice warning compact" style="margin-top:auto;">
+        <p><strong>Demo:</strong> los datos se guardan localmente en este navegador. No es una base de datos segura de producción.</p>
+      </div>
+    </aside>
+
+    <div id="overlay" class="overlay" onclick="toggleSidebar(false)"></div>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="hamburger" onclick="toggleSidebar(true)" aria-label="Abrir menú">☰</button>
+          <div class="page-title">
+            <h1 id="pageTitle">Inicio</h1>
+            <p id="pageSubtitle">Panel ejecutivo del Demo funcional.</p>
+          </div>
+        </div>
+        <button class="icon-btn" onclick="toggleTheme()" title="Cambiar tema">◐</button>
+      </header>
+
+      <section class="content">
+        <div id="module-dashboard" class="module active"></div>
+        <div id="module-clientes" class="module"></div>
+        <div id="module-generar" class="module"></div>
+        <div id="module-pagares" class="module"></div>
+        <div id="module-escanear" class="module"></div>
+        <div id="module-pagos" class="module"></div>
+        <div id="module-reportes" class="module"></div>
+        <div id="module-historial" class="module"></div>
+        <div id="module-auditoria" class="module"></div>
+        <div id="module-configuracion" class="module"></div>
+        <div id="module-real" class="module"></div>
+
+        <div class="footer-cta no-print">
+          <div>
+            <strong>Demo funcional, no producción</strong>
+            <p>Convierte este prototipo en una plataforma real con base de datos, usuarios, permisos, PDF real, escaneo móvil y auditoría segura.</p>
+          </div>
+          <a class="btn" href="https://www.iangine.com" target="_blank" rel="noopener">Llevarlo a la realidad</a>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toastWrap" class="toast-wrap"></div>
+
+  <script>
+    const STORAGE_KEYS = {
+      clientes: 'demoPagares_clientes',
+      pagares: 'demoPagares_pagares',
+      pagos: 'demoPagares_pagos',
+      auditoria: 'demoPagares_auditoria',
+      config: 'demoPagares_config'
+    };
+
+    const MODULES = [
+      { id: 'dashboard', label: 'Inicio', subtitle: 'Panel ejecutivo del Demo funcional.', hint: 'Resumen' },
+      { id: 'clientes', label: 'Clientes', subtitle: 'Registro y gestión de clientes.', hint: 'CRM' },
+      { id: 'generar', label: 'Generar pagaré', subtitle: 'Crea pagarés con código CODE128 real.', hint: 'PDF demo' },
+      { id: 'pagares', label: 'Pagarés', subtitle: 'Control de pagarés emitidos, pagados y vencidos.', hint: 'Control' },
+      { id: 'escanear', label: 'Escanear pago', subtitle: 'Escaneo con cámara usando ZXing Browser.', hint: 'Cámara' },
+      { id: 'pagos', label: 'Pagos registrados', subtitle: 'Historial de pagos capturados.', hint: 'Cobranza' },
+      { id: 'reportes', label: 'Reportes', subtitle: 'Indicadores de cobranza y cartera.', hint: 'KPIs' },
+      { id: 'historial', label: 'Historial por cliente', subtitle: 'Consulta movimientos por cliente.', hint: 'Detalle' },
+      { id: 'auditoria', label: 'Auditoría', subtitle: 'Trazabilidad de acciones críticas.', hint: 'Logs' },
+      { id: 'configuracion', label: 'Configuración', subtitle: 'Datos demo, tema y reinicio.', hint: 'Demo' },
+      { id: 'real', label: 'Versión real con IANGINE', subtitle: 'Qué incluiría una implementación productiva.', hint: 'CTA' }
+    ];
+
+    let currentModule = 'dashboard';
+    let scannerControls = null;
+    let lastScannedCode = '';
+    let selectedPagareForPayment = null;
+
+    const $ = (id) => document.getElementById(id);
+
+    function uid(prefix) {
+      return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    }
+
+    function todayISO() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function nowISO() {
+      return new Date().toISOString();
+    }
+
+    function formatDate(value) {
+      if (!value) return '—';
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return value;
+      return d.toLocaleDateString('es-HN', { year: 'numeric', month: '2-digit', day: '2-digit' });
+    }
+
+    function formatDateTime(value) {
+      if (!value) return '—';
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return value;
+      return d.toLocaleString('es-HN', { dateStyle: 'short', timeStyle: 'short' });
+    }
+
+    function currency(value) {
+      const cfg = getConfig();
+      return `${cfg.moneda || 'L'} ${Number(value || 0).toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+
+    function getDeviceType() {
+      const ua = navigator.userAgent || '';
+      if (/Mobi|Android|iPhone|iPod/i.test(ua)) return 'Móvil';
+      if (/Tablet|iPad/i.test(ua)) return 'Tablet';
+      return 'Escritorio';
+    }
+
+    function read(key, fallback = []) {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+      } catch (err) {
+        console.error(err);
+        return fallback;
+      }
+    }
+
+    function write(key, value) {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    function getClientes() { return read(STORAGE_KEYS.clientes); }
+    function setClientes(data) { write(STORAGE_KEYS.clientes, data); }
+    function getPagares() { return read(STORAGE_KEYS.pagares); }
+    function setPagares(data) { write(STORAGE_KEYS.pagares, data); }
+    function getPagos() { return read(STORAGE_KEYS.pagos); }
+    function setPagos(data) { write(STORAGE_KEYS.pagos, data); }
+    function getAuditoria() { return read(STORAGE_KEYS.auditoria); }
+    function setAuditoria(data) { write(STORAGE_KEYS.auditoria, data); }
+
+    function getConfig() {
+      return read(STORAGE_KEYS.config, {
+        empresa: 'Financiera Demo S.A.',
+        usuarioActivo: 'Admin Demo',
+        moneda: 'L',
+        tema: 'light',
+        advertenciasActivas: true
+      });
+    }
+
+    function setConfig(config) {
+      write(STORAGE_KEYS.config, config);
+      document.documentElement.dataset.theme = config.tema || 'light';
+    }
+
+    function logAudit(modulo, accion, descripcion, resultado = 'Exitoso') {
+      const config = getConfig();
+      const logs = getAuditoria();
+      logs.unshift({
+        id: uid('AUD'),
+        fecha: nowISO(),
+        usuario: config.usuarioActivo || 'Admin Demo',
+        modulo,
+        accion,
+        descripcion,
+        dispositivo: getDeviceType(),
+        resultado
+      });
+      setAuditoria(logs.slice(0, 300));
+    }
+
+    function toast(message, type = 'success') {
+      const wrap = $('toastWrap');
+      const el = document.createElement('div');
+      el.className = `toast ${type}`;
+      el.textContent = message;
+      wrap.appendChild(el);
+      setTimeout(() => el.remove(), 4500);
+    }
+
+    function escapeHTML(value) {
+      return String(value ?? '').replace(/[&<>'"]/g, (char) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;'
+      }[char]));
+    }
+
+    function init() {
+      const config = getConfig();
+      setConfig(config);
+      buildNav();
+      if (!localStorage.getItem(STORAGE_KEYS.clientes)) loadDemoData(false);
+      renderAll();
+      openModule('dashboard');
+    }
+
+    function buildNav() {
+      const nav = $('nav');
+      nav.innerHTML = MODULES.map(m => `
+        <button class="nav-btn" data-nav="${m.id}" onclick="openModule('${m.id}')">
+          <span>${m.label}</span><small>${m.hint}</small>
+        </button>
+      `).join('');
+    }
+
+    function openModule(id) {
+      currentModule = id;
+      document.querySelectorAll('.module').forEach(el => el.classList.remove('active'));
+      $(`module-${id}`).classList.add('active');
+      document.querySelectorAll('[data-nav]').forEach(btn => btn.classList.toggle('active', btn.dataset.nav === id));
+      const meta = MODULES.find(m => m.id === id);
+      $('pageTitle').textContent = meta.label;
+      $('pageSubtitle').textContent = meta.subtitle;
+      toggleSidebar(false);
+      if (id !== 'escanear') stopScanner(false);
+      renderAll();
+    }
+
+    function toggleSidebar(force) {
+      const sidebar = $('sidebar');
+      const overlay = $('overlay');
+      const shouldOpen = typeof force === 'boolean' ? force : !sidebar.classList.contains('open');
+      sidebar.classList.toggle('open', shouldOpen);
+      overlay.classList.toggle('show', shouldOpen);
+    }
+
+    function toggleTheme() {
+      const cfg = getConfig();
+      cfg.tema = cfg.tema === 'dark' ? 'light' : 'dark';
+      setConfig(cfg);
+      logAudit('Configuración', 'Tema modificado', `Tema cambiado a ${cfg.tema}.`);
+      renderConfiguracion();
+    }
+
+    function renderAll() {
+      renderDashboard();
+      renderClientes();
+      renderGenerar();
+      renderPagares();
+      renderEscanear();
+      renderPagos();
+      renderReportes();
+      renderHistorial();
+      renderAuditoria();
+      renderConfiguracion();
+      renderReal();
+      setTimeout(renderBarcodes, 80);
+    }
+
+    function calcStats() {
+      const clientes = getClientes();
+      const pagares = getPagares().map(updateComputedStatus);
+      const pagos = getPagos();
+      const today = todayISO();
+      return {
+        clientes: clientes.length,
+        pagares: pagares.length,
+        pendientes: pagares.filter(p => p.estado === 'Pendiente').length,
+        pagados: pagares.filter(p => p.estado === 'Pagado').length,
+        vencidos: pagares.filter(p => p.estado === 'Vencido').length,
+        anulados: pagares.filter(p => p.estado === 'Anulado').length,
+        pagosHoy: pagos.filter(p => p.fechaPago.slice(0, 10) === today),
+        totalCobrado: pagos.reduce((sum, p) => sum + Number(p.monto || 0), 0),
+        totalPendiente: pagares.filter(p => ['Pendiente','Vencido'].includes(p.estado)).reduce((sum, p) => sum + Number(p.monto || 0), 0),
+        carteraVencida: pagares.filter(p => p.estado === 'Vencido').reduce((sum, p) => sum + Number(p.monto || 0), 0)
+      };
+    }
+
+    function renderDashboard() {
+      const s = calcStats();
+      $('module-dashboard').innerHTML = `
+        <div class="grid" style="gap:18px;">
+          <div class="notice">
+            <h3>Demo funcional de control de pagarés con código de barras real</h3>
+            <p>Este prototipo genera códigos CODE128 con JsBarcode, permite escanearlos desde cámara con ZXing Browser y valida pagos duplicados usando localStorage.</p>
+            <div class="actions">
+              <button class="btn accent" onclick="openModule('generar')">Generar pagaré</button>
+              <button class="btn secondary" onclick="openModule('escanear')">Escanear pago</button>
+              <a class="btn" href="https://www.iangine.com" target="_blank" rel="noopener">Llevar este sistema a la realidad</a>
+            </div>
+          </div>
+
+          <div class="grid cards">
+            ${metricCard('Clientes registrados', s.clientes, 'Base de clientes demo')}
+            ${metricCard('Pagarés emitidos', s.pagares, 'Documentos creados')}
+            ${metricCard('Pendientes', s.pendientes, 'Requieren seguimiento')}
+            ${metricCard('Pagados', s.pagados, 'Cobranza registrada')}
+            ${metricCard('Vencidos', s.vencidos, 'Riesgo de cartera')}
+            ${metricCard('Pagos hoy', currency(s.pagosHoy.reduce((a,p)=>a+Number(p.monto||0),0)), `${s.pagosHoy.length} pagos registrados`)}
+            ${metricCard('Total cobrado', currency(s.totalCobrado), 'Histórico demo')}
+            ${metricCard('Saldo pendiente', currency(s.totalPendiente), 'Pendiente + vencido')}
+          </div>
+
+          <div class="grid two">
+            <div class="card">
+              <div class="section-head"><div><h2>Flujo principal</h2><p>El cliente puede probar el proceso completo sin depender de backend.</p></div></div>
+              <div class="bar-list">
+                ${stepItem('1', 'Registrar cliente')}
+                ${stepItem('2', 'Generar pagaré con CODE128')}
+                ${stepItem('3', 'Imprimir o visualizar pagaré')}
+                ${stepItem('4', 'Escanear con cámara')}
+                ${stepItem('5', 'Registrar pago y bloquear duplicados')}
+              </div>
+            </div>
+            <div class="notice warning">
+              <h3>Limitación crítica del Demo</h3>
+              <p>localStorage no protege datos contra manipulación. En producción se requiere backend, autenticación, base de datos, permisos, auditoría protegida y generación segura de códigos.</p>
+              <button class="btn warning" onclick="openModule('real')">Ver versión real recomendada</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function metricCard(label, value, note) {
+      return `<article class="card metric"><span>${label}</span><strong>${value}</strong><small>${note}</small></article>`;
+    }
+
+    function stepItem(n, text) {
+      return `<div class="detail"><strong>${n}. ${text}</strong></div>`;
+    }
+
+    function renderClientes() {
+      const clientes = getClientes();
+      $('module-clientes').innerHTML = `
+        <div class="grid two">
+          <div class="card">
+            <div class="section-head"><div><h2>Registrar cliente</h2><p>El documento no puede repetirse.</p></div></div>
+            <form onsubmit="saveCliente(event)" class="grid">
+              <input type="hidden" id="clienteId" />
+              <div class="form-grid">
+                ${field('Nombre completo', '<input id="clienteNombre" required placeholder="Ej. Juan Pérez" />')}
+                ${field('Documento / Identidad', '<input id="clienteDocumento" required placeholder="Ej. 0801-1990-00000" />')}
+                ${field('Teléfono', '<input id="clienteTelefono" placeholder="Ej. +504 9999-9999" />')}
+                ${field('Correo', '<input id="clienteCorreo" type="email" placeholder="cliente@correo.com" />')}
+                ${field('Dirección', '<input id="clienteDireccion" placeholder="Ciudad, colonia, referencia" />')}
+                ${field('Empresa / Referencia', '<input id="clienteEmpresa" placeholder="Opcional" />')}
+                ${field('Estado', '<select id="clienteEstado"><option>Activo</option><option>Inactivo</option></select>')}
+              </div>
+              ${field('Observaciones', '<textarea id="clienteObservaciones" placeholder="Notas internas del cliente"></textarea>')}
+              <div class="actions">
+                <button class="btn success" type="submit">Guardar cliente</button>
+                <button class="btn secondary" type="button" onclick="clearClienteForm()">Limpiar</button>
+              </div>
+            </form>
+          </div>
+          <div class="notice">
+            <h3>Control de duplicidad</h3>
+            <p>Este módulo bloquea documentos repetidos para evitar crear dos clientes con la misma identidad. Cada alta o edición se registra en auditoría.</p>
+          </div>
+        </div>
+        <div style="height:18px"></div>
+        <div class="section-head"><div><h2>Clientes registrados</h2><p>${clientes.length} clientes almacenados en localStorage.</p></div><input style="max-width:320px" placeholder="Buscar cliente" oninput="filterCards('clientesList', this.value)" /></div>
+        <div id="clientesList" class="list">
+          ${clientes.length ? clientes.map(clienteCard).join('') : empty('No hay clientes registrados.')}
+        </div>
+      `;
+    }
+
+    function field(label, input) {
+      return `<div class="field"><label>${label}</label>${input}</div>`;
+    }
+
+    function clienteCard(c) {
+      const pagares = getPagares().filter(p => p.clienteId === c.id).map(updateComputedStatus);
+      return `
+        <article class="entity-card searchable" data-search="${escapeHTML([c.nombre,c.documento,c.telefono,c.estado].join(' '))}">
+          <div class="entity-top">
+            <div class="entity-title"><strong>${escapeHTML(c.nombre)}</strong><span>Documento: ${escapeHTML(c.documento)}</span></div>
+            <span class="badge ${c.estado === 'Activo' ? 'paid' : 'void'}">${escapeHTML(c.estado)}</span>
+          </div>
+          <div class="details-grid">
+            ${detail('Teléfono', c.telefono || '—')}
+            ${detail('Correo', c.correo || '—')}
+            ${detail('Pagarés', pagares.length)}
+            ${detail('Pendientes', pagares.filter(p => ['Pendiente','Vencido'].includes(p.estado)).length)}
+          </div>
+          <div class="actions">
+            <button class="btn secondary" onclick="editCliente('${c.id}')">Editar</button>
+            <button class="btn accent" onclick="preparePagareForCliente('${c.id}')">Generar pagaré</button>
+            <button class="btn secondary" onclick="openHistorialCliente('${c.id}')">Ver historial</button>
+            <button class="btn danger" onclick="deleteCliente('${c.id}')">Eliminar</button>
+          </div>
+        </article>
+      `;
+    }
+
+    function detail(label, value) {
+      return `<div class="detail"><span>${label}</span><strong>${escapeHTML(value)}</strong></div>`;
+    }
+
+    function empty(text) { return `<div class="empty">${text}</div>`; }
+
+    function saveCliente(event) {
+      event.preventDefault();
+      const id = $('clienteId').value || uid('CLI');
+      const clientes = getClientes();
+      const documento = $('clienteDocumento').value.trim();
+      const duplicate = clientes.find(c => c.documento.toLowerCase() === documento.toLowerCase() && c.id !== id);
+      if (duplicate) return toast('Documento duplicado. Ya existe un cliente con esa identidad.', 'danger');
+      const payload = {
+        id,
+        nombre: $('clienteNombre').value.trim(),
+        documento,
+        telefono: $('clienteTelefono').value.trim(),
+        correo: $('clienteCorreo').value.trim(),
+        direccion: $('clienteDireccion').value.trim(),
+        empresaReferencia: $('clienteEmpresa').value.trim(),
+        estado: $('clienteEstado').value,
+        fechaRegistro: clientes.find(c => c.id === id)?.fechaRegistro || nowISO(),
+        observaciones: $('clienteObservaciones').value.trim()
+      };
+      const idx = clientes.findIndex(c => c.id === id);
+      if (idx >= 0) {
+        clientes[idx] = payload;
+        logAudit('Clientes', 'Cliente editado', `Se editó el cliente ${payload.nombre}.`);
+      } else {
+        clientes.unshift(payload);
+        logAudit('Clientes', 'Cliente creado', `Se creó el cliente ${payload.nombre}.`);
+      }
+      setClientes(clientes);
+      clearClienteForm();
+      renderAll();
+      toast('Cliente guardado correctamente.');
+    }
+
+    function editCliente(id) {
+      const c = getClientes().find(x => x.id === id);
+      if (!c) return;
+      openModule('clientes');
+      setTimeout(() => {
+        $('clienteId').value = c.id;
+        $('clienteNombre').value = c.nombre;
+        $('clienteDocumento').value = c.documento;
+        $('clienteTelefono').value = c.telefono;
+        $('clienteCorreo').value = c.correo;
+        $('clienteDireccion').value = c.direccion;
+        $('clienteEmpresa').value = c.empresaReferencia;
+        $('clienteEstado').value = c.estado;
+        $('clienteObservaciones').value = c.observaciones;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 50);
+    }
+
+    function clearClienteForm() {
+      ['clienteId','clienteNombre','clienteDocumento','clienteTelefono','clienteCorreo','clienteDireccion','clienteEmpresa','clienteObservaciones'].forEach(id => { if ($(id)) $(id).value = ''; });
+      if ($('clienteEstado')) $('clienteEstado').value = 'Activo';
+    }
+
+    function deleteCliente(id) {
+      const c = getClientes().find(x => x.id === id);
+      if (!c) return;
+      const hasPagares = getPagares().some(p => p.clienteId === id);
+      if (hasPagares) return toast('No se puede eliminar: el cliente tiene pagarés asociados.', 'danger');
+      setClientes(getClientes().filter(x => x.id !== id));
+      logAudit('Clientes', 'Cliente eliminado', `Se eliminó el cliente ${c.nombre}.`, 'Advertencia');
+      renderAll();
+      toast('Cliente eliminado.', 'warning');
+    }
+
+    function renderGenerar() {
+      const clientes = getClientes().filter(c => c.estado === 'Activo');
+      $('module-generar').innerHTML = `
+        <div class="grid two">
+          <div class="card">
+            <div class="section-head"><div><h2>Generar pagaré</h2><p>El sistema asignará un código único y generará un código de barras real CODE128.</p></div></div>
+            <form onsubmit="savePagare(event)" class="grid">
+              <div class="form-grid">
+                ${field('Cliente', `<select id="pagareCliente" required>${clientes.map(c => `<option value="${c.id}">${escapeHTML(c.nombre)} — ${escapeHTML(c.documento)}</option>`).join('')}</select>`)}
+                ${field('Monto', '<input id="pagareMonto" type="number" min="1" step="0.01" required placeholder="3500" />')}
+                ${field('Fecha de emisión', `<input id="pagareEmision" type="date" required value="${todayISO()}" />`)}
+                ${field('Fecha de vencimiento', `<input id="pagareVencimiento" type="date" required />`)}
+                ${field('Número de cuota', '<input id="pagareCuota" type="number" min="1" placeholder="1" />')}
+                ${field('Concepto', '<input id="pagareConcepto" required placeholder="Mensualidad / Financiamiento" />')}
+              </div>
+              ${field('Observaciones', '<textarea id="pagareObservaciones" placeholder="Notas internas del pagaré"></textarea>')}
+              <div class="actions">
+                <button class="btn success" type="submit">Generar pagaré con código de barras</button>
+                <button class="btn secondary" type="button" onclick="fillNextMonth()">Vencimiento próximo mes</button>
+              </div>
+            </form>
+          </div>
+          <div id="lastPagarePreview" class="notice">
+            <h3>CODE128 con JsBarcode</h3>
+            <p>El valor codificado será el mismo identificador del pagaré, por ejemplo: PG-2026-000001. Este código podrá escanearse desde el módulo de cámara.</p>
+            <div class="barcode-box"><svg id="sampleBarcode"></svg></div>
+          </div>
+        </div>
+      `;
+      setTimeout(() => safeBarcode('#sampleBarcode', 'PG-2026-000001'), 80);
+    }
+
+    function fillNextMonth() {
+      const d = new Date();
+      d.setMonth(d.getMonth() + 1);
+      $('pagareVencimiento').value = d.toISOString().slice(0,10);
+    }
+
+    function nextPagareCode() {
+      const year = new Date().getFullYear();
+      const pagares = getPagares();
+      const nums = pagares
+        .map(p => String(p.codigo || '').match(/^PG-(\d{4})-(\d+)$/))
+        .filter(Boolean)
+        .filter(m => Number(m[1]) === year)
+        .map(m => Number(m[2]));
+      const next = (nums.length ? Math.max(...nums) : 0) + 1;
+      return `PG-${year}-${String(next).padStart(6, '0')}`;
+    }
+
+    function savePagare(event) {
+      event.preventDefault();
+      const codigo = nextPagareCode();
+      const pagares = getPagares();
+      const payload = {
+        id: uid('PAG'),
+        codigo,
+        clienteId: $('pagareCliente').value,
+        monto: Number($('pagareMonto').value),
+        concepto: $('pagareConcepto').value.trim(),
+        fechaEmision: $('pagareEmision').value,
+        fechaVencimiento: $('pagareVencimiento').value,
+        cuota: $('pagareCuota').value || '—',
+        estado: 'Pendiente',
+        barcodeFormat: 'CODE128',
+        barcodeValue: codigo,
+        fechaPago: '',
+        usuarioPago: '',
+        dispositivoPago: '',
+        metodoPago: '',
+        observaciones: $('pagareObservaciones').value.trim()
+      };
+      pagares.unshift(payload);
+      setPagares(pagares);
+      logAudit('Pagarés', 'Pagaré generado', `Se generó el pagaré ${codigo}.`);
+      renderAll();
+      toast(`Pagaré ${codigo} generado correctamente.`);
+      openPagarePrint(payload.id);
+    }
+
+    function preparePagareForCliente(clienteId) {
+      openModule('generar');
+      setTimeout(() => { if ($('pagareCliente')) $('pagareCliente').value = clienteId; }, 80);
+    }
+
+    function renderPagares() {
+      const pagares = getPagares().map(updateComputedStatus);
+      const clientes = getClientes();
+      $('module-pagares').innerHTML = `
+        <div class="section-head">
+          <div><h2>Pagarés generados</h2><p>Vista en tarjetas responsive. Sin tablas HTML.</p></div>
+          <div class="form-grid" style="max-width:520px;width:100%;">
+            <input placeholder="Buscar por código o cliente" oninput="filterCards('pagaresList', this.value)" />
+            <select onchange="filterByStatus(this.value)"><option value="">Todos</option><option>Pendiente</option><option>Pagado</option><option>Vencido</option><option>Anulado</option></select>
+          </div>
+        </div>
+        <div id="pagaresList" class="list">
+          ${pagares.length ? pagares.map(p => pagareCard(p, clientes.find(c => c.id === p.clienteId))).join('') : empty('No hay pagarés generados.')}
+        </div>
+      `;
+    }
+
+    function updateComputedStatus(p) {
+      if (p.estado === 'Pagado' || p.estado === 'Anulado') return p;
+      const today = todayISO();
+      return { ...p, estado: p.fechaVencimiento < today ? 'Vencido' : 'Pendiente' };
+    }
+
+    function statusClass(status) {
+      return { Pendiente: 'pending', Pagado: 'paid', Vencido: 'overdue', Anulado: 'void' }[status] || 'info';
+    }
+
+    function pagareCard(p, cliente) {
+      return `
+        <article class="entity-card searchable" data-status="${p.estado}" data-search="${escapeHTML([p.codigo, cliente?.nombre, p.estado, p.monto].join(' '))}">
+          <div class="entity-top">
+            <div class="entity-title"><strong>${escapeHTML(p.codigo)}</strong><span>${escapeHTML(cliente?.nombre || 'Cliente no encontrado')}</span></div>
+            <span class="badge ${statusClass(p.estado)}">${p.estado}</span>
+          </div>
+          <div class="details-grid">
+            ${detail('Monto', currency(p.monto))}
+            ${detail('Emisión', formatDate(p.fechaEmision))}
+            ${detail('Vencimiento', formatDate(p.fechaVencimiento))}
+            ${detail('Formato', p.barcodeFormat || 'CODE128')}
+          </div>
+          <div class="barcode-box"><svg class="barcode" data-code="${escapeHTML(p.barcodeValue || p.codigo)}"></svg></div>
+          <div class="actions">
+            <button class="btn secondary" onclick="openPagarePrint('${p.id}')">Ver / Imprimir</button>
+            <button class="btn success" onclick="preparePayment('${p.codigo}', 'Ingreso manual')">Registrar pago</button>
+            ${p.estado !== 'Anulado' && p.estado !== 'Pagado' ? `<button class="btn warning" onclick="voidPagare('${p.id}')">Anular</button>` : ''}
+          </div>
+        </article>
+      `;
+    }
+
+    function renderBarcodes() {
+      document.querySelectorAll('svg.barcode').forEach(svg => {
+        if (!svg.dataset.rendered) {
+          safeBarcode(svg, svg.dataset.code);
+          svg.dataset.rendered = 'true';
+        }
+      });
+    }
+
+    function safeBarcode(target, value) {
+      try {
+        JsBarcode(target, value, {
+          format: 'CODE128',
+          displayValue: true,
+          height: 54,
+          margin: 8,
+          fontSize: 14,
+          lineColor: '#111827'
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function filterCards(listId, query) {
+      const q = query.trim().toLowerCase();
+      document.querySelectorAll(`#${listId} .searchable`).forEach(card => {
+        card.style.display = card.dataset.search.toLowerCase().includes(q) ? '' : 'none';
+      });
+    }
+
+    function filterByStatus(status) {
+      document.querySelectorAll('#pagaresList .searchable').forEach(card => {
+        card.style.display = !status || card.dataset.status === status ? '' : 'none';
+      });
+    }
+
+    function voidPagare(id) {
+      const pagares = getPagares();
+      const idx = pagares.findIndex(p => p.id === id);
+      if (idx < 0) return;
+      pagares[idx].estado = 'Anulado';
+      setPagares(pagares);
+      logAudit('Pagarés', 'Pagaré anulado', `Se anuló el pagaré ${pagares[idx].codigo}.`, 'Advertencia');
+      renderAll();
+      toast('Pagaré anulado para fines del Demo.', 'warning');
+    }
+
+    function openPagarePrint(id) {
+      const p = getPagares().map(updateComputedStatus).find(x => x.id === id);
+      const c = getClientes().find(x => x.id === p?.clienteId);
+      if (!p) return;
+      const preview = `
+        <div class="card">
+          <div class="section-head no-print">
+            <div><h2>Vista imprimible del pagaré</h2><p>Usa imprimir para guardar como PDF desde el navegador.</p></div>
+            <button class="btn" onclick="window.print()">Imprimir / Guardar PDF</button>
+          </div>
+          <div class="print-area">
+            <div class="print-header">
+              <div><h2>${escapeHTML(getConfig().empresa)}</h2><p>Pagaré mensual — Demo funcional</p></div>
+              <div><strong>Código</strong><div>${escapeHTML(p.codigo)}</div></div>
+            </div>
+            <div class="details-grid">
+              ${detail('Cliente', c?.nombre || '—')}
+              ${detail('Documento', c?.documento || '—')}
+              ${detail('Concepto', p.concepto)}
+              ${detail('Cuota', p.cuota || '—')}
+              ${detail('Emisión', formatDate(p.fechaEmision))}
+              ${detail('Vencimiento', formatDate(p.fechaVencimiento))}
+              ${detail('Estado', p.estado)}
+            </div>
+            <div>
+              <div style="color:#475569;font-weight:800;">Monto del pagaré</div>
+              <div class="print-total">${currency(p.monto)}</div>
+            </div>
+            <div class="barcode-box"><svg id="printBarcode" data-print-code="${escapeHTML(p.codigo)}"></svg></div>
+            <p style="color:#475569;margin:0;line-height:1.5;">Este documento pertenece a un Demo funcional. En producción, el PDF debe generarse desde backend, con controles de seguridad, numeración protegida y auditoría inalterable.</p>
+          </div>
+        </div>
+      `;
+      $('module-pagares').innerHTML = preview + `<div class="actions no-print"><button class="btn secondary" onclick="renderPagares(); setTimeout(renderBarcodes, 80)">Volver al listado</button><button class="btn success" onclick="preparePayment('${p.codigo}', 'Ingreso manual')">Registrar pago</button></div>`;
+      openModule('pagares');
+      setTimeout(() => safeBarcode('#printBarcode', p.codigo), 120);
+      logAudit('Pagarés', 'Pagaré visualizado', `Se visualizó el pagaré ${p.codigo}.`);
+    }
+
+    function renderEscanear() {
+      $('module-escanear').innerHTML = `
+        <div class="grid two">
+          <div class="card scanner-box">
+            <div class="section-head"><div><h2>Escanear código de barras</h2><p>Usa ZXing Browser para leer el CODE128 generado en el pagaré.</p></div></div>
+            <video id="scannerVideo" muted playsinline></video>
+            <div class="actions">
+              <button class="btn accent" onclick="startScanner()">Iniciar escaneo</button>
+              <button class="btn secondary" onclick="stopScanner(true)">Detener cámara</button>
+            </div>
+            <div class="notice warning">
+              <p>La cámara normalmente requiere HTTPS o localhost. Si abres este archivo como file://, algunos navegadores podrían bloquear el permiso.</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="section-head"><div><h2>Buscar pagaré</h2><p>Respaldo manual obligatorio por compatibilidad de navegador.</p></div></div>
+            <div class="field">
+              <label>Código escaneado o ingresado manualmente</label>
+              <input id="manualCode" placeholder="PG-2026-000001" value="${escapeHTML(lastScannedCode)}" />
+            </div>
+            <div class="actions">
+              <button class="btn success" onclick="preparePayment(document.getElementById('manualCode').value, lastScannedCode ? 'Escaneo con cámara' : 'Ingreso manual')">Buscar y registrar</button>
+            </div>
+            <div id="paymentResult" class="scan-result" style="margin-top:14px;">
+              ${selectedPagareForPayment ? paymentPreview(selectedPagareForPayment) : 'Escanea o ingresa un código para ver el pagaré.'}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function startScanner() {
+      try {
+        if (!window.ZXingBrowser) throw new Error('ZXing Browser no está disponible. Revisa la conexión al CDN.');
+        const video = $('scannerVideo');
+        const hints = new Map();
+        const codeReader = new ZXingBrowser.BrowserMultiFormatReader(hints, { delayBetweenScanAttempts: 250 });
+        logAudit('Escaneo', 'Escaneo iniciado', 'Se inició el lector de cámara con ZXing Browser.');
+        toast('Cámara iniciada. Apunta al código de barras.', 'success');
+        scannerControls = await codeReader.decodeFromVideoDevice(undefined, video, (result, err) => {
+          if (result) {
+            const code = result.getText();
+            lastScannedCode = code;
+            if ($('manualCode')) $('manualCode').value = code;
+            logAudit('Escaneo', 'Código escaneado', `Se escaneó el código ${code}.`);
+            preparePayment(code, 'Escaneo con cámara');
+            stopScanner(false);
+          }
+        });
+      } catch (err) {
+        logAudit('Escaneo', 'Error de cámara', err.message || 'No se pudo iniciar la cámara.', 'Error');
+        toast(`No se pudo acceder a la cámara: ${err.message || 'permiso denegado o navegador incompatible'}.`, 'danger');
+      }
+    }
+
+    function stopScanner(showToast = true) {
+      try {
+        if (scannerControls) {
+          scannerControls.stop();
+          scannerControls = null;
+          if (showToast) toast('Escaneo detenido correctamente.', 'warning');
+        }
+        const video = $('scannerVideo');
+        if (video && video.srcObject) {
+          video.srcObject.getTracks().forEach(t => t.stop());
+          video.srcObject = null;
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function preparePayment(rawCode, method = 'Ingreso manual') {
+      const code = String(rawCode || '').trim();
+      if (!code) return toast('Ingresa o escanea un código de pagaré.', 'warning');
+      const p = getPagares().map(updateComputedStatus).find(x => x.codigo.toLowerCase() === code.toLowerCase());
+      if (!p) {
+        selectedPagareForPayment = null;
+        logAudit('Escaneo', 'Pagaré no encontrado', `No se encontró el código ${code}.`, 'Error');
+        toast('No se encontró ningún pagaré con ese código.', 'danger');
+        if ($('paymentResult')) $('paymentResult').innerHTML = `<strong>No encontrado:</strong> ${escapeHTML(code)}`;
+        return;
+      }
+      selectedPagareForPayment = { ...p, method };
+      if ($('paymentResult')) $('paymentResult').innerHTML = paymentPreview(selectedPagareForPayment);
+      if (currentModule !== 'escanear') openModule('escanear');
+    }
+
+    function paymentPreview(p) {
+      const c = getClientes().find(x => x.id === p.clienteId);
+      const warning = p.estado === 'Pagado'
+        ? '<div class="notice danger"><p><strong>Pago duplicado bloqueado:</strong> este pagaré ya fue pagado.</p></div>'
+        : p.estado === 'Anulado'
+          ? '<div class="notice danger"><p><strong>Pagaré anulado:</strong> no puede registrarse como pagado.</p></div>'
+          : p.estado === 'Vencido'
+            ? '<div class="notice warning"><p><strong>Advertencia:</strong> este pagaré está vencido. El pago puede registrarse, pero quedará auditado.</p></div>'
+            : '';
+      return `
+        <div class="grid">
+          <div class="entity-top"><div class="entity-title"><strong>${escapeHTML(p.codigo)}</strong><span>${escapeHTML(c?.nombre || 'Cliente no encontrado')}</span></div><span class="badge ${statusClass(p.estado)}">${p.estado}</span></div>
+          <div class="details-grid">
+            ${detail('Monto', currency(p.monto))}
+            ${detail('Vencimiento', formatDate(p.fechaVencimiento))}
+            ${detail('Método', p.method || 'Ingreso manual')}
+            ${detail('Dispositivo', getDeviceType())}
+          </div>
+          ${warning}
+          <div class="actions">
+            <button class="btn success" onclick="registerPayment('${p.codigo}', '${p.method || 'Ingreso manual'}')">Confirmar pago</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function registerPayment(code, method = 'Ingreso manual') {
+      const pagares = getPagares();
+      const idx = pagares.findIndex(x => x.codigo.toLowerCase() === String(code).toLowerCase());
+      if (idx < 0) return toast('No se encontró el pagaré.', 'danger');
+      const p = updateComputedStatus(pagares[idx]);
+      if (p.estado === 'Pagado') {
+        logAudit('Pagos', 'Intento de pago duplicado', `Se bloqueó un pago duplicado para ${p.codigo}.`, 'Bloqueado');
+        toast(`Pago duplicado bloqueado. ${p.codigo} ya fue pagado.`, 'danger');
+        return;
+      }
+      if (p.estado === 'Anulado') {
+        logAudit('Pagos', 'Intento sobre pagaré anulado', `Se intentó pagar el pagaré anulado ${p.codigo}.`, 'Bloqueado');
+        toast('Este pagaré está anulado y no puede pagarse.', 'danger');
+        return;
+      }
+      const cfg = getConfig();
+      pagares[idx] = {
+        ...pagares[idx],
+        estado: 'Pagado',
+        fechaPago: nowISO(),
+        usuarioPago: cfg.usuarioActivo,
+        dispositivoPago: getDeviceType(),
+        metodoPago: method
+      };
+      const pagos = getPagos();
+      pagos.unshift({
+        id: uid('PAY'),
+        pagareId: p.id,
+        codigoPagare: p.codigo,
+        clienteId: p.clienteId,
+        monto: Number(p.monto || 0),
+        fechaPago: nowISO(),
+        usuario: cfg.usuarioActivo,
+        dispositivo: getDeviceType(),
+        metodoRegistro: method,
+        observaciones: p.estado === 'Vencido' ? 'Pago registrado sobre pagaré vencido.' : ''
+      });
+      setPagares(pagares);
+      setPagos(pagos);
+      logAudit('Pagos', 'Pago registrado', `Se registró el pago del pagaré ${p.codigo} por ${currency(p.monto)} mediante ${method}.`, p.estado === 'Vencido' ? 'Advertencia' : 'Exitoso');
+      selectedPagareForPayment = null;
+      lastScannedCode = '';
+      renderAll();
+      toast('Pago registrado correctamente. La operación quedó en auditoría.');
+      openModule('pagos');
+    }
+
+    function renderPagos() {
+      const pagos = getPagos();
+      const clientes = getClientes();
+      $('module-pagos').innerHTML = `
+        <div class="section-head"><div><h2>Pagos registrados</h2><p>Cada pago conserva fecha, usuario, dispositivo y método.</p></div><input style="max-width:320px" placeholder="Buscar pago" oninput="filterCards('pagosList', this.value)" /></div>
+        <div id="pagosList" class="list">
+          ${pagos.length ? pagos.map(p => pagoCard(p, clientes.find(c => c.id === p.clienteId))).join('') : empty('No hay pagos registrados.')}
+        </div>
+      `;
+    }
+
+    function pagoCard(p, c) {
+      return `
+        <article class="entity-card searchable" data-search="${escapeHTML([p.codigoPagare,c?.nombre,p.usuario,p.metodoRegistro].join(' '))}">
+          <div class="entity-top"><div class="entity-title"><strong>Pago ${escapeHTML(p.codigoPagare)}</strong><span>${escapeHTML(c?.nombre || 'Cliente no encontrado')}</span></div><span class="badge paid">Pagado</span></div>
+          <div class="details-grid">
+            ${detail('Monto', currency(p.monto))}
+            ${detail('Fecha', formatDateTime(p.fechaPago))}
+            ${detail('Usuario', p.usuario)}
+            ${detail('Dispositivo', p.dispositivo)}
+            ${detail('Método', p.metodoRegistro)}
+          </div>
+        </article>
+      `;
+    }
+
+    function renderReportes() {
+      const s = calcStats();
+      const totalDocs = Math.max(s.pagares, 1);
+      $('module-reportes').innerHTML = `
+        <div class="grid cards">
+          ${metricCard('Pagos del día', currency(s.pagosHoy.reduce((a,p)=>a+Number(p.monto||0),0)), `${s.pagosHoy.length} operaciones`)}
+          ${metricCard('Total cobrado', currency(s.totalCobrado), 'Todos los pagos')}
+          ${metricCard('Total pendiente', currency(s.totalPendiente), 'Pendiente + vencido')}
+          ${metricCard('Cartera vencida', currency(s.carteraVencida), `${s.vencidos} pagarés vencidos`)}
+        </div>
+        <div style="height:18px"></div>
+        <div class="grid two">
+          <div class="card">
+            <div class="section-head"><div><h2>Distribución de pagarés</h2><p>Indicadores visuales sin tablas.</p></div></div>
+            <div class="bar-list">
+              ${bar('Pagados', s.pagados, totalDocs, 'success')}
+              ${bar('Pendientes', s.pendientes, totalDocs, 'warning')}
+              ${bar('Vencidos', s.vencidos, totalDocs, 'danger')}
+              ${bar('Anulados', s.anulados, totalDocs, 'gray')}
+            </div>
+          </div>
+          <div class="card">
+            <div class="section-head"><div><h2>Clientes con saldo pendiente</h2><p>Ranking por saldo pendiente o vencido.</p></div></div>
+            <div class="list">
+              ${clientRanking()}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function bar(label, count, total) {
+      const pct = Math.round((count / total) * 100);
+      return `<div class="bar-item"><div class="entity-top"><strong>${label}</strong><span>${count} · ${pct}%</span></div><div class="bar-line"><div class="bar-fill" style="width:${pct}%"></div></div></div>`;
+    }
+
+    function clientRanking() {
+      const clientes = getClientes();
+      const pagares = getPagares().map(updateComputedStatus);
+      const rows = clientes.map(c => {
+        const saldo = pagares.filter(p => p.clienteId === c.id && ['Pendiente','Vencido'].includes(p.estado)).reduce((a,p)=>a+Number(p.monto||0),0);
+        return { c, saldo };
+      }).filter(x => x.saldo > 0).sort((a,b)=>b.saldo-a.saldo).slice(0,8);
+      return rows.length ? rows.map(x => `<div class="detail"><span>${escapeHTML(x.c.nombre)}</span><strong>${currency(x.saldo)}</strong></div>`).join('') : empty('No hay saldos pendientes.');
+    }
+
+    function renderHistorial() {
+      const clientes = getClientes();
+      $('module-historial').innerHTML = `
+        <div class="card">
+          <div class="section-head"><div><h2>Historial por cliente</h2><p>Selecciona un cliente para revisar pagarés, pagos y saldo.</p></div></div>
+          <div class="form-grid">
+            <select id="histCliente" onchange="showHistorialCliente(this.value)">
+              <option value="">Seleccionar cliente</option>
+              ${clientes.map(c => `<option value="${c.id}">${escapeHTML(c.nombre)} — ${escapeHTML(c.documento)}</option>`).join('')}
+            </select>
+          </div>
+          <div id="historialResult" style="margin-top:16px;">${empty('Aún no se ha seleccionado cliente.')}</div>
+        </div>
+      `;
+    }
+
+    function openHistorialCliente(id) {
+      openModule('historial');
+      setTimeout(() => {
+        $('histCliente').value = id;
+        showHistorialCliente(id);
+      }, 80);
+    }
+
+    function showHistorialCliente(id) {
+      if (!id) return $('historialResult').innerHTML = empty('Aún no se ha seleccionado cliente.');
+      const c = getClientes().find(x => x.id === id);
+      const pagares = getPagares().map(updateComputedStatus).filter(p => p.clienteId === id);
+      const pagos = getPagos().filter(p => p.clienteId === id);
+      const emitido = pagares.reduce((a,p)=>a+Number(p.monto||0),0);
+      const pagado = pagos.reduce((a,p)=>a+Number(p.monto||0),0);
+      const saldo = pagares.filter(p => ['Pendiente','Vencido'].includes(p.estado)).reduce((a,p)=>a+Number(p.monto||0),0);
+      $('historialResult').innerHTML = `
+        <div class="grid">
+          <div class="entity-card">
+            <div class="entity-top"><div class="entity-title"><strong>${escapeHTML(c.nombre)}</strong><span>${escapeHTML(c.documento)}</span></div><span class="badge info">Historial</span></div>
+            <div class="details-grid">
+              ${detail('Total emitido', currency(emitido))}
+              ${detail('Total pagado', currency(pagado))}
+              ${detail('Saldo pendiente', currency(saldo))}
+              ${detail('Pagarés', pagares.length)}
+            </div>
+          </div>
+          <div class="list">
+            ${pagares.length ? pagares.map(p => pagareCard(p, c)).join('') : empty('Este cliente no tiene pagarés.')}
+          </div>
+        </div>
+      `;
+      setTimeout(renderBarcodes, 80);
+    }
+
+    function renderAuditoria() {
+      const logs = getAuditoria();
+      $('module-auditoria').innerHTML = `
+        <div class="section-head"><div><h2>Auditoría del sistema</h2><p>Trazabilidad de operaciones, errores y bloqueos.</p></div><input style="max-width:320px" placeholder="Buscar evento" oninput="filterCards('auditList', this.value)" /></div>
+        <div id="auditList" class="list">
+          ${logs.length ? logs.map(auditCard).join('') : empty('No hay eventos de auditoría.')}
+        </div>
+      `;
+    }
+
+    function auditCard(a) {
+      const cls = a.resultado === 'Exitoso' ? 'paid' : a.resultado === 'Bloqueado' || a.resultado === 'Error' ? 'overdue' : 'pending';
+      return `
+        <article class="entity-card searchable" data-search="${escapeHTML([a.usuario,a.modulo,a.accion,a.descripcion,a.resultado].join(' '))}">
+          <div class="entity-top"><div class="entity-title"><strong>${escapeHTML(a.accion)}</strong><span>${formatDateTime(a.fecha)} · ${escapeHTML(a.modulo)}</span></div><span class="badge ${cls}">${escapeHTML(a.resultado)}</span></div>
+          <div class="details-grid">
+            ${detail('Usuario', a.usuario)}
+            ${detail('Dispositivo', a.dispositivo)}
+            ${detail('Descripción', a.descripcion)}
+          </div>
+        </article>
+      `;
+    }
+
+    function renderConfiguracion() {
+      const cfg = getConfig();
+      $('module-configuracion').innerHTML = `
+        <div class="grid two">
+          <div class="card">
+            <div class="section-head"><div><h2>Configuración del Demo</h2><p>Ajustes básicos almacenados en localStorage.</p></div></div>
+            <form onsubmit="saveConfig(event)" class="grid">
+              <div class="form-grid">
+                ${field('Empresa demo', `<input id="cfgEmpresa" value="${escapeHTML(cfg.empresa)}" />`)}
+                ${field('Usuario activo', `<input id="cfgUsuario" value="${escapeHTML(cfg.usuarioActivo)}" />`)}
+                ${field('Moneda', `<input id="cfgMoneda" value="${escapeHTML(cfg.moneda)}" />`)}
+                ${field('Tema', `<select id="cfgTema"><option value="light" ${cfg.tema==='light'?'selected':''}>Claro</option><option value="dark" ${cfg.tema==='dark'?'selected':''}>Oscuro</option></select>`)}
+              </div>
+              <div class="actions"><button class="btn success" type="submit">Guardar configuración</button></div>
+            </form>
+          </div>
+          <div class="card">
+            <div class="section-head"><div><h2>Datos del Demo</h2><p>Útil para reiniciar pruebas frente al cliente.</p></div></div>
+            <div class="actions">
+              <button class="btn accent" onclick="loadDemoData(true)">Cargar datos de ejemplo</button>
+              <button class="btn danger" onclick="resetDemo()">Reiniciar todo</button>
+            </div>
+            <div style="height:14px"></div>
+            <div class="notice warning"><p>Reiniciar elimina clientes, pagarés, pagos y auditoría guardados en este navegador.</p></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function saveConfig(event) {
+      event.preventDefault();
+      setConfig({
+        ...getConfig(),
+        empresa: $('cfgEmpresa').value.trim() || 'Financiera Demo S.A.',
+        usuarioActivo: $('cfgUsuario').value.trim() || 'Admin Demo',
+        moneda: $('cfgMoneda').value.trim() || 'L',
+        tema: $('cfgTema').value
+      });
+      logAudit('Configuración', 'Configuración modificada', 'Se actualizaron los datos de configuración.');
+      renderAll();
+      toast('Configuración guardada.');
+    }
+
+    function renderReal() {
+      $('module-real').innerHTML = `
+        <div class="notice">
+          <h3>Este Demo muestra el flujo. La versión real requiere una implementación segura.</h3>
+          <p>Podemos convertir este prototipo en una plataforma productiva con backend, base de datos, usuarios, permisos, PDF real, escaneo móvil, auditoría protegida, reportes avanzados y despliegue seguro.</p>
+          <div class="actions"><a class="btn accent" href="https://www.iangine.com" target="_blank" rel="noopener">Llevar este sistema a producción</a></div>
+        </div>
+        <div style="height:18px"></div>
+        <div class="grid three">
+          ${realCard('Seguridad y usuarios', 'Login, roles, permisos, sesiones, bitácora protegida y control de acceso por área o sucursal.')}
+          ${realCard('PDF y códigos reales', 'Generación desde backend, secuencias protegidas, CODE128, plantillas imprimibles y trazabilidad por documento.')}
+          ${realCard('Escaneo móvil', 'PWA o app móvil, cámara trasera, validación en servidor, bloqueo real de duplicados y registro de dispositivo.')}
+          ${realCard('Reportes financieros', 'Cartera vencida, pagos por usuario, saldos por cliente, exportación Excel/PDF y filtros avanzados.')}
+          ${realCard('Automatización', 'Alertas por WhatsApp o correo, recordatorios de vencimiento y flujos de cobranza.')}
+          ${realCard('Infraestructura', 'Base de datos, respaldos automáticos, hosting seguro, monitoreo y escalabilidad.')}
+        </div>
+      `;
+    }
+
+    function realCard(title, text) {
+      return `<div class="card"><h3 style="margin:0 0 8px;letter-spacing:-.03em;">${title}</h3><p style="margin:0;color:var(--muted);line-height:1.55;">${text}</p></div>`;
+    }
+
+    function loadDemoData(showMessage = true) {
+      const clientes = [
+        { id:'CLI-1', nombre:'Juan Pérez', documento:'0801-1990-00001', telefono:'+504 9999-1111', correo:'juan@demo.com', direccion:'Tegucigalpa', empresaReferencia:'Sucursal Centro', estado:'Activo', fechaRegistro:nowISO(), observaciones:'Cliente demo' },
+        { id:'CLI-2', nombre:'María López', documento:'0801-1988-00002', telefono:'+504 9999-2222', correo:'maria@demo.com', direccion:'San Pedro Sula', empresaReferencia:'Sucursal Norte', estado:'Activo', fechaRegistro:nowISO(), observaciones:'Cliente demo' },
+        { id:'CLI-3', nombre:'Carlos Mejía', documento:'0801-1985-00003', telefono:'+504 9999-3333', correo:'carlos@demo.com', direccion:'La Ceiba', empresaReferencia:'Sucursal Atlántico', estado:'Activo', fechaRegistro:nowISO(), observaciones:'Cliente demo' },
+        { id:'CLI-4', nombre:'Ana Rodríguez', documento:'0801-1992-00004', telefono:'+504 9999-4444', correo:'ana@demo.com', direccion:'Comayagua', empresaReferencia:'Sucursal Centro', estado:'Activo', fechaRegistro:nowISO(), observaciones:'Cliente demo' },
+        { id:'CLI-5', nombre:'Roberto Díaz', documento:'0801-1979-00005', telefono:'+504 9999-5555', correo:'roberto@demo.com', direccion:'Choluteca', empresaReferencia:'Sucursal Sur', estado:'Activo', fechaRegistro:nowISO(), observaciones:'Cliente demo' }
+      ];
+      const d = new Date();
+      const future = (days) => { const x = new Date(); x.setDate(d.getDate()+days); return x.toISOString().slice(0,10); };
+      const past = (days) => { const x = new Date(); x.setDate(d.getDate()-days); return x.toISOString().slice(0,10); };
+      const pagares = [
+        makeDemoPagare('PAG-1','PG-2026-000001','CLI-1',3500,past(35),past(5),'Vencido'),
+        makeDemoPagare('PAG-2','PG-2026-000002','CLI-1',3500,past(20),future(10),'Pendiente'),
+        makeDemoPagare('PAG-3','PG-2026-000003','CLI-2',2200,past(50),past(20),'Pagado'),
+        makeDemoPagare('PAG-4','PG-2026-000004','CLI-2',2200,past(15),future(15),'Pendiente'),
+        makeDemoPagare('PAG-5','PG-2026-000005','CLI-3',5000,past(60),past(30),'Pagado'),
+        makeDemoPagare('PAG-6','PG-2026-000006','CLI-3',5000,past(10),future(20),'Pendiente'),
+        makeDemoPagare('PAG-7','PG-2026-000007','CLI-4',1800,past(45),past(10),'Vencido'),
+        makeDemoPagare('PAG-8','PG-2026-000008','CLI-4',1800,past(7),future(25),'Pendiente'),
+        makeDemoPagare('PAG-9','PG-2026-000009','CLI-5',4200,past(70),past(40),'Pagado'),
+        makeDemoPagare('PAG-10','PG-2026-000010','CLI-5',4200,past(5),future(30),'Pendiente')
+      ];
+      const pagos = pagares.filter(p => p.estado === 'Pagado').map(p => ({
+        id: uid('PAY'), pagareId:p.id, codigoPagare:p.codigo, clienteId:p.clienteId, monto:p.monto,
+        fechaPago: nowISO(), usuario:'Admin Demo', dispositivo:'Escritorio', metodoRegistro:'Ingreso manual', observaciones:'Pago demo precargado.'
+      }));
+      pagos.forEach(pay => {
+        const idx = pagares.findIndex(p => p.id === pay.pagareId);
+        if (idx >= 0) {
+          pagares[idx].fechaPago = pay.fechaPago;
+          pagares[idx].usuarioPago = pay.usuario;
+          pagares[idx].dispositivoPago = pay.dispositivo;
+          pagares[idx].metodoPago = pay.metodoRegistro;
+        }
+      });
+      setClientes(clientes);
+      setPagares(pagares);
+      setPagos(pagos);
+      setAuditoria([]);
+      logAudit('Configuración', 'Datos demo cargados', 'Se cargaron clientes, pagarés y pagos de ejemplo.');
+      renderAll();
+      if (showMessage) toast('Datos de ejemplo cargados correctamente.');
+    }
+
+    function makeDemoPagare(id, codigo, clienteId, monto, emision, vencimiento, estado) {
+      return { id, codigo, clienteId, monto, concepto:'Mensualidad de financiamiento', fechaEmision:emision, fechaVencimiento:vencimiento, cuota:'1', estado, barcodeFormat:'CODE128', barcodeValue:codigo, fechaPago:'', usuarioPago:'', dispositivoPago:'', metodoPago:'', observaciones:'Pagaré demo' };
+    }
+
+    function resetDemo() {
+      if (!confirm('¿Eliminar todos los datos guardados en este navegador?')) return;
+      Object.values(STORAGE_KEYS).forEach(k => localStorage.removeItem(k));
+      setConfig({ empresa: 'Financiera Demo S.A.', usuarioActivo: 'Admin Demo', moneda: 'L', tema: 'light', advertenciasActivas: true });
+      loadDemoData(false);
+      toast('Demo reiniciado correctamente.', 'warning');
+    }
+
+    window.addEventListener('beforeunload', () => stopScanner(false));
+    init();
+  </script>
+</body>
+</html>
