@@ -2298,6 +2298,40 @@
       updateTimerDisplay();
     }
 
+    async function copyTextToClipboard(text) {
+      const value = String(text || '').trim();
+      if (!value) return false;
+
+      try {
+        if (navigator.clipboard?.writeText && window.isSecureContext) {
+          await navigator.clipboard.writeText(value);
+          return true;
+        }
+      } catch {
+        // Fallback para navegadores, iframes o vistas previas donde Clipboard API falla por permisos.
+      }
+
+      const textarea = document.createElement('textarea');
+      textarea.value = value;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'fixed';
+      textarea.style.left = '-9999px';
+      textarea.style.top = '0';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      textarea.setSelectionRange(0, textarea.value.length);
+
+      let copied = false;
+      try {
+        copied = document.execCommand('copy');
+      } catch {
+        copied = false;
+      }
+      textarea.remove();
+      return copied;
+    }
+
     function exportData() {
       const blob = new Blob([JSON.stringify(loadSessions(), null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -2492,10 +2526,14 @@
       officialScrambleBtn?.addEventListener('click', () => applyGeneratedScramble());
       centerCubeBtn.addEventListener('click', centerView);
       copyNotationBtn.addEventListener('click', async () => {
-        const notation = getCurrentNotation();
+        const notation = getCurrentNotation() || currentMoves.join(' ');
         if (!notation) return showModal({ icon: '⚠️', title: 'Sin notación', message: 'No hay una secuencia para copiar.' });
-        await navigator.clipboard.writeText(notation);
-        showToast('Notación copiada', 'La secuencia quedó disponible en tu portapapeles.');
+        const copied = await copyTextToClipboard(notation);
+        if (copied) {
+          showToast('Notación copiada', 'La secuencia quedó disponible en tu portapapeles.');
+        } else {
+          showModal({ icon: '⚠️', title: 'No se pudo copiar', message: `Tu navegador bloqueó el copiado automático. Copia manualmente esta notación: ${notation}` });
+        }
       });
 
       scrambleBtn.addEventListener('click', generateAndScrambleCube);
