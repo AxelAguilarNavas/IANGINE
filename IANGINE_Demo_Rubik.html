@@ -4,13 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Demo Rubik 3D + Cronómetro Cubero | IANGINE</title>
-  <meta name="description" content="Demo funcional de cubo Rubik 3D, animación por notación, resolución inversa, cronómetro cubero y sesiones locales." />
+  <meta name="description" content="Demo funcional de cubo Rubik 3D, scramble, cronómetro cubero, inspección WCA, penalizaciones +2/DNF e historial local." />
   <style>
     :root {
       --bg: #f5f5f7;
       --bg-2: #fbfbfd;
       --card: rgba(255, 255, 255, 0.78);
-      --card-solid: #ffffff;
       --text: #1d1d1f;
       --muted: #6e6e73;
       --muted-2: #8a8a8f;
@@ -25,7 +24,6 @@
       --shadow-soft: 0 16px 40px rgba(0, 0, 0, 0.08);
       --radius-xl: 32px;
       --radius-lg: 24px;
-      --radius-md: 18px;
       --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
@@ -43,11 +41,7 @@
       overflow-x: hidden;
     }
 
-    body.timer-lock {
-      touch-action: none;
-      overscroll-behavior: none;
-    }
-
+    body.timer-lock { touch-action: none; overscroll-behavior: none; }
     a { color: inherit; }
     button, input, textarea, select { font-family: inherit; }
     button { -webkit-tap-highlight-color: transparent; }
@@ -66,7 +60,7 @@
       align-items: center;
       justify-content: space-between;
       gap: 14px;
-      padding: 12px 14px 12px 18px;
+      padding: 12px 18px;
       border: 1px solid var(--line);
       border-radius: 999px;
       background: rgba(255,255,255,0.78);
@@ -105,64 +99,10 @@
     }
     .mini-cube span { border-radius: 2px; }
     .mini-cube span:nth-child(1), .mini-cube span:nth-child(9) { background: #ff9500; }
-    .mini-cube span:nth-child(2), .mini-cube span:nth-child(5) { background: #ffffff; border: 1px solid rgba(0,0,0,.08); }
+    .mini-cube span:nth-child(2), .mini-cube span:nth-child(5) { background: #fff; border: 1px solid rgba(0,0,0,.08); }
     .mini-cube span:nth-child(3), .mini-cube span:nth-child(7) { background: #34c759; }
     .mini-cube span:nth-child(4), .mini-cube span:nth-child(8) { background: #ff3b30; }
     .mini-cube span:nth-child(6) { background: #0071e3; }
-
-    .top-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    .topbar-cube-preview {
-      position: absolute;
-      right: 18px;
-      bottom: 102px;
-      z-index: 6;
-      display: grid;
-      align-items: center;
-      justify-items: center;
-      padding: 8px 10px;
-      border-radius: 18px;
-      border: 1px solid rgba(255,255,255,.58);
-      background: rgba(255,255,255,.78);
-      backdrop-filter: blur(20px) saturate(180%);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.42), 0 14px 34px rgba(0,0,0,.10);
-      min-height: 88px;
-      overflow: visible;
-      pointer-events: none;
-    }
-
-    .cube-net-preview {
-      display: grid;
-      grid-template-columns: repeat(4, 20px);
-      grid-template-rows: repeat(3, 20px);
-      gap: 2px;
-    }
-
-    .net-face {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: repeat(3, 1fr);
-      gap: 1px;
-    }
-
-    .net-face[data-face="U"] { grid-column: 2; grid-row: 1; }
-    .net-face[data-face="L"] { grid-column: 1; grid-row: 2; }
-    .net-face[data-face="F"] { grid-column: 2; grid-row: 2; }
-    .net-face[data-face="R"] { grid-column: 3; grid-row: 2; }
-    .net-face[data-face="B"] { grid-column: 4; grid-row: 2; }
-    .net-face[data-face="D"] { grid-column: 2; grid-row: 3; }
-
-    .net-sticker {
-      border-radius: 2px;
-      border: 1px solid rgba(0,0,0,.28);
-      background: var(--sticker, #fff);
-    }
 
     .btn {
       border: 0;
@@ -180,17 +120,16 @@
       min-height: 42px;
       white-space: nowrap;
     }
-
     .btn:hover { transform: translateY(-1px); }
     .btn:active { transform: translateY(0) scale(.98); }
     .btn:disabled { opacity: .48; cursor: not-allowed; transform: none; }
     .btn-primary { color: #fff; background: linear-gradient(180deg, var(--blue-2), var(--blue)); box-shadow: 0 12px 24px rgba(0,113,227,.24); }
-    .btn-dark { color: #fff; background: #1d1d1f; box-shadow: 0 12px 24px rgba(29,29,31,.16); }
     .btn-soft { color: var(--text); background: rgba(0,0,0,0.055); }
     .btn-danger { color: #fff; background: var(--red); }
     .btn-green { color: #fff; background: var(--green); box-shadow: 0 12px 24px rgba(52,199,89,.20); }
     .btn-ghost { color: var(--text); background: transparent; border: 1px solid var(--line); }
     .btn-small { min-height: 34px; padding: 8px 12px; font-size: 12px; }
+    .btn-icon { min-width: 54px !important; width: 54px; padding: 11px; font-size: 18px; }
 
     .hero {
       position: relative;
@@ -203,9 +142,7 @@
       box-shadow: var(--shadow);
       overflow: hidden;
     }
-
-    .hero::before,
-    .hero::after {
+    .hero::before, .hero::after {
       content: "";
       position: absolute;
       border-radius: 999px;
@@ -214,26 +151,9 @@
       pointer-events: none;
       animation: floatOrb 7s ease-in-out infinite alternate;
     }
-    .hero::before {
-      width: 280px;
-      height: 280px;
-      right: -80px;
-      top: -100px;
-      background: radial-gradient(circle, rgba(0,113,227,.20), transparent 65%);
-    }
-    .hero::after {
-      width: 220px;
-      height: 220px;
-      left: -80px;
-      bottom: -90px;
-      background: radial-gradient(circle, rgba(255,149,0,.20), transparent 65%);
-      animation-delay: -2s;
-    }
-
-    @keyframes floatOrb {
-      from { transform: translate3d(0,0,0) scale(1); }
-      to { transform: translate3d(-16px,18px,0) scale(1.05); }
-    }
+    .hero::before { width: 280px; height: 280px; right: -80px; top: -100px; background: radial-gradient(circle, rgba(0,113,227,.20), transparent 65%); }
+    .hero::after { width: 220px; height: 220px; left: -80px; bottom: -90px; background: radial-gradient(circle, rgba(255,149,0,.20), transparent 65%); animation-delay: -2s; }
+    @keyframes floatOrb { from { transform: translate3d(0,0,0) scale(1); } to { transform: translate3d(-16px,18px,0) scale(1.05); } }
 
     .hero-grid {
       position: relative;
@@ -243,70 +163,8 @@
       gap: clamp(20px, 4vw, 44px);
       align-items: center;
     }
-
-    .badge-row {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-bottom: 18px;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      border-radius: 999px;
-      padding: 8px 12px;
-      font-size: 13px;
-      font-weight: 750;
-      background: rgba(0,113,227,.10);
-      color: #045fb8;
-      border: 1px solid rgba(0,113,227,.14);
-    }
-
-    .badge-neutral {
-      color: var(--muted);
-      background: rgba(0,0,0,.045);
-      border-color: var(--line);
-    }
-
-    h1 {
-      margin: 0;
-      max-width: 880px;
-      font-size: clamp(42px, 7vw, 86px);
-      letter-spacing: -0.075em;
-      line-height: .95;
-    }
-
-    .hero p {
-      margin: 20px 0 0;
-      max-width: 750px;
-      color: var(--muted);
-      font-size: clamp(16px, 2.2vw, 22px);
-      line-height: 1.45;
-      letter-spacing: -0.02em;
-    }
-
-    .hero-actions {
-      margin-top: 28px;
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .demo-note {
-      margin-top: 18px;
-      padding: 14px 16px;
-      border-radius: 18px;
-      background: rgba(255, 204, 0, 0.14);
-      border: 1px solid rgba(255, 204, 0, 0.24);
-      color: #654700;
-      font-size: 14px;
-      line-height: 1.4;
-      max-width: 760px;
-    }
+    h1 { margin: 0; max-width: 880px; font-size: clamp(42px, 7vw, 86px); letter-spacing: -0.075em; line-height: .95; }
+    .hero p { margin: 20px 0 0; max-width: 750px; color: var(--muted); font-size: clamp(16px, 2.2vw, 22px); line-height: 1.45; letter-spacing: -0.02em; }
 
     .hero-panel {
       border-radius: 30px;
@@ -315,13 +173,7 @@
       border: 1px solid var(--line);
       box-shadow: var(--shadow-soft);
     }
-
-    .hero-stat-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-
+    .hero-stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
     .hero-stat {
       padding: 18px;
       min-height: 120px;
@@ -335,14 +187,8 @@
     .hero-stat strong { font-size: 28px; letter-spacing: -0.05em; }
     .hero-stat span { color: var(--muted); font-size: 13px; line-height: 1.3; }
 
-    .section-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 18px;
-      align-items: start;
-      margin-top: 18px;
-    }
-
+    .section-grid, .panels-grid { display: grid; grid-template-columns: 1fr; gap: 18px; align-items: start; margin-top: 18px; }
+    .panels-grid { margin-top: 36px; }
     .card {
       border: 1px solid var(--line);
       border-radius: var(--radius-lg);
@@ -351,236 +197,30 @@
       box-shadow: 0 14px 42px rgba(0,0,0,.06);
       overflow: hidden;
     }
-
-    .card-header {
-      padding: 20px 22px 0;
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: flex-start;
-    }
-
-    .card-title {
-      margin: 0;
-      font-size: 24px;
-      letter-spacing: -0.045em;
-    }
-
-    .card-subtitle {
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.4;
-    }
-
+    .card-header { padding: 20px 22px 0; display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+    .card-title { margin: 0; font-size: 24px; letter-spacing: -0.045em; }
+    .card-subtitle { margin: 6px 0 0; color: var(--muted); font-size: 14px; line-height: 1.4; }
     .card-body { padding: 20px 22px 22px; }
-
-    .field { margin-bottom: 16px; }
-    .label-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 8px;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 750;
-    }
-
-    textarea, input, select {
-      width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      background: rgba(255,255,255,.86);
-      color: var(--text);
-      outline: none;
-      transition: border .18s ease, box-shadow .18s ease, background .18s ease;
-    }
-
-    textarea {
-      min-height: 110px;
-      resize: vertical;
-      padding: 15px 16px;
-      font-size: 16px;
-      line-height: 1.45;
-      letter-spacing: .02em;
-    }
-
-    select, input { padding: 12px 14px; font-size: 15px; }
-
-    textarea:focus, input:focus, select:focus {
-      border-color: rgba(0,113,227,.42);
-      box-shadow: 0 0 0 4px rgba(0,113,227,.10);
-      background: #fff;
-    }
-
-    .chips {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin: 10px 0 0;
-    }
-
-    .chip {
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.70);
-      border-radius: 999px;
-      padding: 8px 10px;
-      cursor: pointer;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 750;
-      transition: transform .18s ease, background .18s ease, color .18s ease;
-    }
-    .chip:hover { transform: translateY(-1px); background: #fff; color: var(--text); }
-    .chip-primary {
-      color: #fff;
-      background: linear-gradient(180deg, var(--blue-2), var(--blue));
-      border-color: rgba(0,113,227,.28);
-      box-shadow: 0 10px 22px rgba(0,113,227,.18);
-    }
-    .chip-primary:hover { color: #fff; background: linear-gradient(180deg, var(--blue-2), var(--blue)); }
-
-    .button-stack {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-      margin-top: 14px;
-    }
-
     .button-row { display: flex; gap: 10px; flex-wrap: wrap; }
     .button-row .btn { flex: 1; }
 
-    .scene-card {
-      min-height: 680px;
-      display: grid;
-      grid-template-rows: auto auto minmax(420px, 1fr) auto;
-    }
-
-    .scene-toolbar {
-      padding: 18px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      border-bottom: 1px solid var(--line);
-      flex-wrap: wrap;
-    }
-
-    .scene-controls {
-      padding: 18px 20px;
-      display: grid;
-      gap: 12px;
-      border-bottom: 1px solid var(--line);
-      background: rgba(255,255,255,.48);
-    }
-
-    .scene-control-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      align-items: end;
-    }
-
-    .scene-control-row.secondary {
-      grid-template-columns: 1fr;
-    }
-
-    .scene-speed-control {
-      margin-top: 4px;
-      padding: 16px 18px;
-      border: 1px solid var(--line);
-      border-radius: 22px;
-      background: rgba(255,255,255,.68);
-    }
-
-    .scene-speed-labels {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 14px;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 800;
-    }
-
-    .scene-speed-labels strong {
-      color: var(--text);
-      font-size: 14px;
-      letter-spacing: -0.02em;
-    }
-
-    .speed-range {
-      width: 100%;
-      height: 10px;
-      appearance: none;
-      -webkit-appearance: none;
-      border: 0;
-      border-radius: 999px;
-      background: linear-gradient(90deg, var(--blue), var(--green));
-      outline: none;
-      padding: 0;
-      cursor: pointer;
-    }
-
-    .speed-range::-webkit-slider-thumb {
-      appearance: none;
-      -webkit-appearance: none;
-      width: 28px;
-      height: 28px;
-      border-radius: 999px;
-      background: #fff;
-      border: 1px solid rgba(0,0,0,.12);
-      box-shadow: 0 8px 22px rgba(0,0,0,.18);
-    }
-
-    .speed-range::-moz-range-thumb {
-      width: 28px;
-      height: 28px;
-      border-radius: 999px;
-      background: #fff;
-      border: 1px solid rgba(0,0,0,.12);
-      box-shadow: 0 8px 22px rgba(0,0,0,.18);
-    }
-
-    .speed-scale {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 10px;
-      color: var(--muted-2);
-      font-size: 12px;
-      font-weight: 750;
-    }
-
-    .scene-controls .btn { min-height: 54px; font-size: 15px; }
-
-    @media (max-width: 920px) {
-      .scene-control-row,
-      .scene-control-row.secondary { grid-template-columns: 1fr; }
-    }
-
-    .scene-status {
-      min-width: 240px;
-    }
+    .scene-card { min-height: 680px; display: grid; grid-template-rows: auto auto minmax(420px, 1fr); }
+    .scene-toolbar { padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; gap: 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+    .scene-status { min-width: 240px; }
     .scene-status strong { display: block; font-size: 16px; letter-spacing: -0.02em; }
     .scene-status span { display: block; margin-top: 3px; color: var(--muted); font-size: 13px; }
-
-    .progress-wrap {
-      flex: 1;
-      min-width: 220px;
-      height: 10px;
-      border-radius: 999px;
-      background: rgba(0,0,0,.06);
-      overflow: hidden;
-    }
-    .progress-bar {
-      width: 0%;
-      height: 100%;
-      background: linear-gradient(90deg, var(--blue), var(--green));
-      border-radius: inherit;
-      transition: width .22s ease;
-    }
+    .progress-wrap { flex: 1; min-width: 220px; height: 10px; border-radius: 999px; background: rgba(0,0,0,.06); overflow: hidden; }
+    .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, var(--blue), var(--green)); border-radius: inherit; transition: width .22s ease; }
+    .scene-controls { padding: 18px 20px; display: grid; gap: 12px; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.48); }
+    .scene-control-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: end; }
+    .scene-control-row.secondary { grid-template-columns: 1fr; }
+    .scene-speed-control { margin-top: 4px; padding: 16px 18px; border: 1px solid var(--line); border-radius: 22px; background: rgba(255,255,255,.68); }
+    .scene-speed-labels { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; color: var(--muted); font-size: 13px; font-weight: 800; }
+    .scene-speed-labels strong { color: var(--text); font-size: 14px; letter-spacing: -0.02em; }
+    .speed-range { width: 100%; height: 10px; appearance: none; -webkit-appearance: none; border: 0; border-radius: 999px; background: linear-gradient(90deg, var(--blue), var(--green)); outline: none; padding: 0; cursor: pointer; }
+    .speed-range::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 28px; height: 28px; border-radius: 999px; background: #fff; border: 1px solid rgba(0,0,0,.12); box-shadow: 0 8px 22px rgba(0,0,0,.18); }
+    .speed-range::-moz-range-thumb { width: 28px; height: 28px; border-radius: 999px; background: #fff; border: 1px solid rgba(0,0,0,.12); box-shadow: 0 8px 22px rgba(0,0,0,.18); }
+    .speed-scale { display: flex; justify-content: space-between; margin-top: 10px; color: var(--muted-2); font-size: 12px; font-weight: 750; }
 
     #cubeStage {
       position: relative;
@@ -593,590 +233,174 @@
       overflow: hidden;
       touch-action: none;
     }
-
     #cubeStage canvas { display: block; width: 100%; height: 100%; }
-
-    .stage-overlay {
-      position: absolute;
-      left: 18px;
-      top: 18px;
-      right: 18px;
-      z-index: 4;
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: flex-start;
-      pointer-events: none;
-    }
-
-    .glass-pill {
-      pointer-events: auto;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.58);
-      background: rgba(255,255,255,.72);
-      backdrop-filter: blur(18px) saturate(180%);
-      box-shadow: 0 10px 28px rgba(0,0,0,.08);
-      padding: 10px 12px;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 750;
-    }
-
-    .scene-footer {
-      position: absolute;
-      left: 18px;
-      right: 18px;
-      bottom: 8px;
-      z-index: 5;
-      padding: 14px;
-      border: 1px solid rgba(255,255,255,.58);
-      border-radius: 26px;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 12px;
-      align-items: center;
-      background: rgba(255,255,255,.78);
-      backdrop-filter: blur(20px) saturate(180%);
-      box-shadow: 0 16px 38px rgba(0,0,0,.10);
-    }
-
-    .move-strip {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding-bottom: 2px;
-      scrollbar-width: thin;
-    }
-    .move-token {
-      flex: 0 0 auto;
-      padding: 7px 10px;
-      border-radius: 12px;
-      background: rgba(0,0,0,.055);
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 800;
-      letter-spacing: .02em;
-    }
+    .stage-overlay { position: absolute; left: 18px; top: 18px; right: 18px; z-index: 4; display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; pointer-events: none; }
+    .glass-pill { pointer-events: auto; border-radius: 999px; border: 1px solid rgba(255,255,255,.58); background: rgba(255,255,255,.72); backdrop-filter: blur(18px) saturate(180%); box-shadow: 0 10px 28px rgba(0,0,0,.08); padding: 10px 12px; color: var(--muted); font-size: 12px; font-weight: 750; }
+    .topbar-cube-preview { position: absolute; right: 18px; bottom: 102px; z-index: 6; display: grid; place-items: center; padding: 8px 10px; border-radius: 18px; border: 1px solid rgba(255,255,255,.58); background: rgba(255,255,255,.78); backdrop-filter: blur(20px) saturate(180%); box-shadow: inset 0 0 0 1px rgba(255,255,255,.42), 0 14px 34px rgba(0,0,0,.10); min-height: 88px; pointer-events: none; }
+    .cube-net-preview { display: grid; grid-template-columns: repeat(4, 20px); grid-template-rows: repeat(3, 20px); gap: 2px; }
+    .net-face { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 1px; }
+    .net-face[data-face="U"] { grid-column: 2; grid-row: 1; }
+    .net-face[data-face="L"] { grid-column: 1; grid-row: 2; }
+    .net-face[data-face="F"] { grid-column: 2; grid-row: 2; }
+    .net-face[data-face="R"] { grid-column: 3; grid-row: 2; }
+    .net-face[data-face="B"] { grid-column: 4; grid-row: 2; }
+    .net-face[data-face="D"] { grid-column: 2; grid-row: 3; }
+    .net-sticker { border-radius: 2px; border: 1px solid rgba(0,0,0,.28); background: var(--sticker, #fff); }
+    .scene-footer { position: absolute; left: 18px; right: 18px; bottom: 8px; z-index: 5; padding: 14px; border: 1px solid rgba(255,255,255,.58); border-radius: 26px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; background: rgba(255,255,255,.78); backdrop-filter: blur(20px) saturate(180%); box-shadow: 0 16px 38px rgba(0,0,0,.10); }
+    .move-strip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; }
+    .move-token { flex: 0 0 auto; padding: 7px 10px; border-radius: 12px; background: rgba(0,0,0,.055); color: var(--muted); font-size: 13px; font-weight: 800; letter-spacing: .02em; }
     .move-token.active { color: #fff; background: var(--blue); }
 
-    .panels-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 18px;
-      margin-top: 36px;
-    }
-
-    .solution-box {
-      min-height: 142px;
-      border-radius: 20px;
-      background: rgba(0,0,0,.045);
-      border: 1px solid var(--line);
-      padding: 14px;
-      color: var(--text);
-      line-height: 1.55;
-      word-break: break-word;
-    }
-
-    .solution-actions { margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap; }
-
-    .solution-collapse {
-      border: 1px solid var(--line);
-      border-radius: 22px;
-      background: rgba(255,255,255,.62);
-      overflow: hidden;
-    }
-
-    .solution-collapse summary {
-      list-style: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      padding: 16px 18px;
-      font-weight: 850;
-      letter-spacing: -0.025em;
-      user-select: none;
-    }
-
-    .solution-collapse summary::-webkit-details-marker { display: none; }
-
-    .solution-collapse summary::after {
-      content: "⌄";
-      width: 32px;
-      height: 32px;
-      display: grid;
-      place-items: center;
-      border-radius: 999px;
-      background: rgba(0,0,0,.055);
-      color: var(--muted);
-      transition: transform .18s ease, background .18s ease;
-      flex: 0 0 auto;
-    }
-
-    .solution-collapse[open] summary::after {
-      transform: rotate(180deg);
-      background: rgba(0,113,227,.10);
-      color: var(--blue);
-    }
-
-    .solution-collapse small {
-      display: block;
-      margin-top: 4px;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 650;
-      line-height: 1.35;
-      letter-spacing: 0;
-    }
-
-    .solution-collapse-body {
-      display: grid;
-      gap: 12px;
-      padding: 0 16px 16px;
-    }
-
-    .solution-meta-block span {
-      display: block;
-      margin: 0 0 8px;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .solution-meta-block code {
-      display: block;
-      width: 100%;
-      min-height: 54px;
-      border-radius: 18px;
-      border: 1px solid var(--line);
-      background: rgba(0,0,0,.045);
-      padding: 13px 14px;
-      color: var(--text);
-      line-height: 1.55;
-      white-space: normal;
-      word-break: break-word;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      font-size: 13px;
-    }
-
     .timer-card { position: relative; overflow: hidden; }
-    .timer-card::before {
-      content: "";
-      position: absolute;
-      inset: auto -70px -90px auto;
-      width: 220px;
-      height: 220px;
-      background: radial-gradient(circle, rgba(0,113,227,.14), transparent 68%);
-      pointer-events: none;
-    }
-
-    .timer-notation-bar {
-      position: relative;
-      z-index: 2;
-      width: 100%;
-      margin: 0 0 14px;
-      padding: 14px;
-      border: 1px solid var(--line);
-      border-radius: 28px;
-      background: rgba(255,255,255,.76);
-      box-shadow: 0 10px 26px rgba(0,0,0,.06);
-      color: var(--text);
-      font-weight: 850;
-      letter-spacing: -0.015em;
-      text-align: left;
-      font-variant-numeric: tabular-nums;
-      display: grid;
-      grid-template-columns: 1fr;
-      align-items: stretch;
-      gap: 12px;
-      overflow: visible;
-    }
-
-    .timer-notation-scroll {
-      width: 100%;
-      max-width: 100%;
-      overflow-x: auto;
-      overflow-y: hidden;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: thin;
-      padding: 10px 12px;
-      border-radius: 20px;
-      border: 1px solid rgba(0,0,0,.055);
-      background: rgba(255,255,255,.72);
-    }
-
-    .timer-scramble-btn {
-      width: 100%;
-      min-height: 46px;
-      padding: 11px 16px;
-      font-size: 15px;
-      flex: 0 0 auto;
-    }
-
-    #timerNotationText {
-      display: inline-block;
-      min-width: max-content;
-      white-space: nowrap;
-      transform-origin: left center;
-      overflow: visible;
-      text-overflow: clip;
-      font-size: clamp(15px, 2.2vw, 22px);
-      line-height: 1.2;
-      letter-spacing: -0.025em;
-    }
-
-    .timer-display {
-      position: relative;
-      display: grid;
-      place-items: center;
-      text-align: center;
-      min-height: 235px;
-      border-radius: 26px;
-      border: 1px solid var(--line);
-      background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.62));
-      user-select: none;
-      cursor: pointer;
-      overflow: hidden;
-      touch-action: none;
-    }
-
-    .timer-display::after {
-      content: "";
-      position: absolute;
-      width: 360px;
-      height: 360px;
-      border-radius: 999px;
-      background: conic-gradient(from 180deg, rgba(0,113,227,.16), rgba(52,199,89,.16), rgba(255,149,0,.16), rgba(0,113,227,.16));
-      opacity: .34;
-      filter: blur(8px);
-      animation: spinSlow 8s linear infinite;
-      transform: scale(.75);
-    }
+    .timer-card::before { content: ""; position: absolute; inset: auto -70px -90px auto; width: 220px; height: 220px; background: radial-gradient(circle, rgba(0,113,227,.14), transparent 68%); pointer-events: none; }
+    .timer-options { position: relative; z-index: 2; margin: 0 0 14px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; gap: 12px; padding: 14px; border: 1px solid var(--line); border-radius: 26px; background: rgba(255,255,255,.72); box-shadow: 0 10px 26px rgba(0,0,0,.045); }
+    .inspection-toggle { width: 100%; display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; padding: 10px; border-radius: 20px; background: rgba(255,255,255,.54); border: 1px solid rgba(0,0,0,.045); }
+    .inspection-toggle input { position: absolute; opacity: 0; pointer-events: none; }
+    .toggle-track { position: relative; flex: 0 0 auto; width: 56px; height: 32px; border-radius: 999px; background: rgba(0,0,0,.12); border: 1px solid rgba(0,0,0,.08); transition: background .18s ease, box-shadow .18s ease; }
+    .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 999px; background: #fff; box-shadow: 0 6px 18px rgba(0,0,0,.18); transition: transform .18s ease; }
+    .inspection-toggle input:checked + .toggle-track { background: linear-gradient(180deg, var(--blue-2), var(--blue)); box-shadow: 0 10px 24px rgba(0,113,227,.18); }
+    .inspection-toggle input:checked + .toggle-track .toggle-thumb { transform: translateX(24px); }
+    .inspection-copy { display: grid; gap: 2px; min-width: 0; }
+    .inspection-copy strong { font-size: 14px; letter-spacing: -0.02em; }
+    .inspection-copy small { color: var(--muted); line-height: 1.35; font-weight: 700; }
+    .timer-notation-bar { position: relative; z-index: 2; width: 100%; margin: 0 0 14px; padding: 14px; border: 1px solid var(--line); border-radius: 28px; background: rgba(255,255,255,.76); box-shadow: 0 10px 26px rgba(0,0,0,.06); color: var(--text); font-weight: 850; letter-spacing: -0.015em; text-align: left; font-variant-numeric: tabular-nums; display: grid; grid-template-columns: 1fr; align-items: stretch; gap: 12px; overflow: visible; }
+    .timer-notation-scroll { width: 100%; max-width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; scrollbar-width: thin; padding: 10px 12px; border-radius: 20px; border: 1px solid rgba(0,0,0,.055); background: rgba(255,255,255,.72); }
+    #timerNotationText { display: inline-block; min-width: max-content; white-space: nowrap; font-size: clamp(15px, 2.2vw, 22px); line-height: 1.2; letter-spacing: -0.025em; }
+    .timer-scramble-btn { width: 100%; min-height: 46px; padding: 11px 16px; font-size: 15px; flex: 0 0 auto; }
+    .timer-display { position: relative; display: grid; place-items: center; text-align: center; min-height: 235px; border-radius: 26px; border: 1px solid var(--line); background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.62)); user-select: none; cursor: pointer; overflow: hidden; touch-action: none; }
+    .timer-display::after { content: ""; position: absolute; width: 360px; height: 360px; border-radius: 999px; background: conic-gradient(from 180deg, rgba(0,113,227,.16), rgba(52,199,89,.16), rgba(255,149,0,.16), rgba(0,113,227,.16)); opacity: .34; filter: blur(8px); animation: spinSlow 8s linear infinite; transform: scale(.75); }
     @keyframes spinSlow { to { transform: scale(.75) rotate(360deg); } }
-
     .timer-inner { position: relative; z-index: 1; padding: 24px; }
-    .timer-time {
-      font-size: clamp(58px, 10vw, 104px);
-      line-height: .9;
-      letter-spacing: -0.085em;
-      font-weight: 850;
-      font-variant-numeric: tabular-nums;
-    }
-    .timer-state {
-      margin-top: 12px;
-      color: var(--muted);
-      font-size: 15px;
-      font-weight: 750;
-    }
-    .timer-display.armed .timer-state { color: var(--green); }
+    .timer-time { font-size: clamp(58px, 10vw, 104px); line-height: .9; letter-spacing: -0.085em; font-weight: 850; font-variant-numeric: tabular-nums; }
+    .timer-state { margin-top: 12px; color: var(--muted); font-size: 15px; font-weight: 750; }
+    .timer-display.inspection .timer-time { color: var(--orange); }
+    .timer-display.inspection .timer-state { color: #9a5a00; }
     .timer-display.running .timer-time { color: var(--blue); }
-    .timer-display.stopped .timer-time { color: var(--text); }
-
-    .timer-help {
-      margin: 12px 0 0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.45;
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin-top: 16px;
-    }
-
-    .stat-box {
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.66);
-      border-radius: 18px;
-      padding: 13px;
-      min-height: 78px;
-    }
-    .stat-box span { display: block; color: var(--muted); font-size: 12px; font-weight: 750; }
-    .stat-box strong { display: block; margin-top: 8px; font-size: 18px; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+    .timer-display.dnf .timer-time, .timer-display.dnf .timer-state { color: var(--red); }
+    .timer-help { margin: 12px 0 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
 
     .history-card { margin-top: 18px; }
-    .history-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
+    .history-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
     .history-actions .btn { min-width: 150px; }
-    .btn-icon {
-      min-width: 54px !important;
-      width: 54px;
-      padding: 11px;
-      font-size: 18px;
-    }
-    .modal-message {
-      margin: 10px 0 0;
-      color: var(--muted);
-      line-height: 1.5;
-    }
-    .stats-modal-grid {
-      margin-top: 18px;
-      display: grid;
-      gap: 12px;
-      color: var(--text);
-    }
-    .stats-modal-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-variant-numeric: tabular-nums;
-    }
-    .stats-modal-table th,
-    .stats-modal-table td {
-      padding: 13px 8px;
-      border-bottom: 1px solid var(--line);
-      text-align: center;
-      font-size: 16px;
-    }
-    .stats-modal-table th {
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 850;
-    }
-    .stats-modal-table td:first-child,
-    .stats-modal-table th:first-child {
-      text-align: left;
-      color: var(--muted);
-      font-weight: 850;
-    }
-    .stats-summary-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-variant-numeric: tabular-nums;
-    }
-    .stats-summary-table td {
-      width: 25%;
-      padding: 13px 8px;
-      border-bottom: 1px solid var(--line);
-      text-align: center;
-      color: var(--text);
-      font-size: 16px;
-    }
-    .stats-summary-table td:nth-child(odd) {
-      color: var(--muted);
-      font-weight: 850;
-    }
     .history-list { display: grid; gap: 14px; }
-    .session-group {
-      border: 1px solid var(--line);
-      border-radius: 22px;
-      background: rgba(255,255,255,.58);
-      overflow: hidden;
-    }
-    .session-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      padding: 14px 16px;
-      background: rgba(0,0,0,.035);
-      border-bottom: 1px solid var(--line);
-    }
+    .session-group { border: 1px solid var(--line); border-radius: 22px; background: rgba(255,255,255,.58); overflow: hidden; }
+    .session-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 14px 16px; background: rgba(0,0,0,.035); border-bottom: 1px solid var(--line); }
     .session-head strong { letter-spacing: -0.02em; }
     .session-head span { color: var(--muted); font-size: 13px; }
+    .session-head-main { display: grid; gap: 2px; min-width: 0; }
+    .session-head-actions { display: flex; justify-content: flex-end; align-items: center; gap: 8px; flex-wrap: wrap; }
     .notation-block { padding: 14px 16px; border-bottom: 1px solid var(--line); }
     .notation-block:last-child { border-bottom: 0; }
-    .notation-title {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      align-items: flex-start;
-      margin-bottom: 10px;
-      font-size: 13px;
-      color: var(--muted);
-    }
-    .notation-title code {
-      display: inline-block;
-      max-width: 100%;
-      color: var(--text);
-      background: rgba(0,0,0,.045);
-      border-radius: 10px;
-      padding: 6px 8px;
-      white-space: normal;
-    }
+    .notation-title { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; margin-bottom: 10px; font-size: 13px; color: var(--muted); }
+    .notation-title code { display: inline-block; max-width: 100%; color: var(--text); background: rgba(0,0,0,.045); border-radius: 10px; padding: 6px 8px; white-space: normal; }
+    .scramble-use-btn { border: 0; display: inline-block; max-width: 100%; color: var(--text); background: rgba(0,0,0,.045); border-radius: 10px; padding: 6px 8px; white-space: normal; text-align: left; cursor: pointer; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 13px; line-height: 1.45; transition: background .18s ease, box-shadow .18s ease, transform .18s ease; }
+    .scramble-use-btn:hover { background: rgba(0,113,227,.10); box-shadow: 0 0 0 3px rgba(0,113,227,.08); transform: translateY(-1px); }
+    .scramble-use-btn:focus-visible { outline: 3px solid rgba(0,113,227,.22); outline-offset: 2px; }
     .times-list { display: grid; gap: 8px; }
-    .time-row {
-      display: grid;
-      grid-template-columns: 92px 1fr auto;
-      gap: 10px;
-      align-items: center;
-      padding: 10px 10px 10px 12px;
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      background: rgba(255,255,255,.70);
-    }
-    .time-value { font-weight: 850; font-variant-numeric: tabular-nums; letter-spacing: -0.035em; }
+    .time-row { display: grid; grid-template-columns: 92px 1fr auto; gap: 10px; align-items: center; padding: 10px 10px 10px 12px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255,255,255,.70); }
+    .time-value { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-weight: 850; font-variant-numeric: tabular-nums; letter-spacing: -0.035em; }
     .time-meta { color: var(--muted); font-size: 12px; }
-    .empty-state {
-      padding: 24px;
-      border-radius: 22px;
-      background: rgba(0,0,0,.04);
-      color: var(--muted);
-      text-align: center;
-      border: 1px dashed rgba(0,0,0,.14);
-    }
+    .time-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+    .time-action-btn { border: 1px solid var(--line); background: rgba(255,255,255,.76); color: var(--text); border-radius: 999px; min-height: 34px; padding: 8px 12px; font-size: 12px; font-weight: 900; cursor: pointer; transition: transform .18s ease, background .18s ease, box-shadow .18s ease, border-color .18s ease; }
+    .time-action-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(0,0,0,.08); }
+    .time-action-btn.active-penalty { background: rgba(255,149,0,.16); color: #9a5a00; border-color: rgba(255,149,0,.30); }
+    .time-action-btn.active-dnf { background: rgba(255,59,48,.12); color: var(--red); border-color: rgba(255,59,48,.28); }
+    .penalty-badge, .invalid-time-badge { display: inline-flex; align-items: center; justify-content: center; min-height: 22px; padding: 4px 8px; border-radius: 999px; font-size: 12px; font-weight: 900; letter-spacing: -0.01em; }
+    .penalty-badge { background: rgba(255,149,0,.14); color: #9a5a00; border: 1px solid rgba(255,149,0,.24); }
+    .invalid-time-badge { background: rgba(255,59,48,.10); color: var(--red); border: 1px solid rgba(255,59,48,.20); }
+    .empty-state { padding: 24px; border-radius: 22px; background: rgba(0,0,0,.04); color: var(--muted); text-align: center; border: 1px dashed rgba(0,0,0,.14); }
 
-    .payment-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 14px;
-    }
+    .stats-modal-grid { margin-top: 18px; display: grid; gap: 12px; color: var(--text); }
+    .stats-modal-table, .stats-summary-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+    .stats-modal-table th, .stats-modal-table td, .stats-summary-table td { padding: 13px 8px; border-bottom: 1px solid var(--line); text-align: center; font-size: 16px; }
+    .stats-modal-table th { color: var(--muted); font-size: 13px; font-weight: 850; }
+    .stats-modal-table td:first-child, .stats-modal-table th:first-child, .stats-summary-table td:nth-child(odd) { text-align: left; color: var(--muted); font-weight: 850; }
+    .modal-message { margin: 10px 0 0; color: var(--muted); line-height: 1.5; }
 
-    .pay-option {
-      min-height: 110px;
-      border-radius: 22px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.72);
-      display: grid;
-      place-items: center;
-      text-align: center;
-      cursor: pointer;
-      transition: transform .18s ease, box-shadow .18s ease, border .18s ease;
-      padding: 16px;
-      user-select: none;
-    }
-    .pay-option:hover { transform: translateY(-2px); box-shadow: 0 14px 28px rgba(0,0,0,.08); }
-    .pay-option.active { border-color: rgba(0,113,227,.46); box-shadow: 0 0 0 4px rgba(0,113,227,.10); }
-    .pay-logo { font-size: 22px; font-weight: 900; letter-spacing: -0.04em; }
-    .paypal { color: #003087; }
-    .mercado { color: #009ee3; }
-    .pay-option small { display: block; color: var(--muted); margin-top: 7px; line-height: 1.35; }
-
-    .footer-cta {
-      margin-top: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 18px;
-      padding: 22px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius-lg);
-      background: #1d1d1f;
-      color: #fff;
-      box-shadow: var(--shadow-soft);
-    }
+    .footer-cta { margin-top: 18px; display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 22px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: #1d1d1f; color: #fff; box-shadow: var(--shadow-soft); }
     .footer-cta p { margin: 6px 0 0; color: rgba(255,255,255,.68); line-height: 1.45; }
     .footer-cta h3 { margin: 0; font-size: 24px; letter-spacing: -0.04em; }
     .footer-cta .btn { background: #fff; color: #1d1d1f; }
 
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      z-index: 100;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 18px;
-      background: rgba(0,0,0,.32);
-      backdrop-filter: blur(18px);
-    }
+    .modal-backdrop { position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; padding: 18px; background: rgba(0,0,0,.32); backdrop-filter: blur(18px); }
     .modal-backdrop.show { display: flex; animation: fadeIn .18s ease; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-    .modal {
-      width: min(540px, 100%);
-      border-radius: 30px;
-      border: 1px solid rgba(255,255,255,.42);
-      background: rgba(255,255,255,.92);
-      box-shadow: 0 26px 80px rgba(0,0,0,.22);
-      overflow: hidden;
-      animation: modalIn .22s ease both;
-    }
+    .modal { width: min(560px, 100%); border-radius: 30px; border: 1px solid rgba(255,255,255,.42); background: rgba(255,255,255,.92); box-shadow: 0 26px 80px rgba(0,0,0,.22); overflow: hidden; animation: modalIn .22s ease both; }
     @keyframes modalIn { from { transform: translateY(12px) scale(.97); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
-    .modal-icon {
-      width: 58px;
-      height: 58px;
-      border-radius: 20px;
-      display: grid;
-      place-items: center;
-      background: rgba(0,113,227,.10);
-      color: var(--blue);
-      font-size: 28px;
-      margin-bottom: 16px;
-    }
+    .modal-icon { width: 58px; height: 58px; border-radius: 20px; display: grid; place-items: center; background: rgba(0,113,227,.10); color: var(--blue); font-size: 28px; margin-bottom: 16px; }
     .modal-content { padding: 26px; }
     .modal h3 { margin: 0; font-size: 25px; letter-spacing: -0.045em; }
-    .modal p, .modal-message { margin: 10px 0 0; color: var(--muted); line-height: 1.5; }
     .modal-actions { display: flex; justify-content: flex-end; gap: 10px; padding: 0 26px 26px; flex-wrap: wrap; }
-
-    .toast-stack {
-      position: fixed;
-      z-index: 120;
-      right: 18px;
-      bottom: 18px;
-      display: grid;
-      gap: 10px;
-      width: min(390px, calc(100vw - 36px));
-    }
-    .toast {
-      border-radius: 20px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.88);
-      backdrop-filter: blur(18px) saturate(180%);
-      box-shadow: 0 16px 40px rgba(0,0,0,.14);
-      padding: 14px 16px;
-      animation: toastIn .24s ease both;
-    }
+    .toast-stack { position: fixed; z-index: 120; right: 18px; bottom: 18px; display: grid; gap: 10px; width: min(390px, calc(100vw - 36px)); }
+    .toast { border-radius: 20px; border: 1px solid var(--line); background: rgba(255,255,255,.88); backdrop-filter: blur(18px) saturate(180%); box-shadow: 0 16px 40px rgba(0,0,0,.14); padding: 14px 16px; animation: toastIn .24s ease both; }
     @keyframes toastIn { from { transform: translateX(18px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     .toast strong { display: block; }
     .toast span { display: block; margin-top: 4px; color: var(--muted); font-size: 13px; line-height: 1.4; }
 
     @media (max-width: 1100px) {
-      .hero-grid,
-      .section-grid,
-      .panels-grid { grid-template-columns: 1fr; }
+      .hero-grid { grid-template-columns: 1fr; }
       .scene-card { min-height: auto; }
       #cubeStage { height: min(72vw, 620px); min-height: 420px; }
     }
-
     @media (max-width: 720px) {
       .app-shell { width: min(100% - 20px, 1440px); padding-top: 10px; }
       .topbar { border-radius: 24px; align-items: flex-start; }
-      .top-actions { width: 100%; display: grid; grid-template-columns: 1fr 1fr; }
-      .topbar { flex-direction: column; }
-      .topbar-cube-preview { right: 14px; bottom: 184px; min-height: 74px; padding: 8px 9px; overflow: visible; }
-      .cube-net-preview { grid-template-columns: repeat(4, 18px); grid-template-rows: repeat(3, 18px); }
-      .brand { width: 100%; }
-      .brand-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       .hero { padding: 24px; border-radius: 28px; }
-      .hero-stat-grid, .stats-grid, .payment-grid { grid-template-columns: 1fr 1fr; }
+      .hero-stat-grid { grid-template-columns: 1fr 1fr; }
       .scene-toolbar, .scene-footer, .footer-cta { grid-template-columns: 1fr; flex-direction: column; align-items: stretch; }
       .scene-status { min-width: 0; }
       #cubeStage { height: 620px; min-height: 560px; }
-      .scene-footer { left: 14px; right: 14px; bottom: 14px; grid-template-columns: 1fr; padding: 12px; gap: 10px; }
-      .stage-overlay { left: 12px; right: 12px; top: 12px; align-items: stretch; }
-      .glass-pill { font-size: 11px; padding: 9px 10px; text-align: center; }
-      .timer-notation-bar { grid-template-columns: 1fr; gap: 10px; padding: 12px; border-radius: 24px; }
-      .timer-notation-scroll { padding: 9px 10px; }
-      .timer-scramble-btn { min-height: 44px; padding: 10px 14px; font-size: 14px; }
-      #timerNotationText { font-size: clamp(14px, 3.2vw, 18px); letter-spacing: -0.025em; }
-      .card-header { flex-direction: column; }
-      .history-actions { width: 100%; justify-content: stretch; }
-      .history-actions .btn { flex: 1; min-width: 0; }
-      .history-actions .btn-icon { flex: 0 0 54px; }
-      .time-row { grid-template-columns: 82px 1fr auto; }
-      .timer-display { min-height: 220px; }
+      .scene-footer { left: 14px; right: 14px; bottom: 14px; grid-template-columns: 1fr; }
+      .history-card .card-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 18px;
+      }
+      .history-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 54px;
+        gap: 8px;
+        justify-content: stretch;
+        align-items: stretch;
+      }
+      .history-actions .btn {
+        width: 100%;
+        min-width: 0;
+        padding-inline: 10px;
+        white-space: normal;
+        text-align: center;
+        line-height: 1.15;
+      }
+      .history-actions .btn-icon {
+        width: 54px;
+        min-width: 54px !important;
+        padding: 11px;
+        white-space: nowrap;
+      }
+      .session-head { flex-direction: column; align-items: stretch; }
+      .session-head-actions { justify-content: stretch; }
+      .session-head-actions .btn { flex: 1; }
+      .time-row { grid-template-columns: 82px 1fr; }
+      .time-actions { grid-column: 1 / -1; justify-content: stretch; }
+      .time-actions .time-action-btn,
+      .time-actions .btn { flex: 1; }
+      .timer-options { grid-template-columns: 1fr; }
       .button-row { flex-direction: column; }
-      .footer-cta { text-align: left; }
     }
-
     @media (max-width: 460px) {
-      .timer-notation-bar { gap: 10px; padding: 10px; border-radius: 22px; }
-      .timer-notation-scroll { padding: 9px 10px; }
-      .timer-scramble-btn { min-height: 42px; padding: 10px 12px; font-size: 14px; letter-spacing: -0.02em; }
-      #timerNotationText { font-size: 14px; letter-spacing: -0.025em; }
-      .topbar-cube-preview { right: 14px; bottom: 184px; min-height: 66px; padding: 8px 8px; border-radius: 16px; overflow: visible; }
-      .cube-net-preview { grid-template-columns: repeat(4, 14px); grid-template-rows: repeat(3, 14px); }
-      .hero-stat-grid, .stats-grid, .payment-grid { grid-template-columns: 1fr; }
-      .time-row { grid-template-columns: 1fr auto; }
+      .hero-stat-grid { grid-template-columns: 1fr; }
+      .time-row { grid-template-columns: 1fr; }
       .time-meta { grid-column: 1 / -1; }
+      .time-actions { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr; }
+      .time-actions .btn { grid-column: auto; }
+      .history-actions {
+        grid-template-columns: 1fr;
+      }
+      .history-actions .btn-icon {
+        width: 100%;
+        min-width: 0 !important;
+      }
       .modal-actions { flex-direction: column; }
       .modal-actions .btn { width: 100%; }
     }
@@ -1195,7 +419,7 @@
       <div class="hero-grid">
         <div>
           <h1>Cubo Rubik 3D con notación, solución y cronómetro cubero.</h1>
-          <p>Ingresa una notación Rubik, desordena el cubo en 3D, genera la solución inversa y mide tus tiempos por sesión como en una práctica de speedcubing.</p>
+          <p>Genera scrambles, visualiza el cubo en 3D, usa inspección con penalizaciones WCA y guarda tus tiempos por sesión local.</p>
         </div>
         <div class="hero-panel">
           <div class="hero-stat-grid">
@@ -1219,145 +443,107 @@
             <span id="cubeStateSubtitle">Presiona “Nuevo scramble” para generar y aplicar una nueva secuencia.</span>
           </div>
           <div class="progress-wrap" aria-label="Progreso de animación"><div class="progress-bar" id="progressBar"></div></div>
-          <div class="button-row">
-            <button class="btn btn-small btn-soft" id="centerCubeBtn">Centrar vista</button>
-          </div>
+          <div class="button-row"><button class="btn btn-small btn-soft" id="centerCubeBtn">Centrar vista</button></div>
         </div>
         <div class="scene-controls">
           <div class="scene-control-row primary">
             <button class="btn btn-primary" id="scrambleBtn">🌀 Nuevo scramble</button>
             <button class="btn btn-green" id="solveBtn">Animar scramble</button>
           </div>
-          <div class="scene-control-row secondary">
-            <button class="btn btn-ghost" id="resetCubeBtn">Restaurar cubo</button>
-          </div>
+          <div class="scene-control-row secondary"><button class="btn btn-ghost" id="resetCubeBtn">Restaurar cubo</button></div>
           <div class="scene-speed-control">
-            <div class="scene-speed-labels">
-              <label for="speedSelect">Velocidad de animación</label>
-              <strong id="speedValueLabel">Normal · 420 ms por movimiento</strong>
-            </div>
+            <div class="scene-speed-labels"><label for="speedSelect">Velocidad de animación</label><strong id="speedValueLabel">Normal · 420 ms por movimiento</strong></div>
             <input class="speed-range" id="speedSelect" type="range" min="180" max="2200" step="20" value="420" aria-label="Velocidad de animación por movimiento" />
             <div class="speed-scale"><span>Más rápida</span><span>Más lenta</span></div>
           </div>
         </div>
         <div id="cubeStage" aria-label="Cubo Rubik 3D interactivo">
-          <div class="stage-overlay">
-            <div class="glass-pill">Arrastra para inspeccionar · Pinch para zoom</div>
-            <div class="glass-pill" id="currentMovePill">Movimiento: --</div>
-          </div>
-          <div class="topbar-cube-preview" aria-label="Resultado visual del cubo desordenado">
-            <div class="cube-net-preview" id="scrambleCubePreview" aria-hidden="true"></div>
-          </div>
-          <div class="scene-footer">
-            <div class="move-strip" id="moveStrip" aria-label="Movimientos de la notación"></div>
-            <button class="btn btn-small btn-primary" id="copyNotationBtn">Copiar notación</button>
-          </div>
+          <div class="stage-overlay"><div class="glass-pill">Arrastra para inspeccionar · Pinch para zoom</div><div class="glass-pill" id="currentMovePill">Movimiento: --</div></div>
+          <div class="topbar-cube-preview" aria-label="Resultado visual del cubo desordenado"><div class="cube-net-preview" id="scrambleCubePreview" aria-hidden="true"></div></div>
+          <div class="scene-footer"><div class="move-strip" id="moveStrip" aria-label="Movimientos de la notación"></div><button class="btn btn-small btn-primary" id="copyNotationBtn">Copiar notación</button></div>
         </div>
       </section>
     </main>
 
     <section class="panels-grid">
       <article class="card timer-card">
-        <div class="card-header">
-          <div>
-            <h2 class="card-title">Cronómetro cubero</h2>
-            <p class="card-subtitle">Inspirado en StackMat: mantén presionada la barra espaciadora y suelta para iniciar. Toca/cualquier tecla para detener.</p>
-          </div>
-        </div>
+        <div class="card-header"><div><h2 class="card-title">Cronómetro cubero</h2><p class="card-subtitle">Un toque/click avanza entre inspección, resolución y detención del tiempo.</p></div></div>
         <div class="card-body">
+          <div class="timer-options" aria-label="Configuración del cronómetro">
+            <label class="inspection-toggle" for="inspectionToggle">
+              <input id="inspectionToggle" type="checkbox" checked />
+              <span class="toggle-track" aria-hidden="true"><span class="toggle-thumb"></span></span>
+              <span class="inspection-copy"><strong>Tiempo de inspección</strong><small>Activo: primer toque inicia inspección · +2 desde 15s · DNF a los 17s</small></span>
+            </label>
+            <label class="inspection-toggle" for="autoScrambleToggle">
+              <input id="autoScrambleToggle" type="checkbox" checked />
+              <span class="toggle-track" aria-hidden="true"><span class="toggle-thumb"></span></span>
+              <span class="inspection-copy"><strong>Nuevo scramble automático</strong><small>Activo: al finalizar un solve o DNF se genera el siguiente scramble</small></span>
+            </label>
+          </div>
           <div class="timer-notation-bar" aria-label="Notación actual del scramble">
-            <div class="timer-notation-scroll" aria-label="Scramble actual desplazable">
-              <span id="timerNotationText">--</span>
-            </div>
+            <div class="timer-notation-scroll" aria-label="Scramble actual desplazable"><span id="timerNotationText">--</span></div>
             <button class="btn btn-small btn-primary timer-scramble-btn" id="timerScrambleBtn" type="button">Nuevo scramble</button>
           </div>
           <div class="timer-display" id="timerPad" role="button" tabindex="0" aria-label="Cronómetro cubero">
-            <div class="timer-inner">
-              <div class="timer-time" id="timerTime">00.00</div>
-              <div class="timer-state" id="timerState">Mantén presionado para preparar</div>
-            </div>
+            <div class="timer-inner"><div class="timer-time" id="timerTime">00.00</div><div class="timer-state" id="timerState">Toca para iniciar inspección</div></div>
           </div>
-          <p class="timer-help">En móvil: mantén presionada el área del cronómetro y suelta para iniciar. Toca otra vez para detener. Al detenerse, el tiempo se guarda automáticamente con la notación actual.</p>
-          <div class="button-row" style="margin-top:14px;">
-            <button class="btn btn-soft" id="clearTimerBtn">Limpiar cronómetro</button>
-          </div>
+          <p class="timer-help" id="timerHelpText">Con inspección activa: primer toque inicia la inspección, segundo toque inicia la resolución y el siguiente toque detiene el tiempo.</p>
+          <div class="button-row" style="margin-top:14px;"><button class="btn btn-soft" id="clearTimerBtn">Limpiar cronómetro</button></div>
         </div>
       </article>
     </section>
 
     <section class="card history-card">
       <div class="card-header">
-        <div>
-          <h2 class="card-title">Sesiones y tiempos guardados</h2>
-          <p class="card-subtitle">Los tiempos se agrupan por fecha y por notación. Puedes eliminar cualquier registro.</p>
-        </div>
+        <div><h2 class="card-title">Sesiones y tiempos guardados</h2><p class="card-subtitle">Los tiempos se agrupan por fecha y por notación. Puedes eliminar cualquier registro.</p></div>
         <div class="history-actions">
           <button class="btn btn-soft" id="exportDataBtn">Exportar tiempos</button>
           <button class="btn btn-soft" id="importDataBtn">Importar tiempos</button>
-          <button class="btn btn-primary btn-icon" id="showStatsBtn" title="Ver estadísticas" aria-label="Ver estadísticas">📊</button>
+          <button class="btn btn-primary btn-icon" id="showStatsBtn" title="Ver estadísticas globales" aria-label="Ver estadísticas globales de todas las sesiones">📊</button>
           <input id="importDataInput" type="file" accept="application/json,.json" hidden />
         </div>
       </div>
-      <div class="card-body">
-        <div class="history-list" id="historyList"></div>
-      </div>
+      <div class="card-body"><div class="history-list" id="historyList"></div></div>
     </section>
 
     <section class="footer-cta">
-      <div>
-        <h3>Desarrollado por IANGINE</h3>
-        <p>Este demo funcional fue diseñado y desarrollado por IANGINE como una experiencia interactiva para visualizar un cubo Rubik 3D, gestionar scrambles y medir tiempos de práctica.</p>
-      </div>
+      <div><h3>Desarrollado por IANGINE</h3><p>Demo funcional para visualizar un cubo Rubik 3D, gestionar scrambles y medir tiempos de práctica.</p></div>
       <a class="btn" href="https://www.iangine.com" target="_blank" rel="noopener noreferrer">Visitar IANGINE</a>
     </section>
   </div>
 
   <div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <div class="modal-content">
-        <div class="modal-icon" id="modalIcon">ℹ</div>
-        <h3 id="modalTitle">Mensaje</h3>
-        <div id="modalMessage" class="modal-message">Contenido del mensaje.</div>
-      </div>
+      <div class="modal-content"><div class="modal-icon" id="modalIcon">ℹ</div><h3 id="modalTitle">Mensaje</h3><div id="modalMessage" class="modal-message">Contenido del mensaje.</div></div>
       <div class="modal-actions" id="modalActions"></div>
     </div>
   </div>
   <div class="toast-stack" id="toastStack" aria-live="polite"></div>
 
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
-      }
-    }
-  </script>
-
   <script type="module">
-    import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
-    import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+    let THREE = null;
+    let OrbitControls = null;
 
-    const KEYS = {
-      sessions: 'rubik_demo_sessions_v1',
-      notation: 'rubik_demo_current_notation_v1'
-    };
-
+    const THREE_MODULE_URLS = [
+      'https://esm.sh/three@0.160.0',
+      'https://cdn.skypack.dev/three@0.160.0'
+    ];
+    const ORBIT_CONTROLS_URLS = [
+      'https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls.js?bundle',
+      'https://cdn.skypack.dev/three@0.160.0/examples/jsm/controls/OrbitControls.js'
+    ];
+    const KEYS = { sessions: 'rubik_demo_sessions_v1', notation: 'rubik_demo_current_notation_v1', autoScramble: 'rubik_demo_auto_scramble_v1' };
     const $ = (selector) => document.querySelector(selector);
-    const $$ = (selector) => Array.from(document.querySelectorAll(selector));
 
     const notationInput = $('#notationInput');
     const notationStatus = $('#notationStatus');
     const scrambleBtn = $('#scrambleBtn');
     const timerScrambleBtn = $('#timerScrambleBtn');
     const solveBtn = $('#solveBtn');
-    const pauseBtn = null;
     const resetCubeBtn = $('#resetCubeBtn');
     const centerCubeBtn = $('#centerCubeBtn');
-    const officialScrambleBtn = $('#officialScrambleBtn');
     const copyNotationBtn = $('#copyNotationBtn');
-    const copySolutionBtn = null;
-    const solutionDetails = null;
-    const solutionScrambleBox = null;
-    const solutionBox = null;
     const moveStrip = $('#moveStrip');
     const progressBar = $('#progressBar');
     const cubeStateTitle = $('#cubeStateTitle');
@@ -1370,6 +556,9 @@
     const timerTime = $('#timerTime');
     const timerState = $('#timerState');
     const timerNotationText = $('#timerNotationText');
+    const inspectionToggle = $('#inspectionToggle');
+    const autoScrambleToggle = $('#autoScrambleToggle');
+    const timerHelpText = $('#timerHelpText');
     const scrambleCubePreview = $('#scrambleCubePreview');
     const clearTimerBtn = $('#clearTimerBtn');
     const historyList = $('#historyList');
@@ -1385,34 +574,34 @@
     const toastStack = $('#toastStack');
 
     const VALID_BASES = new Set(['U', 'D', 'L', 'R', 'F', 'B']);
-    const COLOR = {
-      U: 0xffffff,
-      D: 0xffd60a,
-      F: 0x22c55e,
-      B: 0x2563eb,
-      R: 0xef4444,
-      L: 0xf97316,
-      INNER: 0x141414
-    };
+    const COLOR = { U: 0xffffff, D: 0xffd60a, F: 0x22c55e, B: 0x2563eb, R: 0xef4444, L: 0xf97316, INNER: 0x141414 };
+    const OFFICIAL_3X3_SCRAMBLE_LENGTH = 20;
+    const INSPECTION_WARN_8_MS = 8000;
+    const INSPECTION_WARN_12_MS = 12000;
+    const INSPECTION_START_SOLVE_MS = 15000;
+    const INSPECTION_DNF_MS = 17000;
 
     let scene, camera, renderer, controls;
     let cubies = [];
+    let threeReady = false;
     let isAnimating = false;
-    let isPaused = false;
-    let activeQueue = [];
-    let activeQueueIndex = 0;
     let currentMoves = [];
     let currentSolution = [];
-    let cubeIsScrambled = false;
-
-    const OFFICIAL_3X3_SCRAMBLE_LENGTH = 20;
+    let audioContext = null;
 
     let timer = {
       state: 'idle',
       start: 0,
       elapsed: 0,
       raf: null,
-      armedByPointer: false,
+      inspectionStart: 0,
+      inspectionElapsed: 0,
+      inspectionRaf: null,
+      inspectionWarn8: false,
+      inspectionWarn12: false,
+      inspectionReady15: false,
+      pendingPenaltyMs: 0,
+      lastInteractionAt: 0,
       autoSaved: false
     };
 
@@ -1434,19 +623,19 @@
 
     function todayKey() {
       const d = new Date();
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      return `${y}-${m}-${day}`;
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     }
 
     function formatDateTime(iso) {
-      return new Intl.DateTimeFormat('es-HN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
+      const date = new Date(iso);
+      if (Number.isNaN(date.getTime())) return 'Fecha no disponible';
+      return new Intl.DateTimeFormat('es-HN', { dateStyle: 'medium', timeStyle: 'short' }).format(date);
     }
 
     function formatMs(ms) {
-      if (!Number.isFinite(ms) || ms <= 0) return '00.00';
-      const totalCs = Math.floor(ms / 10);
+      const value = Number(ms);
+      if (!Number.isFinite(value) || value <= 0) return '00.00';
+      const totalCs = Math.floor(value / 10);
       const cs = totalCs % 100;
       const totalSeconds = Math.floor(totalCs / 100);
       const s = totalSeconds % 60;
@@ -1455,9 +644,22 @@
       return `${String(s).padStart(2, '0')}.${String(cs).padStart(2, '0')}`;
     }
 
+    function isValidTimeMs(value) {
+      const ms = Number(value);
+      return Number.isFinite(ms) && ms > 0;
+    }
+
     function avg(values) {
-      if (!values.length) return 0;
-      return values.reduce((a,b) => a + b, 0) / values.length;
+      return values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0;
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
     }
 
     function getCurrentNotation() {
@@ -1465,15 +667,13 @@
     }
 
     function parseNotation(input) {
-      const normalized = input.trim().replace(/\s+/g, ' ');
+      const normalized = String(input || '').trim().replace(/\s+/g, ' ');
       if (!normalized) return { ok: false, moves: [], error: 'Ingresa al menos un movimiento.' };
       const tokens = normalized.split(' ');
       const moves = [];
       for (const token of tokens) {
         const match = token.match(/^([UDLRFB])(['2]?)$/);
-        if (!match || !VALID_BASES.has(match[1])) {
-          return { ok: false, moves: [], error: `Movimiento inválido: ${token}. Usa U, D, L, R, F, B con sufijo opcional ' o 2.` };
-        }
+        if (!match || !VALID_BASES.has(match[1])) return { ok: false, moves: [], error: `Movimiento inválido: ${token}` };
         moves.push(token);
       }
       return { ok: true, moves, error: '' };
@@ -1493,16 +693,13 @@
       const parsed = parseNotation(getCurrentNotation());
       if (parsed.ok) {
         notationStatus.textContent = `${parsed.moves.length} movimientos válidos`;
-        notationStatus.style.color = 'var(--green)';
         currentMoves = parsed.moves;
         currentSolution = invertMoves(currentMoves);
         renderMoveStrip(currentMoves);
         updateTimerNotation();
         updateScramblePreview(currentMoves);
-        renderSolution(false, { close: true });
       } else {
         notationStatus.textContent = parsed.error;
-        notationStatus.style.color = 'var(--red)';
         currentMoves = [];
         currentSolution = [];
         renderMoveStrip([]);
@@ -1516,49 +713,40 @@
     }
 
     function updateTimerNotation() {
-      if (!timerNotationText) return;
-      const notation = getCurrentNotation() || '--';
-      timerNotationText.textContent = notation;
-      fitTimerNotation();
-    }
-
-    function fitTimerNotation() {
-      if (!timerNotationText) return;
+      timerNotationText.textContent = getCurrentNotation() || '--';
       const scroller = timerNotationText.closest('.timer-notation-scroll');
       if (scroller) scroller.scrollLeft = 0;
     }
 
     function stickerHex(face) {
-      const map = {
-        U: '#ffffff',
-        D: '#ffd60a',
-        F: '#22c55e',
-        B: '#2563eb',
-        R: '#ef4444',
-        L: '#f97316'
-      };
-      return map[face] || '#ffffff';
+      return { U: '#ffffff', D: '#ffd60a', F: '#22c55e', B: '#2563eb', R: '#ef4444', L: '#f97316' }[face] || '#ffffff';
     }
 
     function rotateVector(v, axis, quarterTurns) {
       let { x, y, z } = v;
       const turns = ((quarterTurns % 4) + 4) % 4;
       for (let i = 0; i < turns; i++) {
-        if (axis === 'x') {
-          const ny = -z;
-          const nz = y;
-          y = ny; z = nz;
-        } else if (axis === 'y') {
-          const nx = z;
-          const nz = -x;
-          x = nx; z = nz;
-        } else {
-          const nx = -y;
-          const ny = x;
-          x = nx; y = ny;
-        }
+        if (axis === 'x') { const ny = -z; const nz = y; y = ny; z = nz; }
+        else if (axis === 'y') { const nx = z; const nz = -x; x = nx; z = nz; }
+        else { const nx = -y; const ny = x; x = nx; y = ny; }
       }
       return { x, y, z };
+    }
+
+    function moveDefinition(token) {
+      const base = token[0];
+      const suffix = token.slice(1);
+      const directionMap = {
+        U: { axis: 'y', layer: 1, direction: -1 },
+        D: { axis: 'y', layer: -1, direction: 1 },
+        R: { axis: 'x', layer: 1, direction: -1 },
+        L: { axis: 'x', layer: -1, direction: 1 },
+        F: { axis: 'z', layer: 1, direction: -1 },
+        B: { axis: 'z', layer: -1, direction: 1 }
+      };
+      const def = { ...directionMap[base], turns: suffix === '2' ? 2 : 1 };
+      if (suffix === "'") def.direction *= -1;
+      return def;
     }
 
     function createStickerState() {
@@ -1580,8 +768,8 @@
       const def = moveDefinition(token);
       stickers.forEach(sticker => {
         if (sticker.pos[def.axis] !== def.layer) return;
-        sticker.pos = rotateVector(sticker.pos, def.axis, def.direction);
-        sticker.normal = rotateVector(sticker.normal, def.axis, def.direction);
+        sticker.pos = rotateVector(sticker.pos, def.axis, def.direction * def.turns);
+        sticker.normal = rotateVector(sticker.normal, def.axis, def.direction * def.turns);
       });
     }
 
@@ -1616,11 +804,9 @@
     }
 
     function updateScramblePreview(moves = currentMoves) {
-      if (!scrambleCubePreview) return;
       const net = getCubeNetAfterMoves(moves);
-      const faces = ['U', 'L', 'F', 'R', 'B', 'D'];
       scrambleCubePreview.innerHTML = '';
-      faces.forEach(face => {
+      ['U', 'L', 'F', 'R', 'B', 'D'].forEach(face => {
         const faceEl = document.createElement('div');
         faceEl.className = 'net-face';
         faceEl.dataset.face = face;
@@ -1632,6 +818,14 @@
         });
         scrambleCubePreview.appendChild(faceEl);
       });
+    }
+
+    function isAutoScrambleEnabled() {
+      return Boolean(autoScrambleToggle?.checked);
+    }
+
+    function saveAutoScrambleSetting() {
+      localStorage.setItem(KEYS.autoScramble, isAutoScrambleEnabled() ? '1' : '0');
     }
 
     function renderMoveStrip(moves, activeIndex = -1) {
@@ -1651,28 +845,13 @@
       });
     }
 
-    function closeSolutionCollapse() {
-      if (solutionDetails) solutionDetails.open = false;
-    }
-
-    function openSolutionCollapse() {
-      if (solutionDetails) solutionDetails.open = true;
-    }
-
-    function renderSolution(showToast = true, options = {}) {
-      if (showToast && currentSolution.length) {
-        showModal({ icon: '🧩', title: 'Solución generada', message: currentSolution.join(' ') });
-      }
-    }
-
     function showModal({ icon = 'ℹ', title = 'Mensaje', message = '', html = null, actions = null }) {
       modalIcon.textContent = icon;
       modalTitle.textContent = title;
-      if (html !== null) modalMessage.innerHTML = html;
-      else modalMessage.textContent = message;
+      modalMessage.innerHTML = html !== null ? html : escapeHtml(message);
       modalActions.innerHTML = '';
       const buttons = actions || [{ label: 'Aceptar', className: 'btn-primary', action: closeModal }];
-      buttons.forEach((item) => {
+      buttons.forEach(item => {
         const btn = document.createElement('button');
         btn.className = `btn ${item.className || 'btn-soft'}`;
         btn.textContent = item.label;
@@ -1700,114 +879,139 @@
       }, 3200);
     }
 
-    function escapeHtml(text) {
-      return String(text)
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
+    async function importFirstAvailable(urls, label) {
+      let lastError = null;
+      for (const url of urls) {
+        try {
+          return await import(url);
+        } catch (error) {
+          lastError = error;
+          console.warn(`No se pudo cargar ${label} desde ${url}:`, error);
+        }
+      }
+      throw lastError || new Error(`No se pudo cargar ${label}.`);
+    }
+
+    async function loadThreeDependencies() {
+      try {
+        const [threeModule, controlsModule] = await Promise.all([
+          importFirstAvailable(THREE_MODULE_URLS, 'Three.js'),
+          importFirstAvailable(ORBIT_CONTROLS_URLS, 'OrbitControls')
+        ]);
+        THREE = threeModule;
+        OrbitControls = controlsModule.OrbitControls;
+        if (!THREE?.Scene || !OrbitControls) throw new Error('Three.js u OrbitControls no expuso los módulos esperados.');
+        return true;
+      } catch (error) {
+        console.error('No se pudieron cargar Three.js/OrbitControls:', error);
+        showThreeFallback(error);
+        return false;
+      }
+    }
+
+    function showThreeFallback(error) {
+      const fallback = document.createElement('div');
+      fallback.className = 'empty-state';
+      fallback.style.position = 'absolute';
+      fallback.style.inset = '18px';
+      fallback.style.zIndex = '8';
+      fallback.style.display = 'grid';
+      fallback.style.placeItems = 'center';
+      fallback.innerHTML = '<div><strong style="display:block;color:var(--text);font-size:18px;margin-bottom:8px;">No se pudo cargar el cubo 3D</strong><span>El cronómetro, los scrambles y el historial seguirán funcionando.</span></div>';
+      cubeStage.appendChild(fallback);
+      cubeStateTitle.textContent = 'Render 3D no disponible';
+      cubeStateSubtitle.textContent = 'Revisa la conexión al CDN o empaqueta Three.js localmente.';
+      progressBar.style.width = '0%';
+      currentMovePill.textContent = 'Movimiento: --';
+      console.warn('Detalle técnico Three.js:', error);
+    }
+
+    function setThreeControlsEnabled(enabled) {
+      [solveBtn, resetCubeBtn, centerCubeBtn].forEach(btn => { if (btn) btn.disabled = !enabled; });
     }
 
     function initThree() {
+      if (!THREE || !OrbitControls) throw new Error('Three.js/OrbitControls no han sido cargados.');
       scene = new THREE.Scene();
-      scene.background = null;
       camera = new THREE.PerspectiveCamera(42, cubeStage.clientWidth / cubeStage.clientHeight, 0.1, 100);
-
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.setSize(cubeStage.clientWidth, cubeStage.clientHeight);
-      renderer.shadowMap.enabled = true;
-      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       cubeStage.prepend(renderer.domElement);
-
       controls = new OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
-      controls.dampingFactor = 0.06;
       controls.minDistance = 4.2;
       controls.maxDistance = 14;
       applyCameraFrame();
-
-      const ambient = new THREE.HemisphereLight(0xffffff, 0xb7c4d8, 2.2);
-      scene.add(ambient);
+      scene.add(new THREE.HemisphereLight(0xffffff, 0xb7c4d8, 2.2));
       const key = new THREE.DirectionalLight(0xffffff, 2.8);
       key.position.set(6, 8, 5);
-      key.castShadow = true;
       scene.add(key);
       const fill = new THREE.DirectionalLight(0xffffff, 1.2);
       fill.position.set(-5, 3, -4);
       scene.add(fill);
-
-      const floor = new THREE.Mesh(
-        new THREE.CircleGeometry(5.2, 80),
-        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.22 })
-      );
+      const floor = new THREE.Mesh(new THREE.CircleGeometry(5.2, 80), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.22 }));
       floor.rotation.x = -Math.PI / 2;
       floor.position.y = -2.15;
       scene.add(floor);
-
       buildCube();
       animateScene();
-      window.addEventListener('resize', () => {
-        resizeRenderer();
-        fitTimerNotation();
-      });
+      window.addEventListener('resize', resizeRenderer);
     }
 
-    function createFaceMaterial(color, roughness = 0.54) {
-      return new THREE.MeshStandardMaterial({
-        color,
-        roughness,
-        metalness: 0.02,
-        polygonOffset: true,
-        polygonOffsetFactor: 1,
-        polygonOffsetUnits: 1
-      });
-    }
-
-    function cubieMaterials(x, y, z) {
-      const inner = createFaceMaterial(COLOR.INNER, 0.72);
-      return [
-        x === 1 ? createFaceMaterial(COLOR.R) : inner,
-        x === -1 ? createFaceMaterial(COLOR.L) : inner,
-        y === 1 ? createFaceMaterial(COLOR.U) : inner,
-        y === -1 ? createFaceMaterial(COLOR.D) : inner,
-        z === 1 ? createFaceMaterial(COLOR.F) : inner,
-        z === -1 ? createFaceMaterial(COLOR.B) : inner,
-      ];
-    }
-
-    function buildCube() {
-      cubies.forEach(c => scene.remove(c.mesh));
-      cubies = [];
-      const spacing = 1.06;
-      const geometry = new THREE.BoxGeometry(0.96, 0.96, 0.96);
-      const edgesMaterial = new THREE.LineBasicMaterial({ color: 0x111111, transparent: true, opacity: 0.52 });
-
-      for (let x = -1; x <= 1; x++) {
-        for (let y = -1; y <= 1; y++) {
-          for (let z = -1; z <= 1; z++) {
-            const mesh = new THREE.Mesh(geometry, cubieMaterials(x, y, z));
-            mesh.position.set(x * spacing, y * spacing, z * spacing);
-            mesh.castShadow = true;
-            mesh.receiveShadow = true;
-            const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geometry), edgesMaterial.clone());
-            mesh.add(edges);
-            scene.add(mesh);
-            cubies.push({ mesh, coord: { x, y, z } });
-          }
-        }
-      }
+    function applyCameraFrame() {
+      if (!camera || !controls) return;
+      const isMobile = window.matchMedia('(max-width: 720px)').matches;
+      camera.position.set(isMobile ? 6.4 : 5.8, isMobile ? 6.2 : 5.5, isMobile ? 7.2 : 6.6);
+      controls.target.set(0, 0, 0);
+      controls.update();
     }
 
     function resizeRenderer() {
       if (!renderer || !camera) return;
-      const w = cubeStage.clientWidth;
-      const h = cubeStage.clientHeight;
-      camera.aspect = w / h;
+      const width = cubeStage.clientWidth;
+      const height = cubeStage.clientHeight;
+      camera.aspect = width / height;
       camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
+      renderer.setSize(width, height);
       applyCameraFrame();
+    }
+
+    function createCubie(x, y, z) {
+      const group = new THREE.Group();
+      group.position.set(x, y, z);
+      group.userData.coord = { x, y, z };
+      const body = new THREE.Mesh(new THREE.BoxGeometry(0.96, 0.96, 0.96), new THREE.MeshStandardMaterial({ color: COLOR.INNER, roughness: 0.58, metalness: 0.12 }));
+      group.add(body);
+      const stickerGeo = new THREE.PlaneGeometry(0.72, 0.72);
+      const offset = 0.486;
+      const stickerDefs = [
+        { face: 'U', condition: y === 1, pos: [0, offset, 0], rot: [-Math.PI / 2, 0, 0] },
+        { face: 'D', condition: y === -1, pos: [0, -offset, 0], rot: [Math.PI / 2, 0, 0] },
+        { face: 'F', condition: z === 1, pos: [0, 0, offset], rot: [0, 0, 0] },
+        { face: 'B', condition: z === -1, pos: [0, 0, -offset], rot: [0, Math.PI, 0] },
+        { face: 'R', condition: x === 1, pos: [offset, 0, 0], rot: [0, Math.PI / 2, 0] },
+        { face: 'L', condition: x === -1, pos: [-offset, 0, 0], rot: [0, -Math.PI / 2, 0] }
+      ];
+      stickerDefs.forEach(def => {
+        if (!def.condition) return;
+        const sticker = new THREE.Mesh(stickerGeo, new THREE.MeshStandardMaterial({ color: COLOR[def.face], roughness: 0.62, metalness: 0.02 }));
+        sticker.position.set(...def.pos);
+        sticker.rotation.set(...def.rot);
+        group.add(sticker);
+      });
+      return group;
+    }
+
+    function buildCube() {
+      if (!scene) return;
+      cubies.forEach(c => scene.remove(c));
+      cubies = [];
+      for (let x = -1; x <= 1; x++) for (let y = -1; y <= 1; y++) for (let z = -1; z <= 1; z++) {
+        const cubie = createCubie(x, y, z);
+        cubies.push(cubie);
+        scene.add(cubie);
+      }
     }
 
     function animateScene() {
@@ -1816,812 +1020,812 @@
       renderer?.render(scene, camera);
     }
 
-    function getCameraFrame() {
-      const width = cubeStage?.clientWidth || window.innerWidth;
-      if (width <= 520) {
-        return {
-          position: [7.2, 5.7, 8.6],
-          target: [0, -0.95, 0]
-        };
-      }
-      if (width <= 720) {
-        return {
-          position: [6.6, 5.2, 8.0],
-          target: [0, -0.78, 0]
-        };
-      }
-      return {
-        position: [5.6, 4.6, 6.8],
-        target: [0, -0.38, 0]
-      };
-    }
-
-    function applyCameraFrame() {
-      if (!camera || !controls) return;
-      const frame = getCameraFrame();
-      camera.position.set(...frame.position);
-      controls.target.set(...frame.target);
-      camera.updateProjectionMatrix();
-      controls.update();
-    }
-
-    function centerView() {
-      applyCameraFrame();
-    }
-
-    function moveDefinition(token) {
-      const base = token[0];
-      const suffix = token.slice(1);
-      const prime = suffix === "'";
-      const twice = suffix === '2';
-      const maps = {
-        R: { axis: 'x', layer: 1, sign: -1 },
-        L: { axis: 'x', layer: -1, sign: 1 },
-        U: { axis: 'y', layer: 1, sign: -1 },
-        D: { axis: 'y', layer: -1, sign: 1 },
-        F: { axis: 'z', layer: 1, sign: -1 },
-        B: { axis: 'z', layer: -1, sign: 1 },
-      };
-      const def = maps[base];
-      const turnCount = twice ? 2 : 1;
-      const direction = def.sign * (prime ? -1 : 1) * turnCount;
-      return { ...def, direction, angle: direction * Math.PI / 2 };
-    }
-
-    function rotateCoord(coord, axis, direction) {
-      const normalizedTurns = ((direction % 4) + 4) % 4;
-      let { x, y, z } = coord;
-      for (let i = 0; i < normalizedTurns; i++) {
-        if (axis === 'x') {
-          const ny = -z;
-          const nz = y;
-          y = ny; z = nz;
-        } else if (axis === 'y') {
-          const nx = z;
-          const nz = -x;
-          x = nx; z = nz;
-        } else if (axis === 'z') {
-          const nx = -y;
-          const ny = x;
-          x = nx; y = ny;
-        }
-      }
-      return { x, y, z };
-    }
-
     function axisVector(axis) {
-      if (axis === 'x') return new THREE.Vector3(1,0,0);
-      if (axis === 'y') return new THREE.Vector3(0,1,0);
-      return new THREE.Vector3(0,0,1);
+      if (axis === 'x') return new THREE.Vector3(1, 0, 0);
+      if (axis === 'y') return new THREE.Vector3(0, 1, 0);
+      return new THREE.Vector3(0, 0, 1);
     }
+
+    function snapCubie(cubie) {
+      cubie.position.x = Math.round(cubie.position.x);
+      cubie.position.y = Math.round(cubie.position.y);
+      cubie.position.z = Math.round(cubie.position.z);
+      cubie.rotation.x = Math.round(cubie.rotation.x / (Math.PI / 2)) * (Math.PI / 2);
+      cubie.rotation.y = Math.round(cubie.rotation.y / (Math.PI / 2)) * (Math.PI / 2);
+      cubie.rotation.z = Math.round(cubie.rotation.z / (Math.PI / 2)) * (Math.PI / 2);
+      cubie.userData.coord = { x: Math.round(cubie.position.x), y: Math.round(cubie.position.y), z: Math.round(cubie.position.z) };
+    }
+
+    function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+    function speedToMs() { const raw = Number(speedSelect?.value || 420); return Number.isFinite(raw) ? raw : 420; }
 
     function updateSpeedLabel() {
-      const value = Number(speedSelect.value) || 420;
+      const ms = speedToMs();
       let label = 'Normal';
-      if (value <= 280) label = 'Rápida';
-      else if (value >= 1400) label = 'Muy lenta';
-      else if (value >= 620) label = 'Lenta';
-      speedValueLabel.textContent = `${label} · ${value} ms por movimiento`;
+      if (ms <= 260) label = 'Muy rápida'; else if (ms <= 520) label = 'Normal'; else if (ms <= 980) label = 'Lenta'; else if (ms <= 1600) label = 'Muy lenta'; else label = 'Ultra lenta';
+      speedValueLabel.textContent = `${label} · ${ms} ms por movimiento`;
     }
 
-    function setUIAnimating(animating) {
-      scrambleBtn.disabled = animating;
-      solveBtn.disabled = animating || !currentMoves.length;
-      resetCubeBtn.disabled = animating;
-    }
-
-    function waitWhilePaused() {
-      return new Promise(resolve => {
-        const check = () => {
-          if (!isPaused) resolve();
-          else requestAnimationFrame(check);
-        };
-        check();
-      });
-    }
-
-    async function rotateLayer(token, duration = 420) {
+    async function rotateLayer(token, options = {}) {
       const def = moveDefinition(token);
-      const selected = cubies.filter(c => c.coord[def.axis] === def.layer);
+      const layerCubies = cubies.filter(c => Math.round(c.userData.coord[def.axis]) === def.layer);
       const pivot = new THREE.Group();
       scene.add(pivot);
-      selected.forEach(c => pivot.attach(c.mesh));
-
-      const axis = axisVector(def.axis);
+      layerCubies.forEach(cubie => { scene.attach(cubie); pivot.attach(cubie); });
+      const angleTotal = def.direction * def.turns * Math.PI / 2;
+      const duration = Math.max(1, Number(options.duration ?? speedToMs()));
       const start = performance.now();
-      let previous = 0;
-      const ease = t => 1 - Math.pow(1 - t, 3);
-
+      const axis = axisVector(def.axis);
       return new Promise(resolve => {
-        const step = async (now) => {
-          if (isPaused) {
-            await waitWhilePaused();
-            requestAnimationFrame(step);
-            return;
-          }
-          const raw = Math.min(1, (now - start) / duration);
-          const eased = ease(raw);
-          const current = def.angle * eased;
-          pivot.rotateOnAxis(axis, current - previous);
-          previous = current;
-          if (raw < 1) {
-            requestAnimationFrame(step);
-          } else {
-            pivot.rotateOnAxis(axis, def.angle - previous);
-            selected.forEach(c => {
-              scene.attach(c.mesh);
-              c.coord = rotateCoord(c.coord, def.axis, def.direction);
-              c.mesh.position.set(c.coord.x * 1.06, c.coord.y * 1.06, c.coord.z * 1.06);
-              c.mesh.updateMatrixWorld(true);
+        function frame(now) {
+          const t = Math.min(1, (now - start) / duration);
+          const eased = 1 - Math.pow(1 - t, 3);
+          pivot.rotation.set(0, 0, 0);
+          pivot.rotateOnAxis(axis, angleTotal * eased);
+          if (t < 1) requestAnimationFrame(frame);
+          else {
+            pivot.rotation.set(0, 0, 0);
+            pivot.rotateOnAxis(axis, angleTotal);
+            layerCubies.forEach(cubie => {
+              scene.attach(cubie);
+              cubie.userData.coord = rotateVector(cubie.userData.coord, def.axis, def.direction * def.turns);
+              snapCubie(cubie);
             });
             scene.remove(pivot);
             resolve();
           }
-        };
-        requestAnimationFrame(step);
+        }
+        requestAnimationFrame(frame);
       });
     }
 
-    function delay(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
+    async function applyMoveInstant(token) {
+      await rotateLayer(token, { duration: 1 });
+      await sleep(0);
     }
 
-    async function runQueue(moves, label = 'Animando', options = {}) {
-      if (!moves.length) return;
+    async function animateMoves(moves) {
+      if (!threeReady) return;
+      if (!moves.length) return showModal({ icon: '⚠️', title: 'Sin movimientos', message: 'Genera un scramble antes de animar.' });
       if (isAnimating) return;
       isAnimating = true;
-      isPaused = false;
-      activeQueue = moves;
-      activeQueueIndex = 0;
       setUIAnimating(true);
-      cubeStateTitle.textContent = label;
-      cubeStateSubtitle.textContent = `Ejecutando ${moves.length} movimientos.`;
-      progressBar.style.width = '0%';
-      const duration = Number(speedSelect.value) || 420;
-
       try {
+        clearCube();
+        await sleep(80);
+        cubeStateTitle.textContent = 'Animando scramble';
+        cubeStateSubtitle.textContent = 'Sigue la secuencia resaltada en la barra inferior.';
         for (let i = 0; i < moves.length; i++) {
-          activeQueueIndex = i;
-          const token = moves[i];
-          currentMovePill.textContent = `Movimiento: ${token}`;
-          cubeStateSubtitle.textContent = `Paso ${i + 1} de ${moves.length}: ${token}`;
+          const move = moves[i];
+          currentMovePill.textContent = `Movimiento: ${move}`;
           renderMoveStrip(moves, i);
-          await rotateLayer(token, duration);
-          progressBar.style.width = `${Math.round(((i + 1) / moves.length) * 100)}%`;
+          progressBar.style.width = `${Math.round((i / moves.length) * 100)}%`;
+          await rotateLayer(move, { duration: speedToMs() });
+          if (i === 0) await sleep(Math.min(900, Math.max(260, speedToMs() * 0.75)));
+          await sleep(70);
         }
+        progressBar.style.width = '100%';
         currentMovePill.textContent = 'Movimiento: --';
-        renderMoveStrip(moves, -1);
-        cubeStateTitle.textContent = options.doneTitle || 'Animación completada';
-        cubeStateSubtitle.textContent = options.doneSubtitle || 'El cubo terminó la secuencia solicitada.';
-        showToast(options.toastTitle || 'Animación completada', options.toastMessage || 'La secuencia se ejecutó correctamente.');
-        if (options.modal) showModal(options.modal);
+        renderMoveStrip(currentMoves);
+        cubeStateTitle.textContent = 'Scramble completado';
+        cubeStateSubtitle.textContent = 'El cubo muestra visualmente el resultado del scramble actual.';
       } finally {
+        setUIAnimating(false);
         isAnimating = false;
-        isPaused = false;
+      }
+    }
+
+    function setUIAnimating(value) {
+      [scrambleBtn, timerScrambleBtn].forEach(btn => { if (btn) btn.disabled = value; });
+      [solveBtn, resetCubeBtn, centerCubeBtn].forEach(btn => { if (btn) btn.disabled = value || !threeReady; });
+    }
+
+    async function showScrambledCubeInstant(moves) {
+      if (!threeReady) return;
+      buildCube();
+      progressBar.style.width = '0%';
+      for (let i = 0; i < moves.length; i++) {
+        currentMovePill.textContent = `Aplicando: ${moves[i]}`;
+        progressBar.style.width = `${Math.round(((i + 1) / moves.length) * 100)}%`;
+        await applyMoveInstant(moves[i]);
+      }
+      cubies.forEach(snapCubie);
+      cubeStateTitle.textContent = 'Cubo desordenado';
+      cubeStateSubtitle.textContent = 'El cubo ya refleja el scramble generado. Puedes animarlo para seguir la secuencia.';
+      currentMovePill.textContent = 'Movimiento: --';
+    }
+
+    function randomNotation(length = OFFICIAL_3X3_SCRAMBLE_LENGTH) {
+      const bases = ['U', 'D', 'L', 'R', 'F', 'B'];
+      const suffixes = ['', "'", '2'];
+      const axisMap = { U: 'y', D: 'y', L: 'x', R: 'x', F: 'z', B: 'z' };
+      const moves = [];
+      let lastBase = '';
+      let lastAxis = '';
+      while (moves.length < length) {
+        const base = bases[Math.floor(Math.random() * bases.length)];
+        const axis = axisMap[base];
+        if (base === lastBase) continue;
+        if (moves.length >= 2 && axis === lastAxis && axisMap[lastBase] === axis) continue;
+        moves.push(`${base}${suffixes[Math.floor(Math.random() * suffixes.length)]}`);
+        lastBase = base;
+        lastAxis = axis;
+      }
+      return moves.join(' ');
+    }
+
+    async function setActiveScramble(notation, options = {}) {
+      const parsed = parseNotation(notation);
+      if (!parsed.ok) {
+        showModal({ icon: '⚠️', title: 'Scramble inválido', message: 'El scramble seleccionado no tiene una notación válida.' });
+        return false;
+      }
+
+      notationInput.value = String(notation || '').trim();
+      validateAndRenderNotation();
+      clearTimer();
+
+      if (threeReady && options.applyToCube !== false) {
+        setUIAnimating(true);
+        try {
+          await showScrambledCubeInstant(currentMoves);
+        } catch (error) {
+          console.error('Error aplicando scramble seleccionado:', error);
+          showModal({ icon: '⚠️', title: 'No se pudo aplicar el scramble', message: 'El scramble quedó activo para el cronómetro, pero el cubo 3D no pudo actualizarse.' });
+        } finally {
+          setUIAnimating(false);
+        }
+      }
+
+      if (options.toast !== false) showToast('Scramble activo', 'Los próximos solves se guardarán bajo el scramble seleccionado.');
+      return true;
+    }
+
+    async function generateScramble() {
+      notationInput.value = randomNotation();
+      validateAndRenderNotation();
+      clearTimer();
+      if (!threeReady) {
+        cubeStateTitle.textContent = 'Scramble generado sin render 3D';
+        cubeStateSubtitle.textContent = 'La notación, la vista previa 2D y el cronómetro siguen disponibles.';
+        showToast('Nuevo scramble generado', 'El render 3D no está disponible, pero puedes usar el scramble en el cronómetro.');
+        return;
+      }
+      setUIAnimating(true);
+      try {
+        await showScrambledCubeInstant(currentMoves);
+        showToast('Nuevo scramble generado', 'El cubo ya se muestra desordenado y listo para practicar.');
+      } catch (error) {
+        console.error('Error aplicando scramble:', error);
+        showModal({ icon: '⚠️', title: 'Error al aplicar scramble', message: 'Se generó la notación, pero el cubo 3D no pudo actualizarse correctamente.' });
+      } finally {
         setUIAnimating(false);
       }
     }
 
-    function applyMovesInstant(moves = currentMoves) {
-      if (!moves.length) return;
-      moves.forEach(token => {
-        const def = moveDefinition(token);
-        const selected = cubies.filter(c => c.coord[def.axis] === def.layer);
-        const pivot = new THREE.Group();
-        scene.add(pivot);
-        selected.forEach(c => pivot.attach(c.mesh));
-        pivot.rotateOnAxis(axisVector(def.axis), def.angle);
-        selected.forEach(c => {
-          scene.attach(c.mesh);
-          c.coord = rotateCoord(c.coord, def.axis, def.direction);
-          c.mesh.position.set(c.coord.x * 1.06, c.coord.y * 1.06, c.coord.z * 1.06);
-          c.mesh.updateMatrixWorld(true);
-        });
-        scene.remove(pivot);
-      });
-    }
-
-    function showScrambledCubeInstant(moves = currentMoves) {
+    function clearCube() {
+      if (!threeReady) {
+        cubeStateTitle.textContent = 'Render 3D no disponible';
+        cubeStateSubtitle.textContent = 'No se puede restaurar el cubo porque Three.js u OrbitControls no cargaron.';
+        progressBar.style.width = '0%';
+        currentMovePill.textContent = 'Movimiento: --';
+        return;
+      }
       buildCube();
-      applyMovesInstant(moves);
-      cubeIsScrambled = true;
-      progressBar.style.width = '100%';
-      currentMovePill.textContent = 'Movimiento: --';
-      renderMoveStrip(moves, -1);
-      cubeStateTitle.textContent = 'Cubo desordenado';
-      cubeStateSubtitle.textContent = 'El cubo muestra el resultado final del scramble actual.';
-      setUIAnimating(false);
-    }
-
-    function resetCube() {
-      if (isAnimating) return;
-      buildCube();
-      cubeIsScrambled = false;
-      setUIAnimating(false);
       progressBar.style.width = '0%';
       currentMovePill.textContent = 'Movimiento: --';
       cubeStateTitle.textContent = 'Cubo restaurado';
-      cubeStateSubtitle.textContent = 'El cubo volvió al estado resuelto. Puedes animar el scramble actual o generar uno nuevo.';
+      cubeStateSubtitle.textContent = 'Presiona “Nuevo scramble” para generar una nueva secuencia.';
       renderMoveStrip(currentMoves);
-      showToast('Cubo restaurado', 'El cubo volvió al estado resuelto.');
     }
 
-    function randomNotation(length = OFFICIAL_3X3_SCRAMBLE_LENGTH) {
-      const bases = ['U','D','L','R','F','B'];
-      const suffixes = ['', "'", '2'];
-      const result = [];
-      let previous = '';
-      for (let i = 0; i < length; i++) {
-        let base = bases[Math.floor(Math.random() * bases.length)];
-        while (base === previous) base = bases[Math.floor(Math.random() * bases.length)];
-        previous = base;
-        result.push(base + suffixes[Math.floor(Math.random() * suffixes.length)]);
-      }
-      return result.join(' ');
-    }
-
-    function applyGeneratedScramble(length = OFFICIAL_3X3_SCRAMBLE_LENGTH) {
-      notationInput.value = randomNotation(length);
-      cubeIsScrambled = false;
-      validateAndRenderNotation();
-      closeSolutionCollapse();
-      buildCube();
-      setUIAnimating(false);
-      progressBar.style.width = '0%';
-      currentMovePill.textContent = 'Movimiento: --';
-      cubeStateTitle.textContent = 'Nueva secuencia generada';
-      cubeStateSubtitle.textContent = `Se generó un scramble 3x3 de ${length} movimientos. Presiona “Desordenar cubo” para aplicarlo.`;
-      showToast('Scramble oficial generado', `Se creó una secuencia de ${length} movimientos para práctica 3x3.`);
-    }
-
-    function saveTime(auto = false) {
-      if (timer.elapsed <= 0 || timer.state !== 'stopped' || timer.autoSaved) return;
-      const notation = getCurrentNotation() || 'Sin notación';
-      const parsed = parseNotation(notation);
-      if (!parsed.ok && notation !== 'Sin notación') {
-        showModal({ icon: '⚠️', title: 'Notación inválida', message: 'Corrige la notación antes de guardar el tiempo.' });
-        return;
-      }
-      const sessions = loadSessions();
-      const date = todayKey();
-      let session = sessions.find(s => s.date === date);
-      if (!session) {
-        session = { id: `session_${date}`, date, notations: [] };
-        sessions.unshift(session);
-      }
-      let notationGroup = session.notations.find(n => n.notation === notation);
-      if (!notationGroup) {
-        notationGroup = { notation, times: [] };
-        session.notations.unshift(notationGroup);
-      }
-      notationGroup.times.unshift({
-        id: `time_${Date.now()}_${Math.random().toString(16).slice(2)}`,
-        valueMs: Math.round(timer.elapsed),
-        formatted: formatMs(timer.elapsed),
-        createdAt: new Date().toISOString()
-      });
-      saveSessions(sessions);
-      timer.autoSaved = true;
-      if (auto) {
-        showToast('Tiempo guardado automáticamente', `Se registró ${formatMs(timer.elapsed)} para la notación actual.`);
-      } else {
-        showModal({ icon: '⏱️', title: 'Tiempo guardado', message: `Se registró ${formatMs(timer.elapsed)} para la notación actual.` });
+    function copyText(text, successMessage) {
+      if (!text) return;
+      if (navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(() => showToast('Copiado', successMessage));
+      else {
+        const helper = document.createElement('textarea');
+        helper.value = text;
+        helper.setAttribute('readonly', '');
+        helper.style.position = 'fixed';
+        helper.style.left = '-9999px';
+        document.body.appendChild(helper);
+        helper.focus();
+        helper.select();
+        let copied = false;
+        try { copied = document.execCommand('copy'); } catch { copied = false; }
+        helper.remove();
+        if (copied) showToast('Copiado', successMessage);
       }
     }
 
-    function deleteTime(sessionId, notation, timeId) {
-      showModal({
-        icon: '🗑️',
-        title: 'Eliminar tiempo',
-        message: 'Esta acción eliminará el registro seleccionado del almacenamiento local.',
-        actions: [
-          { label: 'Cancelar', className: 'btn-soft', action: closeModal },
-          { label: 'Eliminar', className: 'btn-danger', action: () => {
-            const sessions = loadSessions();
-            const session = sessions.find(s => s.id === sessionId);
-            if (session) {
-              const group = session.notations.find(n => n.notation === notation);
-              if (group) group.times = group.times.filter(t => t.id !== timeId);
-              session.notations = session.notations.filter(n => n.times.length);
-            }
-            const clean = sessions.filter(s => s.notations.length);
-            saveSessions(clean);
-            closeModal();
-            showToast('Tiempo eliminado', 'El registro fue eliminado correctamente.');
-          }}
-        ]
-      });
+    function countStoredTimes(sessions = loadSessions()) {
+      return sessions.reduce((total, session) => total + (session.notations || []).reduce((sub, group) => sub + (group.times || []).length, 0), 0);
     }
 
-    function computeStats(times) {
-      const values = times.map(t => t.valueMs).filter(Number.isFinite);
-      if (!values.length) return { attempts: 0, average: '--', best: '--', worst: '--' };
-      return {
-        attempts: values.length,
-        average: formatMs(avg(values)),
-        best: formatMs(Math.min(...values)),
-        worst: formatMs(Math.max(...values))
-      };
-    }
-
-    function getTimesForCurrentNotationToday() {
-      const notation = getCurrentNotation() || 'Sin notación';
-      const session = loadSessions().find(s => s.date === todayKey());
-      const group = session?.notations.find(n => n.notation === notation);
-      return group?.times || [];
-    }
-
-    function updateCurrentStats() {
-      const stats = computeStats(getTimesForCurrentNotationToday());
-      const attemptsEl = $('#statAttempts');
-      const averageEl = $('#statAverage');
-      const bestEl = $('#statBest');
-      const worstEl = $('#statWorst');
-      if (attemptsEl) attemptsEl.textContent = stats.attempts;
-      if (averageEl) averageEl.textContent = stats.average;
-      if (bestEl) bestEl.textContent = stats.best;
-      if (worstEl) worstEl.textContent = stats.worst;
+    function normalizeTimeEntries(sessions) {
+      return sessions.flatMap(s => s.notations || []).flatMap(n => n.times || [])
+        .map(t => {
+          const numericMs = Number(t?.ms);
+          const numericRawMs = Number(t?.rawMs);
+          const numericPenaltyMs = Number(t?.penaltyMs);
+          return {
+            ...t,
+            ms: Number.isFinite(numericMs) ? numericMs : null,
+            rawMs: Number.isFinite(numericRawMs) ? numericRawMs : (Number.isFinite(numericMs) ? numericMs : null),
+            penaltyMs: Number.isFinite(numericPenaltyMs) ? numericPenaltyMs : 0,
+            date: t?.createdAt ? new Date(t.createdAt) : new Date(0)
+          };
+        })
+        .filter(t => Number.isFinite(t.ms) && t.ms > 0)
+        .sort((a, b) => b.date - a.date);
     }
 
     function updateHeroStats() {
       const sessions = loadSessions();
-      const allTimes = sessions.flatMap(s => s.notations.flatMap(n => n.times));
-      $('#heroTotalTimes').textContent = allTimes.length;
+      const entries = normalizeTimeEntries(sessions);
+      const calculableTimes = entries.map(t => Number(t.ms)).filter(ms => Number.isFinite(ms) && ms > 0);
+      $('#heroTotalTimes').textContent = countStoredTimes(sessions);
+      $('#heroBestTime').textContent = calculableTimes.length ? formatMs(Math.min(...calculableTimes)) : '--';
       $('#heroSessionCount').textContent = sessions.length;
-      $('#heroBestTime').textContent = allTimes.length ? formatMs(Math.min(...allTimes.map(t => t.valueMs))) : '--';
       $('#heroMoveCount').textContent = currentMoves.length;
+    }
+
+    function updateCurrentStats() {
+      const attemptsEl = $('#statAttempts');
+      const avgEl = $('#statAverage');
+      const bestEl = $('#statBest');
+      const worstEl = $('#statWorst');
+      if (!attemptsEl || !avgEl || !bestEl || !worstEl) return;
+      const notation = getCurrentNotation();
+      const times = loadSessions().flatMap(s => s.notations || []).filter(n => n.notation === notation).flatMap(n => n.times || []).map(t => Number(t.ms)).filter(ms => Number.isFinite(ms) && ms > 0);
+      attemptsEl.textContent = times.length;
+      avgEl.textContent = times.length ? formatMs(avg(times)) : '--';
+      bestEl.textContent = times.length ? formatMs(Math.min(...times)) : '--';
+      worstEl.textContent = times.length ? formatMs(Math.max(...times)) : '--';
+    }
+
+    function queueAutoScrambleAfterSolve() {
+      if (!isAutoScrambleEnabled()) return;
+      window.setTimeout(() => {
+        generateScramble();
+      }, 450);
+    }
+
+    function saveTime(ms, options = {}) {
+      const notation = getCurrentNotation();
+      if (!notation || !currentMoves.length) return showModal({ icon: '⚠️', title: 'No hay scramble activo', message: 'Genera un nuevo scramble antes de guardar tiempos.' });
+      const normalizedMs = Number(ms);
+      const rawMs = Number.isFinite(Number(options.rawMs)) ? Number(options.rawMs) : normalizedMs;
+      const penaltyMs = Number.isFinite(Number(options.penaltyMs)) ? Number(options.penaltyMs) : 0;
+      if (!Number.isFinite(normalizedMs) || normalizedMs <= 0) return;
+      const sessions = loadSessions();
+      const date = todayKey();
+      let session = sessions.find(s => s.date === date);
+      if (!session) { session = { date, notations: [] }; sessions.unshift(session); }
+      let notationGroup = session.notations.find(n => n.notation === notation);
+      if (!notationGroup) { notationGroup = { notation, times: [] }; session.notations.unshift(notationGroup); }
+      notationGroup.times.unshift({
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+        ms: normalizedMs,
+        rawMs,
+        penaltyMs,
+        penaltyLabel: penaltyMs ? `+${Math.round(penaltyMs / 1000)}` : '',
+        isDNF: Boolean(options.isDNF),
+        reason: options.reason || '',
+        inspectionMs: Number.isFinite(Number(options.inspectionMs)) ? Number(options.inspectionMs) : null,
+        createdAt: new Date().toISOString()
+      });
+      saveSessions(sessions);
+      if (options.isDNF) showToast('DNF guardado', `Se registró DNF. Para cálculos internos se reutiliza ${formatMs(normalizedMs)}.`);
+      else if (penaltyMs) showToast('Tiempo guardado con +2', `${formatMs(rawMs)} +2 registrado. Cálculo final: ${formatMs(normalizedMs)}.`);
+      else showToast('Tiempo guardado automáticamente', `${formatMs(normalizedMs)} registrado en la sesión de hoy.`);
+      queueAutoScrambleAfterSolve();
+    }
+
+    function saveInspectionDNF() {
+      if (timer.autoSaved) return;
+      timer.autoSaved = true;
+      cancelAnimationFrame(timer.inspectionRaf);
+      timer.inspectionElapsed = INSPECTION_DNF_MS;
+      timerTime.textContent = 'DNF';
+      setTimerState('dnf');
+      document.body.classList.remove('timer-lock');
+      saveTime(INSPECTION_DNF_MS, { isDNF: true, reason: 'Inspección excedida', inspectionMs: INSPECTION_DNF_MS });
+    }
+
+    function formatTimeEntry(item) {
+      if (item?.isDNF) return 'DNF';
+      const rawMs = Number.isFinite(Number(item?.rawMs)) ? Number(item.rawMs) : Number(item?.ms);
+      if (!isValidTimeMs(rawMs)) return '<span class="invalid-time-badge">Sin tiempo válido</span>';
+      return formatMs(rawMs);
+    }
+
+    function formatTimeMeta(item) {
+      const dateText = formatDateTime(item.createdAt);
+      if (item?.isDNF) return `${escapeHtml(item.reason || 'DNF')} · cálculo: ${formatMs(Number(item.ms))} · ${dateText}`;
+      if (!isValidTimeMs(item?.rawMs ?? item?.ms)) return `Registro heredado sin duración recuperable · ${dateText}`;
+      if (Number(item?.penaltyMs || 0) > 0) return `Penalización por inspección · cálculo final: ${formatMs(Number(item.ms))} · ${dateText}`;
+      return dateText;
     }
 
     function renderHistory() {
       const sessions = loadSessions();
       historyList.innerHTML = '';
       if (!sessions.length) {
-        historyList.innerHTML = `<div class="empty-state">Aún no hay tiempos guardados. Detén el cronómetro para guardar automáticamente tu primer registro.</div>`;
+        historyList.innerHTML = '<div class="empty-state">Aún no hay tiempos guardados. Genera un scramble, inicia el cronómetro y guarda tus primeros registros.</div>';
         return;
       }
       sessions.forEach(session => {
-        const groupEl = document.createElement('div');
-        groupEl.className = 'session-group';
-        const total = session.notations.reduce((acc, n) => acc + n.times.length, 0);
-        groupEl.innerHTML = `
+        const group = document.createElement('div');
+        group.className = 'session-group';
+        const count = (session.notations || []).reduce((acc, n) => acc + (n.times || []).length, 0);
+        group.innerHTML = `
           <div class="session-head">
-            <div><strong>${escapeHtml(session.date)}</strong><span>${total} tiempo(s) registrados</span></div>
-            <button class="btn btn-small btn-soft" data-session-clear="${escapeHtml(session.id)}">Vaciar día</button>
-          </div>
-        `;
-        session.notations.forEach(group => {
-          const stats = computeStats(group.times);
+            <div class="session-head-main"><strong>${escapeHtml(session.date)}</strong><span>${count} tiempos</span></div>
+            <div class="session-head-actions">
+              <button class="btn btn-small btn-primary" data-session-stats="${escapeHtml(session.date)}" title="Ver estadísticas de esta sesión">📊 Estadísticas</button>
+              <button class="btn btn-small btn-danger" data-delete-session="${escapeHtml(session.date)}">Eliminar sesión</button>
+            </div>
+          </div>`;
+        (session.notations || []).forEach(notationGroup => {
           const block = document.createElement('div');
           block.className = 'notation-block';
-          block.innerHTML = `
-            <div class="notation-title">
-              <div>
-                <span>Notación</span><br />
-                <code>${escapeHtml(group.notation)}</code>
-              </div>
-              <div style="text-align:right; min-width:112px;">Mejor<br><strong style="color:var(--text);">${stats.best}</strong></div>
-            </div>
-            <div class="times-list"></div>
-          `;
-          const list = block.querySelector('.times-list');
-          group.times.forEach(time => {
+          const times = notationGroup.times || [];
+          block.innerHTML = `<div class="notation-title"><div><span>Scramble</span><br><button class="scramble-use-btn" type="button" data-use-scramble="${encodeURIComponent(notationGroup.notation)}" title="Usar este scramble para los próximos solves">${escapeHtml(notationGroup.notation)}</button></div><span>${times.length} registros</span></div><div class="times-list"></div>`;
+          const timesList = block.querySelector('.times-list');
+          times.forEach(item => {
             const row = document.createElement('div');
             row.className = 'time-row';
-            row.innerHTML = `
-              <div class="time-value">${escapeHtml(time.formatted)}</div>
-              <div class="time-meta">${escapeHtml(formatDateTime(time.createdAt))}</div>
-              <button class="btn btn-small btn-danger" data-delete-time="${escapeHtml(time.id)}" data-session="${escapeHtml(session.id)}" data-notation="${escapeHtml(group.notation)}">Eliminar</button>
-            `;
-            list.appendChild(row);
+            const hasPenalty = Number(item?.penaltyMs || 0) > 0;
+            const isDNF = Boolean(item?.isDNF);
+            row.innerHTML = `<div class="time-value">${formatTimeEntry(item)}</div><div class="time-meta">${formatTimeMeta(item)}</div><div class="time-actions"><button class="time-action-btn${hasPenalty ? ' active-penalty' : ''}" data-toggle-penalty="${escapeHtml(item.id)}" title="Agregar o quitar penalización +2">+2</button><button class="time-action-btn${isDNF ? ' active-dnf' : ''}" data-toggle-dnf="${escapeHtml(item.id)}" title="Marcar o quitar DNF">DNF</button><button class="btn btn-small btn-ghost" data-delete-time="${escapeHtml(item.id)}">Eliminar</button></div>`;
+            timesList.appendChild(row);
           });
-          groupEl.appendChild(block);
+          group.appendChild(block);
         });
-        historyList.appendChild(groupEl);
-      });
-
-      $$('[data-delete-time]').forEach(btn => {
-        btn.addEventListener('click', () => deleteTime(btn.dataset.session, btn.dataset.notation, btn.dataset.deleteTime));
-      });
-      $$('[data-session-clear]').forEach(btn => {
-        btn.addEventListener('click', () => clearSession(btn.dataset.sessionClear));
+        historyList.appendChild(group);
       });
     }
 
-    function clearSession(sessionId) {
+    function updateTimeById(id, updater) {
+      let updated = false;
+      const sessions = loadSessions().map(session => ({
+        ...session,
+        notations: (session.notations || []).map(group => ({
+          ...group,
+          times: (group.times || []).map(item => {
+            if (item.id !== id) return item;
+            updated = true;
+            return updater({ ...item });
+          })
+        }))
+      }));
+      if (!updated) return false;
+      saveSessions(sessions);
+      return true;
+    }
+
+    function togglePenalty(id) {
+      const changed = updateTimeById(id, item => {
+        if (!isValidTimeMs(item.rawMs ?? item.ms)) return item;
+        const currentlyPenalized = Number(item.penaltyMs || 0) > 0;
+        const currentMs = Number(item.ms);
+        const rawMs = Number.isFinite(Number(item.rawMs)) && Number(item.rawMs) > 0
+          ? Number(item.rawMs)
+          : currentlyPenalized
+            ? Math.max(1, currentMs - Number(item.penaltyMs || 0))
+            : currentMs;
+        const nextPenalty = currentlyPenalized ? 0 : 2000;
+        item.rawMs = rawMs;
+        item.penaltyMs = nextPenalty;
+        item.penaltyLabel = nextPenalty ? '+2' : '';
+        item.ms = rawMs + nextPenalty;
+        if (!nextPenalty && !item.isDNF && item.reason === 'Penalización manual +2') item.reason = '';
+        if (nextPenalty && !item.isDNF) item.reason = 'Penalización manual +2';
+        return item;
+      });
+      if (changed) showToast('Registro actualizado', 'La penalización +2 fue actualizada para este solve.');
+    }
+
+    function toggleDNF(id) {
+      const changed = updateTimeById(id, item => {
+        item.isDNF = !Boolean(item.isDNF);
+        if (item.isDNF) {
+          item.reason = item.reason && item.reason !== 'Penalización manual +2' ? item.reason : 'DNF manual';
+          if (!isValidTimeMs(item.ms) && isValidTimeMs(item.rawMs)) item.ms = Number(item.rawMs) + Number(item.penaltyMs || 0);
+        } else if (item.reason === 'DNF manual') {
+          item.reason = Number(item.penaltyMs || 0) > 0 ? 'Penalización manual +2' : '';
+        }
+        return item;
+      });
+      if (changed) showToast('Registro actualizado', 'El estado DNF fue actualizado para este solve.');
+    }
+
+    function deleteTime(id) {
+      const sessions = loadSessions().map(session => ({ ...session, notations: (session.notations || []).map(n => ({ ...n, times: (n.times || []).filter(t => t.id !== id) })).filter(n => (n.times || []).length) })).filter(s => (s.notations || []).length);
+      saveSessions(sessions);
+      showToast('Registro eliminado', 'El tiempo fue eliminado del historial local.');
+    }
+
+    function deleteSession(date) {
       showModal({
-        icon: '⚠️',
-        title: 'Vaciar sesión',
-        message: 'Se eliminarán todos los tiempos del día seleccionado.',
+        icon: '🗑️',
+        title: 'Eliminar sesión',
+        message: `¿Deseas eliminar todos los tiempos del ${date}?`,
         actions: [
           { label: 'Cancelar', className: 'btn-soft', action: closeModal },
-          { label: 'Vaciar', className: 'btn-danger', action: () => {
-            saveSessions(loadSessions().filter(s => s.id !== sessionId));
-            closeModal();
-            showToast('Sesión eliminada', 'Los tiempos del día fueron removidos.');
-          }}
+          { label: 'Eliminar', className: 'btn-danger', action: () => { closeModal(); saveSessions(loadSessions().filter(s => s.date !== date)); showToast('Sesión eliminada', 'La sesión fue eliminada correctamente.'); } }
         ]
       });
     }
 
-    function updateTimerDisplay() {
-      timerTime.textContent = formatMs(timer.elapsed);
-    }
-
-    function timerLoop() {
-      if (timer.state !== 'running') return;
-      timer.elapsed = performance.now() - timer.start;
-      updateTimerDisplay();
-      timer.raf = requestAnimationFrame(timerLoop);
-    }
-
-    function armTimer() {
-      if (timer.state === 'running') return;
-      timer.state = 'armed';
-      timer.autoSaved = false;
-      timerPad.classList.remove('stopped', 'running');
-      timerPad.classList.add('armed');
-      timerState.textContent = 'Listo: suelta para iniciar';
-      document.body.classList.add('timer-lock');
-    }
-
-    function startTimer() {
-      if (timer.state !== 'armed') return;
-      timer.state = 'running';
-      timer.start = performance.now();
-      timer.elapsed = 0;
-      timerPad.classList.remove('armed', 'stopped');
-      timerPad.classList.add('running');
-      timerState.textContent = 'Corriendo · toca o presiona cualquier tecla para detener';
-      timer.raf = requestAnimationFrame(timerLoop);
-    }
-
-    function stopTimer() {
-      if (timer.state !== 'running') return;
-      timer.state = 'stopped';
-      cancelAnimationFrame(timer.raf);
-      updateTimerDisplay();
-      timerPad.classList.remove('running', 'armed');
-      timerPad.classList.add('stopped');
-      timerState.textContent = 'Tiempo detenido y guardado automáticamente';
-      document.body.classList.remove('timer-lock');
-      saveTime(true);
-    }
-
-    function clearTimer() {
-      cancelAnimationFrame(timer.raf);
-      timer.state = 'idle';
-      timer.elapsed = 0;
-      timer.autoSaved = false;
-      timerPad.classList.remove('running', 'armed', 'stopped');
-      timerState.textContent = 'Mantén presionado para preparar';
-      document.body.classList.remove('timer-lock');
-      updateTimerDisplay();
-    }
-
-    async function copyTextToClipboard(text) {
-      const value = String(text || '').trim();
-      if (!value) return false;
-
-      try {
-        if (navigator.clipboard?.writeText && window.isSecureContext) {
-          await navigator.clipboard.writeText(value);
-          return true;
-        }
-      } catch {
-        // Fallback para navegadores, iframes o vistas previas donde Clipboard API falla por permisos.
-      }
-
-      const textarea = document.createElement('textarea');
-      textarea.value = value;
-      textarea.setAttribute('readonly', '');
-      textarea.style.position = 'fixed';
-      textarea.style.left = '-9999px';
-      textarea.style.top = '0';
-      document.body.appendChild(textarea);
-      textarea.focus();
-      textarea.select();
-      textarea.setSelectionRange(0, textarea.value.length);
-
-      let copied = false;
-      try {
-        copied = document.execCommand('copy');
-      } catch {
-        copied = false;
-      }
-      textarea.remove();
-      return copied;
-    }
-
     function exportData() {
-      const blob = new Blob([JSON.stringify(loadSessions(), null, 2)], { type: 'application/json' });
+      const payload = { exportedAt: new Date().toISOString(), app: 'IANGINE Rubik 3D Timer', version: 1, sessions: loadSessions() };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `rubik-tiempos-${todayKey()}.json`;
+      a.download = `iangine-rubik-tiempos-${todayKey()}.json`;
+      document.body.appendChild(a);
       a.click();
+      a.remove();
       URL.revokeObjectURL(url);
-      showToast('Exportación lista', 'El archivo JSON fue generado con tus tiempos locales.');
+      showToast('Exportación lista', 'Tus tiempos se descargaron como archivo JSON.');
     }
 
-    function isValidImportedSessions(data) {
-      return Array.isArray(data) && data.every(session =>
-        session && typeof session.date === 'string' && Array.isArray(session.notations) &&
-        session.notations.every(group =>
-          group && typeof group.notation === 'string' && Array.isArray(group.times) &&
-          group.times.every(time => Number.isFinite(time.valueMs) && typeof time.createdAt === 'string')
-        )
-      );
-    }
-
-    function normalizeImportedSessions(data) {
-      return data.map(session => ({
-        id: session.id || `session_${session.date}`,
-        date: session.date,
-        notations: session.notations.map(group => ({
-          notation: group.notation,
-          times: group.times.map(time => ({
-            id: time.id || `time_${Date.now()}_${Math.random().toString(16).slice(2)}`,
-            valueMs: Math.round(time.valueMs),
-            formatted: time.formatted || formatMs(time.valueMs),
-            createdAt: time.createdAt
-          }))
-        }))
-      }));
-    }
-
-    function mergeImportedSessions(importedSessions) {
-      const currentSessions = loadSessions();
-      let addedCount = 0;
-
-      importedSessions.forEach(importedSession => {
-        let targetSession = currentSessions.find(session => session.date === importedSession.date);
-        if (!targetSession) {
-          targetSession = { id: importedSession.id || `session_${importedSession.date}`, date: importedSession.date, notations: [] };
-          currentSessions.push(targetSession);
-        }
-
-        importedSession.notations.forEach(importedGroup => {
-          let targetGroup = targetSession.notations.find(group => group.notation === importedGroup.notation);
-          if (!targetGroup) {
-            targetGroup = { notation: importedGroup.notation, times: [] };
-            targetSession.notations.push(targetGroup);
-          }
-
-          importedGroup.times.forEach(importedTime => {
-            const alreadyExists = targetGroup.times.some(time =>
-              time.id === importedTime.id ||
-              (time.createdAt === importedTime.createdAt && Number(time.valueMs) === Number(importedTime.valueMs))
-            );
-            if (!alreadyExists) {
-              targetGroup.times.push(importedTime);
-              addedCount += 1;
-            }
-          });
-
-          targetGroup.times.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    function normalizeImportedSessions(raw) {
+      const source = Array.isArray(raw) ? raw : raw?.sessions;
+      if (!Array.isArray(source)) return null;
+      const normalized = [];
+      source.forEach(session => {
+        if (!session?.date || !Array.isArray(session.notations)) return;
+        const normalizedSession = { date: String(session.date), notations: [] };
+        session.notations.forEach(group => {
+          if (!group?.notation || !Array.isArray(group.times)) return;
+          const validTimes = group.times.filter(t => Number.isFinite(Number(t.ms)) && Number(t.ms) > 0).map(t => ({
+            id: t.id ? String(t.id) : (crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random())),
+            ms: Number(t.ms),
+            rawMs: Number.isFinite(Number(t.rawMs)) ? Number(t.rawMs) : Number(t.ms),
+            penaltyMs: Number.isFinite(Number(t.penaltyMs)) ? Number(t.penaltyMs) : 0,
+            penaltyLabel: t.penaltyLabel ? String(t.penaltyLabel) : '',
+            isDNF: Boolean(t.isDNF),
+            reason: t.reason ? String(t.reason) : '',
+            inspectionMs: Number.isFinite(Number(t.inspectionMs)) ? Number(t.inspectionMs) : null,
+            createdAt: t.createdAt ? String(t.createdAt) : new Date().toISOString()
+          }));
+          if (validTimes.length) normalizedSession.notations.push({ notation: String(group.notation), times: validTimes });
         });
-
-        targetSession.notations = targetSession.notations.filter(group => group.times.length);
+        if (normalizedSession.notations.length) normalized.push(normalizedSession);
       });
-
-      const cleanSessions = currentSessions
-        .filter(session => session.notations.length)
-        .sort((a, b) => new Date(b.date) - new Date(a.date));
-
-      saveSessions(cleanSessions);
-      return addedCount;
+      return normalized;
     }
 
-    function importDataFromFile(file) {
+    function mergeSessions(existing, imported) {
+      const result = structuredClone ? structuredClone(existing) : JSON.parse(JSON.stringify(existing));
+      imported.forEach(importedSession => {
+        let session = result.find(s => s.date === importedSession.date);
+        if (!session) { result.push(importedSession); return; }
+        importedSession.notations.forEach(importedGroup => {
+          let group = session.notations.find(n => n.notation === importedGroup.notation);
+          if (!group) { session.notations.push(importedGroup); return; }
+          const existingKeys = new Set(group.times.map(t => `${t.ms}-${t.createdAt}`));
+          importedGroup.times.forEach(t => { if (!existingKeys.has(`${t.ms}-${t.createdAt}`)) group.times.push(t); });
+          group.times.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        });
+      });
+      result.sort((a, b) => String(b.date).localeCompare(String(a.date)));
+      return result;
+    }
+
+    function importDataFile(file) {
       if (!file) return;
       const reader = new FileReader();
       reader.onload = () => {
         try {
-          const data = JSON.parse(reader.result);
-          if (!isValidImportedSessions(data)) {
-            showModal({ icon: '⚠️', title: 'Archivo inválido', message: 'El archivo no contiene una estructura válida de tiempos Rubik.' });
-            return;
-          }
-          showModal({
-            icon: '📥',
-            title: 'Importar tiempos',
-            message: 'Los tiempos importados se adjuntarán al listado actual. Los registros duplicados serán omitidos.',
-            actions: [
-              { label: 'Cancelar', className: 'btn-soft', action: closeModal },
-              { label: 'Importar tiempos', className: 'btn-primary', action: () => {
-                const addedCount = mergeImportedSessions(normalizeImportedSessions(data));
-                closeModal();
-                showToast('Tiempos importados', `${addedCount} registro(s) fueron adjuntados al listado actual.`);
-              }}
-            ]
-          });
-        } catch {
-          showModal({ icon: '⚠️', title: 'JSON inválido', message: 'No fue posible leer el archivo seleccionado.' });
-        } finally {
-          importDataInput.value = '';
-        }
+          const imported = normalizeImportedSessions(JSON.parse(String(reader.result || '{}')));
+          if (!imported) throw new Error('Formato inválido');
+          saveSessions(mergeSessions(loadSessions(), imported));
+          showModal({ icon: '✅', title: 'Tiempos importados', message: 'Los tiempos fueron agregados al historial actual sin eliminar los registros existentes.' });
+        } catch (error) {
+          showModal({ icon: '⚠️', title: 'No se pudo importar', message: 'El archivo no tiene el formato JSON esperado para los tiempos del demo.' });
+        } finally { importDataInput.value = ''; }
       };
       reader.readAsText(file);
     }
 
-    function getAllTimesSorted() {
-      return loadSessions()
-        .flatMap(session => session.notations.flatMap(group => group.times.map(time => ({ ...time, notation: group.notation, date: session.date }))))
-        .filter(time => Number.isFinite(time.valueMs))
-        .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-    }
-
-    function trimmedAverage(values) {
-      if (values.length < 3) return avg(values);
-      const sorted = [...values].sort((a, b) => a - b);
-      return avg(sorted.slice(1, -1));
-    }
-
-    function rollingAverage(values, size, trim = false) {
-      if (values.length < size) return { current: '--', best: '--' };
-      const windows = [];
-      for (let i = 0; i <= values.length - size; i++) {
-        const slice = values.slice(i, i + size);
-        windows.push(trim ? trimmedAverage(slice) : avg(slice));
+    function aoN(entries, size) {
+      if (entries.length < size) return null;
+      const slice = entries.slice(0, size).map(v => Number(v.ms)).filter(ms => Number.isFinite(ms) && ms > 0);
+      if (slice.length < size) return null;
+      if (size >= 5) {
+        const sorted = [...slice].sort((a, b) => a - b);
+        sorted.shift();
+        sorted.pop();
+        return avg(sorted);
       }
+      return avg(slice);
+    }
+
+    function getStatsSummary(entries = normalizeTimeEntries(loadSessions())) {
+      const values = entries.map(t => Number(t.ms)).filter(ms => Number.isFinite(ms) && ms > 0);
       return {
-        current: formatMs(windows[windows.length - 1]),
-        best: formatMs(Math.min(...windows))
+        count: values.length,
+        best: values.length ? Math.min(...values) : null,
+        worst: values.length ? Math.max(...values) : null,
+        mean: values.length ? avg(values) : null,
+        dnfCount: entries.filter(t => t.isDNF).length,
+        penaltyCount: entries.filter(t => Number(t.penaltyMs || 0) > 0).length,
+        ao5: aoN(entries, 5),
+        ao12: aoN(entries, 12),
+        ao50: aoN(entries, 50),
+        ao100: aoN(entries, 100)
       };
     }
 
-    function showUserStats() {
-      const allTimes = getAllTimesSorted();
-      if (!allTimes.length) {
-        showModal({ icon: '📊', title: 'Estadísticas', message: 'Aún no hay tiempos guardados para calcular estadísticas.' });
-        return;
-      }
-      const values = allTimes.map(time => time.valueMs);
-      const mo3 = rollingAverage(values, 3, false);
-      const ao5 = rollingAverage(values, 5, true);
-      const overallAverage = formatMs(avg(values));
-      const best = formatMs(Math.min(...values));
-      const worst = formatMs(Math.max(...values));
-      const html = `
+    function buildStatsHtml(stats, label = 'Global') {
+      return stats.count ? `
         <div class="stats-modal-grid">
-          <table class="stats-modal-table" aria-label="Estadísticas de promedios">
-            <thead><tr><th></th><th>Mejor</th><th>Actual</th></tr></thead>
-            <tbody>
-              <tr><td>Mo3</td><td>${mo3.best}</td><td>${mo3.current}</td></tr>
-              <tr><td>Ao5</td><td>${ao5.best}</td><td>${ao5.current}</td></tr>
-            </tbody>
-          </table>
-          <table class="stats-summary-table" aria-label="Resumen de estadísticas">
-            <tbody>
-              <tr><td>Media</td><td>${overallAverage}</td><td>Resolución</td><td>${values.length} / ${values.length}</td></tr>
-              <tr><td>Mejor</td><td>${best}</td><td>Peor</td><td>${worst}</td></tr>
-            </tbody>
-          </table>
-        </div>
-      `;
-      showModal({ icon: '📊', title: 'Estadísticas', html });
+          <table class="stats-summary-table" aria-label="Resumen de estadísticas"><tbody>
+            <tr><td>Media</td><td>${formatMs(stats.mean)}</td><td>Mejor</td><td>${formatMs(stats.best)}</td></tr>
+            <tr><td>Peor</td><td>${formatMs(stats.worst)}</td><td>Intentos</td><td>${stats.count}</td></tr>
+            <tr><td>+2</td><td>${stats.penaltyCount}</td><td>DNF</td><td>${stats.dnfCount}</td></tr>
+          </tbody></table>
+          <table class="stats-modal-table" aria-label="Promedios cuberos"><thead><tr><th>Métrica</th><th>Ao5</th><th>Ao12</th><th>Ao50</th><th>Ao100</th></tr></thead><tbody><tr><td>${escapeHtml(label)}</td><td>${stats.ao5 ? formatMs(stats.ao5) : '-'}</td><td>${stats.ao12 ? formatMs(stats.ao12) : '-'}</td><td>${stats.ao50 ? formatMs(stats.ao50) : '-'}</td><td>${stats.ao100 ? formatMs(stats.ao100) : '-'}</td></tr></tbody></table>
+          <p class="modal-message">Los registros +2 usan el tiempo penalizado para cálculos. Los DNF se muestran como DNF, pero conservan su tiempo base para los cálculos internos.</p>
+        </div>` : '<p>No hay tiempos suficientes para calcular estadísticas.</p>';
     }
 
-    async function generateAndScrambleCube() {
-      notationInput.value = randomNotation();
-      const parsed = validateAndRenderNotation();
-      buildCube();
-      cubeIsScrambled = false;
-      setUIAnimating(false);
-      progressBar.style.width = '0%';
-      currentMovePill.textContent = 'Movimiento: --';
-      await runQueue(parsed.moves, 'Generando y desordenando cubo', {
-        doneTitle: 'Nuevo scramble aplicado',
-        doneSubtitle: 'Se generó un nuevo scramble y fue aplicado al cubo 3D. Ahora puedes resolverlo o usar el cronómetro para practicar.',
-        toastTitle: 'Nuevo scramble aplicado',
-        toastMessage: 'Se generó una secuencia nueva y el cubo fue desordenado correctamente.'
-      });
-      cubeIsScrambled = true;
-      setUIAnimating(false);
+    function showStatsModal() {
+      const stats = getStatsSummary(normalizeTimeEntries(loadSessions()));
+      showModal({ icon: '📊', title: 'Estadísticas globales', html: buildStatsHtml(stats, 'Global') });
+    }
+
+    function showSessionStatsModal(date) {
+      const session = loadSessions().find(s => s.date === date);
+      if (!session) return showModal({ icon: '⚠️', title: 'Sesión no encontrada', message: 'No se pudo encontrar la sesión seleccionada.' });
+      const stats = getStatsSummary(normalizeTimeEntries([session]));
+      showModal({ icon: '📊', title: `Estadísticas · ${date}`, html: buildStatsHtml(stats, 'Sesión') });
+    }
+
+    function isInspectionEnabled() { return Boolean(inspectionToggle?.checked); }
+
+    function playInspectionSignal(type = 'warn8') {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        audioContext = audioContext || new AudioCtx();
+        if (audioContext.state === 'suspended') audioContext.resume();
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        const now = audioContext.currentTime;
+        const frequency = type === 'warn12' ? 620 : 880;
+        const duration = type === 'warn12' ? 0.22 : 0.16;
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(frequency, now);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.22, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.start(now);
+        oscillator.stop(now + duration + 0.03);
+      } catch (error) { console.warn('No se pudo emitir alerta sonora:', error); }
+    }
+
+    function setTimerState(state) {
+      timer.state = state;
+      timerPad.classList.remove('inspection', 'running', 'stopped', 'dnf');
+      if (state === 'inspection') {
+        timerPad.classList.add('inspection');
+        timerState.textContent = 'Inspección activa · toca otra vez para iniciar la resolución';
+      } else if (state === 'running') {
+        timerPad.classList.add('running');
+        timerState.textContent = 'Cronómetro activo · toca para detener';
+      } else if (state === 'stopped') {
+        timerPad.classList.add('stopped');
+        timerState.textContent = 'Tiempo detenido y guardado';
+      } else if (state === 'dnf') {
+        timerPad.classList.add('dnf');
+        timerState.textContent = 'DNF guardado por exceder la inspección';
+      } else {
+        timerState.textContent = isInspectionEnabled() ? 'Toca para iniciar inspección' : 'Toca para iniciar resolución';
+      }
+    }
+
+    function startTimer() {
+      if (timer.state === 'running') return;
+      const startedFromInspection = timer.state === 'inspection';
+      const inspectionMs = Number(timer.inspectionElapsed || 0);
+      cancelAnimationFrame(timer.inspectionRaf);
+      document.body.classList.remove('timer-lock');
+      timer.pendingPenaltyMs = startedFromInspection && inspectionMs >= INSPECTION_START_SOLVE_MS && inspectionMs < INSPECTION_DNF_MS ? 2000 : 0;
+      timer.start = performance.now();
+      timer.elapsed = 0;
+      timer.autoSaved = false;
+      timerTime.textContent = '00.00';
+      setTimerState('running');
+      if (timer.pendingPenaltyMs) timerState.textContent = 'Cronómetro activo · penalización +2 aplicada';
+      tickTimer();
+    }
+
+    function startInspection() {
+      if (timer.state === 'inspection') return;
+      cancelAnimationFrame(timer.raf);
+      cancelAnimationFrame(timer.inspectionRaf);
+      timer.inspectionStart = performance.now();
+      timer.inspectionElapsed = 0;
+      timer.inspectionWarn8 = false;
+      timer.inspectionWarn12 = false;
+      timer.inspectionReady15 = false;
+      timer.pendingPenaltyMs = 0;
+      timer.autoSaved = false;
+      timerTime.textContent = '00.00';
+      document.body.classList.add('timer-lock');
+      setTimerState('inspection');
+      tickInspection();
+    }
+
+    function tickInspection() {
+      if (timer.state !== 'inspection') return;
+      timer.inspectionElapsed = performance.now() - timer.inspectionStart;
+      timerTime.textContent = formatMs(Math.min(timer.inspectionElapsed, INSPECTION_DNF_MS));
+      if (!timer.inspectionWarn8 && timer.inspectionElapsed >= INSPECTION_WARN_8_MS) { timer.inspectionWarn8 = true; playInspectionSignal('warn8'); timerState.textContent = 'Inspección · 8 segundos'; }
+      if (!timer.inspectionWarn12 && timer.inspectionElapsed >= INSPECTION_WARN_12_MS) { timer.inspectionWarn12 = true; playInspectionSignal('warn12'); timerState.textContent = 'Inspección · 12 segundos'; }
+      if (!timer.inspectionReady15 && timer.inspectionElapsed >= INSPECTION_START_SOLVE_MS) { timer.inspectionReady15 = true; timerState.textContent = '15 segundos · penalización +2 si inicias ahora'; }
+      if (timer.inspectionElapsed >= INSPECTION_DNF_MS) { saveInspectionDNF(); return; }
+      timer.inspectionRaf = requestAnimationFrame(tickInspection);
+    }
+
+    function tickTimer() {
+      if (timer.state !== 'running') return;
+      timer.elapsed = performance.now() - timer.start;
+      timerTime.textContent = formatMs(timer.elapsed);
+      timer.raf = requestAnimationFrame(tickTimer);
+    }
+
+    function stopTimer() {
+      if (timer.state !== 'running') return;
+      cancelAnimationFrame(timer.raf);
+      timer.elapsed = performance.now() - timer.start;
+      timerTime.textContent = formatMs(timer.elapsed);
+      setTimerState('stopped');
+      if (!timer.autoSaved) {
+        timer.autoSaved = true;
+        const penaltyMs = Number(timer.pendingPenaltyMs || 0);
+        const rawMs = timer.elapsed;
+        saveTime(rawMs + penaltyMs, { rawMs, penaltyMs, inspectionMs: Number.isFinite(Number(timer.inspectionElapsed)) ? Number(timer.inspectionElapsed) : null });
+      }
+    }
+
+    function handleTimerInteraction(source = 'manual') {
+      const now = performance.now();
+      if (now - timer.lastInteractionAt < 180) return;
+      timer.lastInteractionAt = now;
+
+      if (timer.state === 'running') { stopTimer(); return; }
+      if (timer.state === 'inspection') { startTimer(); return; }
+      if (isInspectionEnabled()) startInspection();
+      else startTimer();
+    }
+
+    function clearTimer() {
+      cancelAnimationFrame(timer.raf);
+      cancelAnimationFrame(timer.inspectionRaf);
+      timer.elapsed = 0;
+      timer.inspectionElapsed = 0;
+      timer.pendingPenaltyMs = 0;
+      timerTime.textContent = '00.00';
+      timer.autoSaved = false;
+      document.body.classList.remove('timer-lock');
+      setTimerState('idle');
+    }
+
+    function updateInspectionHelp() {
+      timerHelpText.textContent = isInspectionEnabled()
+        ? 'Con inspección activa: primer toque inicia la inspección, segundo toque inicia la resolución y el siguiente toque detiene el tiempo. Desde los 15 segundos se aplica +2; a los 17 segundos se guarda DNF automáticamente.'
+        : 'Inspección desactivada: primer toque inicia la resolución y el segundo toque detiene el tiempo.';
+      if (['idle', 'stopped', 'dnf'].includes(timer.state)) setTimerState('idle');
     }
 
     function bindEvents() {
-      notationInput.addEventListener('input', validateAndRenderNotation);
-      speedSelect.addEventListener('input', updateSpeedLabel);
-      officialScrambleBtn?.addEventListener('click', () => applyGeneratedScramble());
-      centerCubeBtn.addEventListener('click', centerView);
-      copyNotationBtn.addEventListener('click', async () => {
-        const notation = getCurrentNotation() || currentMoves.join(' ');
-        if (!notation) return showModal({ icon: '⚠️', title: 'Sin notación', message: 'No hay una secuencia para copiar.' });
-        const copied = await copyTextToClipboard(notation);
-        if (copied) {
-          showToast('Notación copiada', 'La secuencia quedó disponible en tu portapapeles.');
-        } else {
-          showModal({ icon: '⚠️', title: 'No se pudo copiar', message: `Tu navegador bloqueó el copiado automático. Copia manualmente esta notación: ${notation}` });
-        }
-      });
-
-      scrambleBtn.addEventListener('click', generateAndScrambleCube);
-      timerScrambleBtn?.addEventListener('click', generateAndScrambleCube);
-
+      scrambleBtn.addEventListener('click', generateScramble);
+      timerScrambleBtn.addEventListener('click', generateScramble);
       solveBtn.addEventListener('click', async () => {
-        const parsed = validateAndRenderNotation();
-        if (!parsed.ok) return showModal({ icon: '⚠️', title: 'Notación inválida', message: parsed.error });
-        buildCube();
-        cubeIsScrambled = false;
-        setUIAnimating(true);
-        progressBar.style.width = '0%';
-        currentMovePill.textContent = 'Movimiento: --';
-        renderMoveStrip(parsed.moves, -1);
-        cubeStateTitle.textContent = 'Preparando animación';
-        cubeStateSubtitle.textContent = 'Cubo resuelto en pantalla. La animación iniciará en un momento.';
-        await delay(1400);
-        setUIAnimating(false);
-        await runQueue(parsed.moves, 'Animando scramble', {
-          doneTitle: 'Cubo desordenado',
-          doneSubtitle: 'La animación inició desde el cubo resuelto y aplicó el scramble actual.',
-          toastTitle: 'Scramble animado',
-          toastMessage: 'El cubo fue desordenado desde el estado resuelto.'
-        });
-        cubeIsScrambled = true;
-        setUIAnimating(false);
+        if (!threeReady) return showModal({ icon: '⚠️', title: 'Animación no disponible', message: 'No se puede animar el scramble porque Three.js u OrbitControls no cargaron.' });
+        if (!currentMoves.length) await generateScramble();
+        await animateMoves(currentMoves);
       });
-
-      resetCubeBtn.addEventListener('click', resetCube);
+      resetCubeBtn.addEventListener('click', clearCube);
+      centerCubeBtn.addEventListener('click', applyCameraFrame);
+      copyNotationBtn.addEventListener('click', () => copyText(getCurrentNotation(), 'La notación fue copiada al portapapeles.'));
+      speedSelect.addEventListener('input', updateSpeedLabel);
       clearTimerBtn.addEventListener('click', clearTimer);
       exportDataBtn.addEventListener('click', exportData);
       importDataBtn.addEventListener('click', () => importDataInput.click());
-      importDataInput.addEventListener('change', () => importDataFromFile(importDataInput.files?.[0]));
-      showStatsBtn.addEventListener('click', showUserStats);
-      modalBackdrop.addEventListener('click', (event) => {
-        if (event.target === modalBackdrop) closeModal();
+      importDataInput.addEventListener('change', () => importDataFile(importDataInput.files?.[0]));
+      showStatsBtn.addEventListener('click', showStatsModal);
+      historyList.addEventListener('click', event => {
+        const target = event.target.closest('button');
+        if (!target) return;
+        if (target.dataset.togglePenalty) togglePenalty(target.dataset.togglePenalty);
+        if (target.dataset.toggleDnf) toggleDNF(target.dataset.toggleDnf);
+        if (target.dataset.deleteTime) deleteTime(target.dataset.deleteTime);
+        if (target.dataset.deleteSession) deleteSession(target.dataset.deleteSession);
+        if (target.dataset.sessionStats) showSessionStatsModal(target.dataset.sessionStats);
+        if (target.dataset.useScramble) {
+          if (timer.state === 'running' || timer.state === 'inspection') {
+            showModal({ icon: '⚠️', title: 'Cronómetro activo', message: 'Detén o limpia el cronómetro antes de cambiar de scramble.' });
+            return;
+          }
+          setActiveScramble(decodeURIComponent(target.dataset.useScramble));
+        }
       });
-
-      timerPad.addEventListener('pointerdown', (event) => {
+      modalBackdrop.addEventListener('click', event => { if (event.target === modalBackdrop) closeModal(); });
+      timerPad.addEventListener('pointerdown', event => {
         event.preventDefault();
+        timerPad.focus({ preventScroll: true });
         timerPad.setPointerCapture?.(event.pointerId);
-        if (timer.state === 'running') stopTimer();
-        else armTimer();
-        timer.armedByPointer = true;
+        handleTimerInteraction('pointer');
       });
-
-      timerPad.addEventListener('pointerup', (event) => {
+      timerPad.addEventListener('click', event => {
         event.preventDefault();
-        if (timer.armedByPointer && timer.state === 'armed') startTimer();
-        timer.armedByPointer = false;
-        document.body.classList.remove('timer-lock');
       });
-
-      timerPad.addEventListener('pointercancel', () => {
-        if (timer.state === 'armed') clearTimer();
-        timer.armedByPointer = false;
-        document.body.classList.remove('timer-lock');
-      });
-
-      window.addEventListener('keydown', (event) => {
-        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
-        if (event.code === 'Space') event.preventDefault();
-        if (timer.state === 'running') {
-          stopTimer();
-          return;
-        }
-        if (event.code === 'Space' && timer.state !== 'armed') armTimer();
-      });
-
-      window.addEventListener('keyup', (event) => {
-        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
-        if (event.code === 'Space' && timer.state === 'armed') {
-          event.preventDefault();
-          startTimer();
-        }
+      inspectionToggle.addEventListener('change', () => { if (timer.state === 'inspection') clearTimer(); updateInspectionHelp(); });
+      autoScrambleToggle.addEventListener('change', () => { saveAutoScrambleSetting(); showToast('Preferencia actualizada', isAutoScrambleEnabled() ? 'Se generará un nuevo scramble después de cada solve o DNF.' : 'El scramble actual se mantendrá después de cada solve.'); });
+      window.addEventListener('keydown', event => {
+        if (event.code === 'Space') { event.preventDefault(); if (!event.repeat) handleTimerInteraction('keyboard'); }
+        else if (timer.state === 'running') stopTimer();
       });
     }
 
-    function bootstrap() {
-      initThree();
-      bindEvents();
+    function runSelfTests() {
+      console.assert(formatMs(4160) === '04.16', 'formatMs debe formatear centésimas correctamente');
+      console.assert(parseNotation("R U R' U'").ok === true, 'parseNotation debe aceptar notación válida');
+      console.assert(parseNotation('X Y Z').ok === false, 'parseNotation debe rechazar notación inválida');
+      const entries = normalizeTimeEntries([{ date: '2026-05-03', notations: [{ notation: 'R U', times: [{ ms: 0 }, { ms: '4160', rawMs: '2160', penaltyMs: 2000 }, { ms: 17000, isDNF: true }] }] }]);
+      console.assert(entries.length === 2, 'normalizeTimeEntries debe excluir tiempos cero y conservar tiempos válidos');
+      const stats = getStatsSummary(entries);
+      console.assert(stats.count === 2 && stats.penaltyCount === 1 && stats.dnfCount === 1, 'getStatsSummary debe contar +2 y DNF correctamente');
+      console.assert(parseNotation('R U F2').ok && encodeURIComponent('R U F2').includes('%20'), 'Los scrambles de historial deben poder codificarse para data attributes');
+      console.assert(Array.isArray(THREE_MODULE_URLS) && THREE_MODULE_URLS.length >= 2, 'Debe existir fallback de CDN para Three.js');
+      console.assert(Array.isArray(ORBIT_CONTROLS_URLS) && ORBIT_CONTROLS_URLS.every(url => !url.includes('unpkg.com/three@0.160.0/examples')), 'OrbitControls no debe cargarse desde unpkg sin importmap');
+      console.assert(inspectionToggle.checked === true, 'El toggle de inspección debe iniciar activo por defecto');
+      const testPenaltyItem = { id: 'test', ms: 5000, rawMs: 5000, penaltyMs: 0 };
+      console.assert(formatTimeEntry(testPenaltyItem).includes('05.00'), 'formatTimeEntry debe mostrar el tiempo base');
+      testPenaltyItem.penaltyMs = 2000;
+      testPenaltyItem.ms = 7000;
+      testPenaltyItem.penaltyLabel = '+2';
+      console.assert(!formatTimeEntry(testPenaltyItem).includes('penalty-badge'), 'formatTimeEntry no debe mostrar el +2 informativo junto al tiempo');
+      const previousState = timer.state;
+      const previousLastInteraction = timer.lastInteractionAt;
+      timer.state = 'idle';
+      timer.lastInteractionAt = performance.now();
+      handleTimerInteraction('test');
+      console.assert(timer.state === 'idle', 'handleTimerInteraction debe ignorar interacciones duplicadas muy rápidas');
+      timer.state = previousState;
+      timer.lastInteractionAt = previousLastInteraction;
+    }
+
+    async function bootstrap() {
+      runSelfTests();
       updateSpeedLabel();
-      notationInput.value = randomNotation();
+      threeReady = await loadThreeDependencies();
+      if (threeReady) {
+        try { initThree(); setThreeControlsEnabled(true); }
+        catch (error) { console.error('Error inicializando el render 3D:', error); threeReady = false; setThreeControlsEnabled(false); showThreeFallback(error); }
+      } else setThreeControlsEnabled(false);
+      const storedAutoScramble = localStorage.getItem(KEYS.autoScramble);
+      autoScrambleToggle.checked = storedAutoScramble === null ? true : storedAutoScramble === '1';
+      inspectionToggle.checked = true;
+      const savedNotation = localStorage.getItem(KEYS.notation);
+      notationInput.value = savedNotation && parseNotation(savedNotation).ok ? savedNotation : randomNotation();
       validateAndRenderNotation();
-      showScrambledCubeInstant(currentMoves);
+      bindEvents();
+      if (threeReady) await showScrambledCubeInstant(currentMoves);
       renderHistory();
       updateHeroStats();
       updateCurrentStats();
+      updateInspectionHelp();
       setUIAnimating(false);
     }
 
