@@ -602,6 +602,8 @@
       inspectionReady15: false,
       pendingPenaltyMs: 0,
       lastInteractionAt: 0,
+      isPressing: false,
+      releaseStartsSolve: false,
       autoSaved: false
     };
 
@@ -1595,20 +1597,58 @@
         if (!AudioCtx) return;
         audioContext = audioContext || new AudioCtx();
         if (audioContext.state === 'suspended') audioContext.resume();
-        const oscillator = audioContext.createOscillator();
-        const gain = audioContext.createGain();
+
         const now = audioContext.currentTime;
-        const frequency = type === 'warn12' ? 620 : 880;
-        const duration = type === 'warn12' ? 0.22 : 0.16;
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(frequency, now);
-        gain.gain.setValueAtTime(0.0001, now);
-        gain.gain.exponentialRampToValueAtTime(0.22, now + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-        oscillator.connect(gain);
-        gain.connect(audioContext.destination);
-        oscillator.start(now);
-        oscillator.stop(now + duration + 0.03);
+        const masterGain = audioContext.createGain();
+        const compressor = audioContext.createDynamicsCompressor();
+        const tonePlan = type === 'warn12'
+          ? { frequencies: [740, 980], duration: 0.46, pulses: 2, peak: 0.9 }
+          : { frequencies: [980, 1320], duration: 0.34, pulses: 1, peak: 0.82 };
+
+        compressor.threshold.setValueAtTime(-24, now);
+        compressor.knee.setValueAtTime(18, now);
+        compressor.ratio.setValueAtTime(8, now);
+        compressor.attack.setValueAtTime(0.003, now);
+        compressor.release.setValueAtTime(0.18, now);
+        masterGain.gain.setValueAtTime(0.0001, now);
+        masterGain.gain.exponentialRampToValueAtTime(tonePlan.peak, now + 0.018);
+        masterGain.gain.exponentialRampToValueAtTime(0.0001, now + tonePlan.duration);
+        masterGain.connect(compressor);
+        compressor.connect(audioContext.destination);
+
+        for (let pulse = 0; pulse < tonePlan.pulses; pulse++) {
+          const pulseStart = now + pulse * 0.2;
+          const pulseDuration = tonePlan.pulses > 1 ? 0.16 : tonePlan.duration;
+
+          tonePlan.frequencies.forEach((frequency, index) => {
+            const oscillator = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            oscillator.type = index === 0 ? 'square' : 'triangle';
+            oscillator.frequency.setValueAtTime(frequency, pulseStart);
+            gain.gain.setValueAtTime(0.0001, pulseStart);
+            gain.gain.exponentialRampToValueAtTime(index === 0 ? 0.7 : 0.42, pulseStart + 0.012);
+            gain.gain.exponentialRampToValueAtTime(0.0001, pulseStart + pulseDuration);
+            oscillator.connect(gain);
+            gain.connect(masterGain);
+            oscillator.start(pulseStart);
+            oscillator.stop(pulseStart + pulseDuration + 0.03);
+          });
+        }
+
+        const clickBufferSize = Math.max(1, Math.floor(audioContext.sampleRate * 0.035));
+        const clickBuffer = audioContext.createBuffer(1, clickBufferSize, audioContext.sampleRate);
+        const data = clickBuffer.getChannelData(0);
+        for (let i = 0; i < clickBufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / clickBufferSize, 2.5);
+        }
+        const click = audioContext.createBufferSource();
+        const clickGain = audioContext.createGain();
+        click.buffer = clickBuffer;
+        clickGain.gain.setValueAtTime(type === 'warn12' ? 0.42 : 0.32, now);
+        clickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
+        click.connect(clickGain);
+        clickGain.connect(masterGain);
+        click.start(now);
       } catch (error) { console.warn('No se pudo emitir alerta sonora:', error); }
     }
 
@@ -1632,13 +1672,14 @@
       }
     }
 
-    function startTimer() {
+    function startTimer(options = {}) {
       if (timer.state === 'running') return;
-      const startedFromInspection = timer.state === 'inspection';
-      const inspectionMs = Number(timer.inspectionElapsed || 0);
+      const startedFromInspection = Boolean(options.fromInspection);
+      const inspectionMs = startedFromInspection ? Number(timer.inspectionElapsed || 0) : 0;
       cancelAnimationFrame(timer.inspectionRaf);
       document.body.classList.remove('timer-lock');
       timer.pendingPenaltyMs = startedFromInspection && inspectionMs >= INSPECTION_START_SOLVE_MS && inspectionMs < INSPECTION_DNF_MS ? 2000 : 0;
+      timer.releaseStartsSolve = false;
       timer.start = performance.now();
       timer.elapsed = 0;
       timer.autoSaved = false;
@@ -1697,15 +1738,37 @@
       }
     }
 
-    function handleTimerInteraction(source = 'manual') {
+    function handleTimerPressStart(source = 'manual') {
       const now = performance.now();
-      if (now - timer.lastInteractionAt < 180) return;
+      if (now - timer.lastInteractionAt < 120) return;
       timer.lastInteractionAt = now;
+      timer.isPressing = true;
 
-      if (timer.state === 'running') { stopTimer(); return; }
-      if (timer.state === 'inspection') { startTimer(); return; }
+      if (timer.state === 'running') {
+        stopTimer();
+        return;
+      }
+
+      if (timer.state === 'inspection') {
+        timer.releaseStartsSolve = true;
+        timerState.textContent = 'Suelta para iniciar la resolución';
+        return;
+      }
+
       if (isInspectionEnabled()) startInspection();
-      else startTimer();
+      else {
+        timer.releaseStartsSolve = true;
+        timerState.textContent = 'Suelta para iniciar la resolución';
+      }
+    }
+
+    function handleTimerPressEnd(source = 'manual') {
+      if (!timer.isPressing && !timer.releaseStartsSolve) return;
+      timer.isPressing = false;
+
+      if (timer.releaseStartsSolve) {
+        startTimer({ fromInspection: timer.state === 'inspection' });
+      }
     }
 
     function clearTimer() {
@@ -1714,6 +1777,8 @@
       timer.elapsed = 0;
       timer.inspectionElapsed = 0;
       timer.pendingPenaltyMs = 0;
+      timer.isPressing = false;
+      timer.releaseStartsSolve = false;
       timerTime.textContent = '00.00';
       timer.autoSaved = false;
       document.body.classList.remove('timer-lock');
@@ -1765,7 +1830,15 @@
         event.preventDefault();
         timerPad.focus({ preventScroll: true });
         timerPad.setPointerCapture?.(event.pointerId);
-        handleTimerInteraction('pointer');
+        handleTimerPressStart('pointer');
+      });
+      timerPad.addEventListener('pointerup', event => {
+        event.preventDefault();
+        handleTimerPressEnd('pointer');
+      });
+      timerPad.addEventListener('pointercancel', () => {
+        timer.isPressing = false;
+        timer.releaseStartsSolve = false;
       });
       timerPad.addEventListener('click', event => {
         event.preventDefault();
@@ -1773,8 +1846,11 @@
       inspectionToggle.addEventListener('change', () => { if (timer.state === 'inspection') clearTimer(); updateInspectionHelp(); });
       autoScrambleToggle.addEventListener('change', () => { saveAutoScrambleSetting(); showToast('Preferencia actualizada', isAutoScrambleEnabled() ? 'Se generará un nuevo scramble después de cada solve o DNF.' : 'El scramble actual se mantendrá después de cada solve.'); });
       window.addEventListener('keydown', event => {
-        if (event.code === 'Space') { event.preventDefault(); if (!event.repeat) handleTimerInteraction('keyboard'); }
+        if (event.code === 'Space') { event.preventDefault(); if (!event.repeat) handleTimerPressStart('keyboard'); }
         else if (timer.state === 'running') stopTimer();
+      });
+      window.addEventListener('keyup', event => {
+        if (event.code === 'Space') { event.preventDefault(); handleTimerPressEnd('keyboard'); }
       });
     }
 
@@ -1790,6 +1866,7 @@
       console.assert(Array.isArray(THREE_MODULE_URLS) && THREE_MODULE_URLS.length >= 2, 'Debe existir fallback de CDN para Three.js');
       console.assert(Array.isArray(ORBIT_CONTROLS_URLS) && ORBIT_CONTROLS_URLS.every(url => !url.includes('unpkg.com/three@0.160.0/examples')), 'OrbitControls no debe cargarse desde unpkg sin importmap');
       console.assert(inspectionToggle.checked === true, 'El toggle de inspección debe iniciar activo por defecto');
+      console.assert(typeof playInspectionSignal === 'function', 'Debe existir la función de alertas sonoras de inspección');
       const testPenaltyItem = { id: 'test', ms: 5000, rawMs: 5000, penaltyMs: 0 };
       console.assert(formatTimeEntry(testPenaltyItem).includes('05.00'), 'formatTimeEntry debe mostrar el tiempo base');
       testPenaltyItem.penaltyMs = 2000;
@@ -1800,8 +1877,8 @@
       const previousLastInteraction = timer.lastInteractionAt;
       timer.state = 'idle';
       timer.lastInteractionAt = performance.now();
-      handleTimerInteraction('test');
-      console.assert(timer.state === 'idle', 'handleTimerInteraction debe ignorar interacciones duplicadas muy rápidas');
+      handleTimerPressStart('test');
+      console.assert(timer.state === 'idle', 'handleTimerPressStart debe ignorar interacciones duplicadas muy rápidas');
       timer.state = previousState;
       timer.lastInteractionAt = previousLastInteraction;
     }
