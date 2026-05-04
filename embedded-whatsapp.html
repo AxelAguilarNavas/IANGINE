@@ -909,29 +909,36 @@
       }
     });
 
-    const fbLoginCallback = async (response) => {
+    function fbLoginCallback(response) {
       setButtonLoading(false);
 
-      if (response.authResponse) {
-        const code = response.authResponse.code;
+      // El SDK de Facebook no debe recibir una función async como callback.
+      // Por eso el callback se mantiene como Function normal y la lógica async se ejecuta dentro.
+      (async () => {
+        if (response.authResponse) {
+          const code = response.authResponse.code;
 
-        await postToN8n(N8N_CODE_WEBHOOK, {
-          client,
-          code,
-          received_at: new Date().toISOString()
-        });
+          await postToN8n(N8N_CODE_WEBHOOK, {
+            client,
+            code,
+            received_at: new Date().toISOString()
+          });
 
-        showToast("<strong>Conexión iniciada:</strong> recibimos el código de Meta y fue enviado a n8n para continuar el proceso.");
-      } else {
-        await postToN8n(N8N_CODE_WEBHOOK, {
-          client,
-          error: response,
-          received_at: new Date().toISOString()
-        });
+          showToast("<strong>Conexión iniciada:</strong> recibimos el código de Meta y fue enviado a n8n para continuar el proceso.");
+        } else {
+          await postToN8n(N8N_CODE_WEBHOOK, {
+            client,
+            error: response,
+            received_at: new Date().toISOString()
+          });
 
-        showToast("<strong>Proceso cancelado o fallido:</strong> Meta no devolvió un código de autorización.");
-      }
-    };
+          showToast("<strong>Proceso cancelado o fallido:</strong> Meta no devolvió un código de autorización.");
+        }
+      })().catch((err) => {
+        console.error("Error procesando la respuesta de Meta:", err);
+        showToast("<strong>Error:</strong> ocurrió un problema al procesar la respuesta de Meta.");
+      });
+    }
 
     // Clave para Coexistence: WhatsApp Business App onboarding.
     const launchWhatsAppSignup = () => {
