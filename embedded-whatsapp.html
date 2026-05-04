@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IANGINE · Conexión WhatsApp Business</title>
+  <meta name="description" content="Conecta tu cuenta de WhatsApp Business con IANGINE para automatizar mensajes, procesos y atención al cliente." />
+  <style>
+    :root {
+      --bg: #05070d;
+      --bg-soft: #0a0f1d;
+      --surface: rgba(255, 255, 255, 0.055);
+      --surface-strong: rgba(255, 255, 255, 0.095);
+      --line: rgba(255, 255, 255, 0.13);
+      --line-strong: rgba(255, 255, 255, 0.2);
+      --text: #ffffff;
+      --text-soft: rgba(255, 255, 255, 0.74);
+      --text-muted: rgba(255, 255, 255, 0.55);
+      --brand: #ffffff;
+      --accent: #18e38a;
+      --accent-dark: #11b96f;
+      --blue: #4f7dff;
+      --violet: #7c5cff;
+      --cyan: #40dfff;
+      --radius-xl: 34px;
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --shadow: 0 32px 90px rgba(0, 0, 0, 0.55);
+      --max: 1120px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      overflow-x: hidden;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page {
+      position: relative;
+      min-height: 100vh;
+      isolation: isolate;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 18% 18%, rgba(79, 125, 255, 0.22), transparent 32%),
+        radial-gradient(circle at 82% 20%, rgba(124, 92, 255, 0.20), transparent 34%),
+        radial-gradient(circle at 50% 92%, rgba(24, 227, 138, 0.12), transparent 34%),
+        linear-gradient(180deg, #070a12 0%, #05070d 48%, #02040a 100%);
+    }
+
+    .page::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -3;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 74px 74px;
+      mask-image: radial-gradient(circle at 50% 36%, #000 0%, transparent 76%);
+      opacity: 0.55;
+    }
+
+    .page::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      background:
+        linear-gradient(180deg, rgba(5, 7, 13, 0.1), rgba(5, 7, 13, 0.72)),
+        radial-gradient(circle at 50% 40%, transparent 0%, rgba(0, 0, 0, 0.28) 78%);
+      pointer-events: none;
+    }
+
+    .orb {
+      position: absolute;
+      z-index: -1;
+      border-radius: 999px;
+      filter: blur(8px);
+      opacity: 0.46;
+      animation: drift 9s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+
+    .orb.one {
+      width: 260px;
+      height: 260px;
+      left: -90px;
+      top: 12%;
+      background: rgba(79, 125, 255, 0.18);
+    }
+
+    .orb.two {
+      width: 300px;
+      height: 300px;
+      right: -120px;
+      top: 10%;
+      background: rgba(124, 92, 255, 0.16);
+      animation-delay: -2s;
+    }
+
+    .orb.three {
+      width: 220px;
+      height: 220px;
+      left: 42%;
+      bottom: -120px;
+      background: rgba(24, 227, 138, 0.12);
+      animation-delay: -4s;
+    }
+
+    @keyframes drift {
+      from { transform: translate3d(0, 0, 0) scale(1); }
+      to { transform: translate3d(20px, -18px, 0) scale(1.07); }
+    }
+
+    .nav {
+      width: min(calc(100% - 36px), var(--max));
+      margin: 0 auto;
+      padding: 22px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 13px;
+      min-width: 0;
+    }
+
+    .brand img {
+      width: 44px;
+      height: 44px;
+      object-fit: contain;
+      filter: drop-shadow(0 10px 28px rgba(255,255,255,0.12));
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1;
+    }
+
+    .brand-text strong {
+      font-size: 18px;
+      letter-spacing: 0.04em;
+      font-weight: 900;
+    }
+
+    .brand-text span {
+      margin-top: 5px;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .nav-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.045);
+      backdrop-filter: blur(18px);
+      color: var(--text-soft);
+      font-size: 13px;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    .nav-pill i {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 20px rgba(24, 227, 138, 0.72);
+    }
+
+    .hero {
+      width: min(calc(100% - 36px), var(--max));
+      min-height: calc(100vh - 88px);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.02fr 0.98fr;
+      align-items: center;
+      gap: 48px;
+      padding: 30px 0 70px;
+    }
+
+    .hero-copy {
+      max-width: 650px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.055);
+      border: 1px solid var(--line);
+      color: var(--text-soft);
+      font-size: 13px;
+      font-weight: 800;
+      backdrop-filter: blur(18px);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .eyebrow svg {
+      width: 16px;
+      height: 16px;
+      color: var(--accent);
+    }
+
+    h1 {
+      margin: 24px 0 0;
+      font-size: clamp(44px, 7.2vw, 88px);
+      line-height: 0.94;
+      letter-spacing: -0.075em;
+      font-weight: 950;
+    }
+
+    .soft-gradient {
+      background: linear-gradient(100deg, #ffffff 0%, #dfe7ff 38%, #91a7ff 68%, #ffffff 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .lead {
+      max-width: 610px;
+      margin: 24px 0 0;
+      color: var(--text-soft);
+      font-size: clamp(17px, 2vw, 21px);
+      line-height: 1.55;
+      font-weight: 650;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 14px;
+      margin-top: 34px;
+    }
+
+    .primary-link,
+    .secondary-link {
+      min-height: 50px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border-radius: 999px;
+      padding: 0 20px;
+      font-size: 14px;
+      font-weight: 900;
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+    }
+
+    .primary-link {
+      color: #05070d;
+      background: #ffffff;
+      box-shadow: 0 18px 48px rgba(255, 255, 255, 0.16);
+    }
+
+    .primary-link:hover,
+    .secondary-link:hover {
+      transform: translateY(-2px);
+    }
+
+    .secondary-link {
+      color: var(--text);
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.045);
+      backdrop-filter: blur(16px);
+    }
+
+    .proof-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 38px;
+      max-width: 650px;
+    }
+
+    .proof {
+      min-height: 112px;
+      padding: 17px;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.045);
+      backdrop-filter: blur(18px);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+
+    .proof strong {
+      display: block;
+      font-size: 14px;
+      line-height: 1.2;
+      font-weight: 900;
+    }
+
+    .proof p {
+      margin: 8px 0 0;
+      color: var(--text-muted);
+      font-size: 12.5px;
+      line-height: 1.45;
+      font-weight: 650;
+    }
+
+    .panel-wrap {
+      display: flex;
+      justify-content: center;
+    }
+
+    .connect-panel {
+      position: relative;
+      width: min(100%, 430px);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--line-strong);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.105), rgba(255,255,255,0.052)),
+        rgba(255,255,255,0.03);
+      box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(26px);
+      overflow: hidden;
+    }
+
+    .connect-panel::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.18), transparent 32%),
+        radial-gradient(circle at 92% 18%, rgba(79, 125, 255, 0.20), transparent 34%),
+        radial-gradient(circle at 12% 88%, rgba(24, 227, 138, 0.12), transparent 32%);
+      pointer-events: none;
+    }
+
+    .connect-inner {
+      position: relative;
+      z-index: 1;
+      padding: 34px;
+    }
+
+    .iangine-mark {
+      width: 86px;
+      height: 86px;
+      margin: 0 auto 18px;
+      display: grid;
+      place-items: center;
+      border-radius: 28px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255, 255, 255, 0.055);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.09), 0 18px 40px rgba(0,0,0,0.22);
+    }
+
+    .iangine-mark img {
+      width: 66px;
+      height: 66px;
+      object-fit: contain;
+    }
+
+    .connect-panel h2 {
+      margin: 0;
+      text-align: center;
+      font-size: clamp(32px, 4.5vw, 45px);
+      line-height: 0.98;
+      letter-spacing: -0.055em;
+      font-weight: 950;
+    }
+
+    .connect-panel h2 span {
+      color: rgba(255, 255, 255, 0.72);
+    }
+
+    .connect-panel p {
+      max-width: 315px;
+      margin: 18px auto 0;
+      text-align: center;
+      color: var(--text-soft);
+      font-size: 15px;
+      line-height: 1.55;
+      font-weight: 700;
+    }
+
+    .connect-btn {
+      position: relative;
+      width: 100%;
+      min-height: 58px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 28px;
+      border: 0;
+      border-radius: 999px;
+      color: #06110b;
+      background: linear-gradient(180deg, #38f59a 0%, var(--accent) 42%, var(--accent-dark) 100%);
+      box-shadow: 0 22px 46px rgba(24, 227, 138, 0.24), inset 0 1px 0 rgba(255,255,255,0.42);
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 950;
+      overflow: hidden;
+      transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+    }
+
+    .connect-btn::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.32), transparent);
+      transform: translateX(-120%);
+      transition: transform 700ms ease;
+    }
+
+    .connect-btn:hover {
+      transform: translateY(-2px);
+      filter: saturate(1.07);
+      box-shadow: 0 28px 56px rgba(24, 227, 138, 0.28), inset 0 1px 0 rgba(255,255,255,0.42);
+    }
+
+    .connect-btn:hover::after {
+      transform: translateX(120%);
+    }
+
+    .connect-btn:active {
+      transform: translateY(0) scale(0.99);
+    }
+
+    .connect-btn svg {
+      width: 21px;
+      height: 21px;
+      flex: 0 0 auto;
+    }
+
+    .client-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 22px;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .client-box code {
+      max-width: 230px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding: 6px 10px;
+      border-radius: 999px;
+      color: rgba(255, 255, 255, 0.84);
+      background: rgba(255, 255, 255, 0.065);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .divider {
+      height: 1px;
+      margin: 24px 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.16), transparent);
+    }
+
+    .security-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .security-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px;
+      border-radius: 18px;
+      background: rgba(0, 0, 0, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: rgba(255,255,255,0.6);
+      font-size: 12px;
+      line-height: 1.45;
+      font-weight: 700;
+    }
+
+    .security-item svg {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+      color: var(--accent);
+      margin-top: 1px;
+    }
+
+    .tech-strip {
+      width: min(calc(100% - 36px), var(--max));
+      margin: -28px auto 0;
+      padding: 0 0 54px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .chip {
+      padding: 9px 13px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.045);
+      color: rgba(255,255,255,0.64);
+      font-size: 12px;
+      font-weight: 800;
+      backdrop-filter: blur(14px);
+    }
+
+    .footer {
+      width: min(calc(100% - 36px), var(--max));
+      margin: 0 auto;
+      padding: 20px 0 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.42);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      z-index: 20;
+      width: min(calc(100% - 32px), 460px);
+      transform: translate(-50%, 24px);
+      padding: 15px 17px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(5, 7, 13, 0.86);
+      backdrop-filter: blur(22px);
+      box-shadow: 0 22px 62px rgba(0, 0, 0, 0.48);
+      color: rgba(255,255,255,0.76);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 220ms ease, transform 220ms ease;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    .toast strong {
+      color: #fff;
+    }
+
+    .toast code {
+      color: #fff;
+      font-weight: 850;
+    }
+
+    @media (max-width: 930px) {
+      .hero {
+        grid-template-columns: 1fr;
+        min-height: auto;
+        gap: 36px;
+        padding-top: 46px;
+      }
+
+      .hero-copy {
+        max-width: none;
+        text-align: center;
+      }
+
+      .lead,
+      .proof-row {
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .actions {
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .nav {
+        width: min(calc(100% - 28px), var(--max));
+        padding-top: 18px;
+      }
+
+      .brand img {
+        width: 38px;
+        height: 38px;
+      }
+
+      .brand-text strong {
+        font-size: 16px;
+      }
+
+      .brand-text span,
+      .nav-pill {
+        display: none;
+      }
+
+      .hero {
+        width: min(calc(100% - 28px), var(--max));
+        padding: 26px 0 48px;
+      }
+
+      h1 {
+        font-size: clamp(42px, 13vw, 64px);
+      }
+
+      .proof-row {
+        grid-template-columns: 1fr;
+        margin-top: 28px;
+      }
+
+      .connect-inner {
+        padding: 26px 20px 22px;
+      }
+
+      .iangine-mark {
+        width: 76px;
+        height: 76px;
+        border-radius: 24px;
+      }
+
+      .iangine-mark img {
+        width: 58px;
+        height: 58px;
+      }
+
+      .actions {
+        align-items: stretch;
+      }
+
+      .primary-link,
+      .secondary-link {
+        width: 100%;
+      }
+
+      .tech-strip {
+        width: min(calc(100% - 28px), var(--max));
+        justify-content: flex-start;
+        padding-bottom: 36px;
+      }
+
+      .footer {
+        width: min(calc(100% - 28px), var(--max));
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <span class="orb one" aria-hidden="true"></span>
+    <span class="orb two" aria-hidden="true"></span>
+    <span class="orb three" aria-hidden="true"></span>
+
+    <header class="nav" aria-label="Navegación principal">
+      <a class="brand" href="#" aria-label="IANGINE">
+        <img src="https://res.cloudinary.com/doivgytwg/image/upload/v1755851728/Logo_IANgine_blanco_fondo_transparente_prfzsc.png" alt="Logo IANGINE" />
+        <span class="brand-text">
+          <strong>IANGINE</strong>
+          <span>Inteligencia Artificial</span>
+        </span>
+      </a>
+      <div class="nav-pill"><i></i> WhatsApp Business onboarding</div>
+    </header>
+
+    <section class="hero" aria-label="Conexión de WhatsApp Business">
+      <div class="hero-copy">
+        <div class="eyebrow">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 3 5 6v5c0 4.6 2.94 8.84 7 10 4.06-1.16 7-5.4 7-10V6l-7-3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+            <path d="m9.5 12 1.7 1.7 3.6-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          Conexión segura para automatización
+        </div>
+
+        <h1>Conecta tu WhatsApp Business con <span class="soft-gradient">IANGINE</span>.</h1>
+        <p class="lead">
+          Vincula tu cuenta para activar flujos de automatización, atención inteligente, seguimiento comercial y conexión con tus sistemas de operación.
+        </p>
+
+        <div class="actions">
+          <a class="primary-link" href="#conexion">Conectar ahora</a>
+          <a class="secondary-link" href="https://www.iangine.com" target="_blank" rel="noopener">Visitar IANGINE.com</a>
+        </div>
+
+        <div class="proof-row" aria-label="Beneficios de conexión">
+          <article class="proof">
+            <strong>Automatización de mensajes</strong>
+            <p>Activa respuestas, seguimiento de leads y flujos conversacionales.</p>
+          </article>
+          <article class="proof">
+            <strong>Integración operativa</strong>
+            <p>Conecta WhatsApp con CRM, agenda, correo, Chatwoot, Odoo o n8n.</p>
+          </article>
+          <article class="proof">
+            <strong>Experiencia guiada</strong>
+            <p>Un punto claro para iniciar el onboarding de WhatsApp Business.</p>
+          </article>
+        </div>
+      </div>
+
+      <div class="panel-wrap" id="conexion">
+        <article class="connect-panel">
+          <div class="connect-inner">
+            <div class="iangine-mark" aria-hidden="true">
+              <img src="https://res.cloudinary.com/doivgytwg/image/upload/v1755851728/Logo_IANgine_blanco_fondo_transparente_prfzsc.png" alt="" />
+            </div>
+
+            <h2><span>Conexión de</span><br />WhatsApp Business</h2>
+            <p>Conecta tu cuenta de WhatsApp Business para comenzar a automatizar tus mensajes con IANGINE.</p>
+
+            <button class="connect-btn" id="connectBtn" type="button" aria-label="Conectar mi WhatsApp">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 21a8.7 8.7 0 0 1-4.42-1.2L3 21l1.23-4.43A8.7 8.7 0 1 1 12 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M8.9 8.45c.2-.46.34-.47.62-.47h.46c.16 0 .38.04.58.43.2.39.68 1.66.74 1.78.06.12.1.27.02.43-.08.16-.12.26-.24.4-.12.14-.25.31-.36.42-.12.12-.24.25-.1.49.14.24.62 1.02 1.34 1.65.92.82 1.7 1.08 1.94 1.2.24.12.38.1.52-.06.16-.18.6-.7.76-.94.16-.24.32-.2.54-.12.22.08 1.42.67 1.66.8.24.12.4.18.46.28.06.1.06.58-.14 1.14-.2.56-1.18 1.08-1.62 1.12-.44.04-1 .06-2.94-.72-2.48-1-4.08-3.48-4.2-3.64-.12-.16-1-1.34-1-2.56 0-1.22.63-1.82.97-2.13Z" fill="currentColor"/>
+              </svg>
+              Conectar mi WhatsApp
+            </button>
+
+            <div class="client-box">
+              Cliente:
+              <code id="clientLabel">sin-cliente</code>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="security-grid" aria-label="Notas técnicas">
+              <div class="security-item">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M20 7 10 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>El botón puede redirigir al endpoint real que inicia el onboarding de Meta.</span>
+              </div>
+              <div class="security-item">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Modo demo activo hasta configurar la URL de integración en el script.</span>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="tech-strip" aria-label="Tecnologías relacionadas">
+      <span class="chip">WhatsApp Business API</span>
+      <span class="chip">Meta OAuth</span>
+      <span class="chip">n8n</span>
+      <span class="chip">Chatwoot</span>
+      <span class="chip">CRM</span>
+      <span class="chip">Automatización IA</span>
+    </section>
+
+    <footer class="footer">
+      <span>© <span id="year"></span> IANGINE.com — Todos los derechos reservados</span>
+      <span>Automatización · Integración · Inteligencia Artificial</span>
+    </footer>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </main>
+
+  <script>
+    // ======== CONFIGURACIÓN FACEBOOK / META ========
+    const APP_ID = "1464876681473593";
+    const GRAPH_VERSION = "v24.0";
+    const CONFIG_ID = "1475887540752322";
+
+    // URLs de los webhooks en n8n
+    const N8N_ONBOARDING_WEBHOOK = "<URL_WEBHOOK_WHATSAPP_ONBOARDING>";
+    const N8N_CODE_WEBHOOK = "<URL_WEBHOOK_WHATSAPP_LOGIN_CODE>";
+
+    // Header Auth para los webhooks
+    const WEBHOOK_HEADER_NAME = "x-tuempresa-secret";
+    const WEBHOOK_HEADER_VALUE = "<TOKEN_SECRETO_N8N>";
+
+    const params = new URLSearchParams(window.location.search);
+    const client = getClientParam();
+
+    const clientLabel = document.getElementById("clientLabel");
+    const connectBtn = document.getElementById("connectBtn");
+    const toast = document.getElementById("toast");
+
+    document.getElementById("year").textContent = new Date().getFullYear();
+    clientLabel.textContent = client || "sin-cliente";
+
+    window.fbAsyncInit = function() {
+      FB.init({
+        appId: APP_ID,
+        autoLogAppEvents: true,
+        xfbml: true,
+        version: GRAPH_VERSION
+      });
+    };
+
+    function getClientParam() {
+      return params.get("client") || params.get("clientId") || params.get("tenant") || "sin-cliente";
+    }
+
+    function showToast(message) {
+      toast.innerHTML = message;
+      toast.classList.add("show");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => {
+        toast.classList.remove("show");
+      }, 5200);
+    }
+
+    function setButtonLoading(isLoading) {
+      connectBtn.disabled = isLoading;
+      connectBtn.style.opacity = isLoading ? "0.72" : "1";
+      connectBtn.style.cursor = isLoading ? "wait" : "pointer";
+    }
+
+    function isPlaceholder(value) {
+      return !value || /^<.*>$/.test(value);
+    }
+
+    async function postToN8n(url, payload) {
+      if (isPlaceholder(url)) {
+        console.warn("Webhook n8n pendiente de configuración:", payload);
+        showToast("<strong>Configuración pendiente:</strong> reemplaza las URLs de los webhooks de n8n antes de usar esta página en producción.");
+        return false;
+      }
+
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            [WEBHOOK_HEADER_NAME]: WEBHOOK_HEADER_VALUE
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          throw new Error("n8n respondió con estado HTTP " + response.status);
+        }
+
+        return true;
+      } catch (err) {
+        console.error("Error enviando a n8n:", err);
+        showToast("<strong>Error:</strong> no se pudo enviar la información a n8n. Revisa la URL del webhook, CORS y el header de autenticación.");
+        return false;
+      }
+    }
+
+    window.addEventListener("message", async (event) => {
+      if (!event.origin.endsWith("facebook.com")) return;
+
+      try {
+        const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+
+        if (data && data.type === "WA_EMBEDDED_SIGNUP") {
+          await postToN8n(N8N_ONBOARDING_WEBHOOK, {
+            client,
+            embedded_event: data,
+            received_at: new Date().toISOString()
+          });
+        }
+      } catch (err) {
+        console.warn("Mensaje de Facebook ignorado porque no era JSON válido:", event.data);
+      }
+    });
+
+    const fbLoginCallback = async (response) => {
+      setButtonLoading(false);
+
+      if (response.authResponse) {
+        const code = response.authResponse.code;
+
+        await postToN8n(N8N_CODE_WEBHOOK, {
+          client,
+          code,
+          received_at: new Date().toISOString()
+        });
+
+        showToast("<strong>Conexión iniciada:</strong> recibimos el código de Meta y fue enviado a n8n para continuar el proceso.");
+      } else {
+        await postToN8n(N8N_CODE_WEBHOOK, {
+          client,
+          error: response,
+          received_at: new Date().toISOString()
+        });
+
+        showToast("<strong>Proceso cancelado o fallido:</strong> Meta no devolvió un código de autorización.");
+      }
+    };
+
+    // Clave para Coexistence: WhatsApp Business App onboarding.
+    const launchWhatsAppSignup = () => {
+      if (isPlaceholder(APP_ID) || isPlaceholder(CONFIG_ID)) {
+        showToast("<strong>Configuración pendiente:</strong> reemplaza <code>APP_ID</code> y <code>CONFIG_ID</code> con los valores reales de Meta.");
+        return;
+      }
+
+      if (!window.FB || typeof FB.login !== "function") {
+        showToast("<strong>SDK no disponible:</strong> el SDK de Facebook todavía no cargó o fue bloqueado por el navegador.");
+        return;
+      }
+
+      setButtonLoading(true);
+
+      FB.login(fbLoginCallback, {
+        config_id: CONFIG_ID,
+        response_type: "code",
+        override_default_response_type: true,
+        extras: {
+          setup: {},
+          featureType: "whatsapp_business_app_onboarding",
+          sessionInfoVersion: "3"
+        }
+      });
+    };
+
+    connectBtn.addEventListener("click", launchWhatsAppSignup);
+  </script>
+
+  <!-- Carga del SDK de Facebook -->
+  <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
+</body>
+</html>
