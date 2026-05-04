@@ -26,7 +26,7 @@
       --radius-lg: 24px;
       --radius-md: 16px;
       --shadow: 0 32px 90px rgba(0, 0, 0, 0.55);
-      --max: 1120px;
+      --max: 980px;
     }
 
     * {
@@ -203,17 +203,20 @@
 
     .hero {
       width: min(calc(100% - 36px), var(--max));
-      min-height: calc(100vh - 88px);
+      min-height: calc(100svh - 88px);
       margin: 0 auto;
       display: grid;
-      grid-template-columns: 1.02fr 0.98fr;
-      align-items: center;
-      gap: 48px;
-      padding: 30px 0 70px;
+      grid-template-columns: 1fr;
+      place-items: center;
+      gap: 22px;
+      padding: 10px 0 44px;
     }
 
     .hero-copy {
-      max-width: 650px;
+      order: 2;
+      max-width: 760px;
+      text-align: center;
+      margin: 0 auto;
     }
 
     .eyebrow {
@@ -238,10 +241,10 @@
     }
 
     h1 {
-      margin: 24px 0 0;
-      font-size: clamp(44px, 7.2vw, 88px);
-      line-height: 0.94;
-      letter-spacing: -0.075em;
+      margin: 18px 0 0;
+      font-size: clamp(32px, 5.4vw, 58px);
+      line-height: 1;
+      letter-spacing: -0.062em;
       font-weight: 950;
     }
 
@@ -253,20 +256,16 @@
     }
 
     .lead {
-      max-width: 610px;
-      margin: 24px 0 0;
+      max-width: 660px;
+      margin: 16px auto 0;
       color: var(--text-soft);
-      font-size: clamp(17px, 2vw, 21px);
-      line-height: 1.55;
+      font-size: clamp(15px, 1.7vw, 18px);
+      line-height: 1.5;
       font-weight: 650;
     }
 
     .actions {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 14px;
-      margin-top: 34px;
+      display: none;
     }
 
     .primary-link,
@@ -302,11 +301,7 @@
     }
 
     .proof-row {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-      margin-top: 38px;
-      max-width: 650px;
+      display: none;
     }
 
     .proof {
@@ -335,20 +330,22 @@
     }
 
     .panel-wrap {
+      order: 1;
+      width: 100%;
       display: flex;
       justify-content: center;
     }
 
     .connect-panel {
       position: relative;
-      width: min(100%, 430px);
+      width: min(100%, 560px);
       border-radius: var(--radius-xl);
-      border: 1px solid var(--line-strong);
+      border: 1px solid rgba(24, 227, 138, 0.34);
       background:
-        linear-gradient(180deg, rgba(255,255,255,0.105), rgba(255,255,255,0.052)),
+        linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.058)),
         rgba(255,255,255,0.03);
-      box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(26px);
+      box-shadow: 0 0 0 1px rgba(24, 227, 138, 0.08), 0 38px 110px rgba(0, 0, 0, 0.62), 0 24px 90px rgba(24, 227, 138, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(28px);
       overflow: hidden;
     }
 
@@ -366,7 +363,7 @@
     .connect-inner {
       position: relative;
       z-index: 1;
-      padding: 34px;
+      padding: clamp(28px, 5vw, 46px);
     }
 
     .iangine-mark {
@@ -390,9 +387,9 @@
     .connect-panel h2 {
       margin: 0;
       text-align: center;
-      font-size: clamp(32px, 4.5vw, 45px);
-      line-height: 0.98;
-      letter-spacing: -0.055em;
+      font-size: clamp(34px, 5.3vw, 56px);
+      line-height: 0.96;
+      letter-spacing: -0.064em;
       font-weight: 950;
     }
 
@@ -401,33 +398,36 @@
     }
 
     .connect-panel p {
-      max-width: 315px;
+      max-width: 390px;
       margin: 18px auto 0;
       text-align: center;
       color: var(--text-soft);
-      font-size: 15px;
+      font-size: clamp(15px, 1.8vw, 17px);
       line-height: 1.55;
-      font-weight: 700;
+      font-weight: 750;
     }
 
     .connect-btn {
       position: relative;
       width: 100%;
-      min-height: 58px;
+      min-height: clamp(70px, 8vw, 86px);
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      margin-top: 28px;
+      gap: 13px;
+      margin-top: 32px;
       border: 0;
       border-radius: 999px;
-      color: #06110b;
-      background: linear-gradient(180deg, #38f59a 0%, var(--accent) 42%, var(--accent-dark) 100%);
-      box-shadow: 0 22px 46px rgba(24, 227, 138, 0.24), inset 0 1px 0 rgba(255,255,255,0.42);
+      color: #031109;
+      background: linear-gradient(180deg, #6dffb3 0%, #22f092 38%, var(--accent) 62%, var(--accent-dark) 100%);
+      box-shadow: 0 0 0 10px rgba(24, 227, 138, 0.075), 0 0 0 1px rgba(255,255,255,0.22) inset, 0 32px 72px rgba(24, 227, 138, 0.32), inset 0 1px 0 rgba(255,255,255,0.52);
       cursor: pointer;
-      font-size: 15px;
+      font-size: clamp(18px, 2.35vw, 23px);
       font-weight: 950;
       overflow: hidden;
+      letter-spacing: -0.025em;
+      transform: translateZ(0);
+      animation: ctaPulse 2.5s ease-in-out infinite;
       transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
     }
 
@@ -455,57 +455,39 @@
     }
 
     .connect-btn svg {
-      width: 21px;
-      height: 21px;
+      width: clamp(25px, 3vw, 31px);
+      height: clamp(25px, 3vw, 31px);
       flex: 0 0 auto;
     }
 
-    .client-box {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 22px;
-      color: var(--text-muted);
-      font-size: 12px;
-      font-weight: 850;
-    }
-
-    .client-box code {
-      max-width: 230px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      padding: 6px 10px;
-      border-radius: 999px;
-      color: rgba(255, 255, 255, 0.84);
-      background: rgba(255, 255, 255, 0.065);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+    @keyframes ctaPulse {
+      0%, 100% { box-shadow: 0 0 0 10px rgba(24, 227, 138, 0.075), 0 0 0 1px rgba(255,255,255,0.22) inset, 0 32px 72px rgba(24, 227, 138, 0.32), inset 0 1px 0 rgba(255,255,255,0.52); }
+      50% { box-shadow: 0 0 0 16px rgba(24, 227, 138, 0.11), 0 0 0 1px rgba(255,255,255,0.26) inset, 0 42px 92px rgba(24, 227, 138, 0.42), inset 0 1px 0 rgba(255,255,255,0.52); }
     }
 
     .divider {
       height: 1px;
-      margin: 24px 0;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.16), transparent);
+      margin: 20px 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
     }
 
     .security-grid {
       display: grid;
-      gap: 10px;
+      gap: 8px;
+      opacity: 0.7;
     }
 
     .security-item {
       display: flex;
       align-items: flex-start;
       gap: 10px;
-      padding: 12px;
-      border-radius: 18px;
-      background: rgba(0, 0, 0, 0.16);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      color: rgba(255,255,255,0.6);
-      font-size: 12px;
-      line-height: 1.45;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: rgba(0, 0, 0, 0.13);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      color: rgba(255,255,255,0.55);
+      font-size: 11.5px;
+      line-height: 1.42;
       font-weight: 700;
     }
 
@@ -519,12 +501,13 @@
 
     .tech-strip {
       width: min(calc(100% - 36px), var(--max));
-      margin: -28px auto 0;
-      padding: 0 0 54px;
+      margin: -18px auto 0;
+      padding: 0 0 38px;
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 10px;
+      gap: 8px;
+      opacity: 0.58;
     }
 
     .chip {
@@ -591,13 +574,13 @@
     @media (max-width: 930px) {
       .hero {
         grid-template-columns: 1fr;
-        min-height: auto;
-        gap: 36px;
-        padding-top: 46px;
+        min-height: calc(100svh - 76px);
+        gap: 18px;
+        padding-top: 10px;
       }
 
       .hero-copy {
-        max-width: none;
+        max-width: 720px;
         text-align: center;
       }
 
@@ -606,25 +589,25 @@
         margin-left: auto;
         margin-right: auto;
       }
-
-      .actions {
-        justify-content: center;
-      }
     }
 
     @media (max-width: 680px) {
       .nav {
         width: min(calc(100% - 28px), var(--max));
-        padding-top: 18px;
+        padding: 14px 0 8px;
+      }
+
+      .brand {
+        gap: 10px;
       }
 
       .brand img {
-        width: 38px;
-        height: 38px;
+        width: 36px;
+        height: 36px;
       }
 
       .brand-text strong {
-        font-size: 16px;
+        font-size: 15px;
       }
 
       .brand-text span,
@@ -634,52 +617,84 @@
 
       .hero {
         width: min(calc(100% - 28px), var(--max));
-        padding: 26px 0 48px;
+        min-height: calc(100svh - 58px);
+        padding: 8px 0 30px;
+        gap: 16px;
+      }
+
+      .eyebrow {
+        display: none;
       }
 
       h1 {
-        font-size: clamp(42px, 13vw, 64px);
+        margin-top: 0;
+        font-size: clamp(28px, 9.2vw, 42px);
+        letter-spacing: -0.055em;
       }
 
-      .proof-row {
-        grid-template-columns: 1fr;
-        margin-top: 28px;
+      .lead {
+        margin-top: 12px;
+        font-size: 14px;
+        line-height: 1.45;
+      }
+
+      .connect-panel {
+        width: 100%;
+        border-radius: 30px;
       }
 
       .connect-inner {
-        padding: 26px 20px 22px;
+        padding: 24px 18px 20px;
       }
 
       .iangine-mark {
-        width: 76px;
-        height: 76px;
-        border-radius: 24px;
+        width: 68px;
+        height: 68px;
+        margin-bottom: 14px;
+        border-radius: 22px;
       }
 
       .iangine-mark img {
-        width: 58px;
-        height: 58px;
+        width: 52px;
+        height: 52px;
       }
 
-      .actions {
-        align-items: stretch;
+      .connect-panel h2 {
+        font-size: clamp(31px, 9.8vw, 43px);
       }
 
-      .primary-link,
-      .secondary-link {
-        width: 100%;
+      .connect-panel p {
+        max-width: 300px;
+        margin-top: 14px;
+        font-size: 14px;
+      }
+
+      .connect-btn {
+        min-height: 74px;
+        margin-top: 24px;
+        font-size: clamp(19px, 5.6vw, 23px);
+      }
+
+      .security-grid {
+        display: none;
+      }
+
+      .divider {
+        display: none;
       }
 
       .tech-strip {
         width: min(calc(100% - 28px), var(--max));
-        justify-content: flex-start;
-        padding-bottom: 36px;
+        justify-content: center;
+        padding-bottom: 28px;
       }
 
       .footer {
         width: min(calc(100% - 28px), var(--max));
         flex-direction: column;
-        align-items: flex-start;
+        align-items: center;
+        text-align: center;
+        padding-bottom: 22px;
       }
     }
 
@@ -763,11 +778,6 @@
               Conectar mi WhatsApp
             </button>
 
-            <div class="client-box">
-              Cliente:
-              <code id="clientLabel">sin-cliente</code>
-            </div>
-
             <div class="divider"></div>
 
             <div class="security-grid" aria-label="Notas técnicas">
@@ -822,13 +832,10 @@
 
     const params = new URLSearchParams(window.location.search);
     const client = getClientParam();
-
-    const clientLabel = document.getElementById("clientLabel");
     const connectBtn = document.getElementById("connectBtn");
     const toast = document.getElementById("toast");
 
     document.getElementById("year").textContent = new Date().getFullYear();
-    clientLabel.textContent = client || "sin-cliente";
 
     window.fbAsyncInit = function() {
       FB.init({
