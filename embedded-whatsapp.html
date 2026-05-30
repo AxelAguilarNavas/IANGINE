@@ -571,6 +571,47 @@
       font-weight: 850;
     }
 
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      display: none; align-items: center; justify-content: center;
+      z-index: 100; opacity: 0; transition: opacity 0.3s ease;
+    }
+    .modal-overlay.show { display: flex; opacity: 1; }
+    .modal-content {
+      background: #0a0f1d;
+      border: 1px solid rgba(255, 255, 255, 0.13);
+      border-radius: 24px; padding: 32px;
+      width: min(calc(100% - 32px), 500px);
+      box-shadow: 0 32px 90px rgba(0, 0, 0, 0.55);
+    }
+    .modal-content h3 { margin-top: 0; font-size: 24px; font-weight: 800; color: #fff; }
+    .modal-content p { color: rgba(255, 255, 255, 0.74); font-size: 14px; margin-bottom: 24px; line-height: 1.5; }
+    .data-group { margin-bottom: 16px; }
+    .data-group label { display: block; font-size: 12px; font-weight: 700; color: rgba(255, 255, 255, 0.74); margin-bottom: 8px; }
+    .input-wrapper { position: relative; display: flex; }
+    .input-wrapper input {
+      width: 100%; padding: 12px 90px 12px 16px;
+      border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(0, 0, 0, 0.2); color: white;
+      outline: none; font-size: 14px; font-family: monospace;
+    }
+    .input-wrapper .copy-btn, .input-wrapper .toggle-btn {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; padding: 6px;
+      display: grid; place-items: center;
+    }
+    .input-wrapper .copy-btn { right: 40px; color: #18e38a; }
+    .input-wrapper .toggle-btn { right: 8px; color: rgba(255, 255, 255, 0.74); }
+    .input-wrapper .copy-btn svg, .input-wrapper .toggle-btn svg { width: 18px; height: 18px; }
+    .close-modal-btn {
+      width: 100%; padding: 14px; margin-top: 24px; border-radius: 12px;
+      border: none; background: rgba(255, 255, 255, 0.13); color: white;
+      font-weight: 700; font-size: 15px; cursor: pointer; transition: background 0.2s;
+    }
+    .close-modal-btn:hover { background: rgba(255, 255, 255, 0.2); }
+
     @media (max-width: 930px) {
       .hero {
         grid-template-columns: 1fr;
@@ -817,6 +858,55 @@
     </footer>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <!-- Modal de Éxito -->
+    <div id="successModal" class="modal-overlay">
+      <div class="modal-content">
+        <h3>¡Conexión Exitosa!</h3>
+        <p>Tu cuenta ha sido vinculada. Guarda los siguientes datos de forma segura:</p>
+        
+        <div class="data-group">
+          <label>Meta Phone Number ID</label>
+          <div class="input-wrapper">
+            <input type="password" id="resPhoneId" readonly>
+            <button class="copy-btn" onclick="copyToClipboard('resPhoneId')" aria-label="Copiar Phone Number ID">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </button>
+            <button class="toggle-btn" onclick="togglePassword('resPhoneId')" aria-label="Mostrar/Ocultar">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="data-group">
+          <label>Meta Verify Token (Webhook Handshake)</label>
+          <div class="input-wrapper">
+            <input type="password" id="resHandshake" readonly>
+            <button class="copy-btn" onclick="copyToClipboard('resHandshake')" aria-label="Copiar Handshake">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </button>
+            <button class="toggle-btn" onclick="togglePassword('resHandshake')" aria-label="Mostrar/Ocultar">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="data-group">
+          <label>Meta Access Token (Token de acceso permanente)</label>
+          <div class="input-wrapper">
+            <input type="password" id="resToken" readonly>
+            <button class="copy-btn" onclick="copyToClipboard('resToken')" aria-label="Copiar Token">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </button>
+            <button class="toggle-btn" onclick="togglePassword('resToken')" aria-label="Mostrar/Ocultar">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </button>
+          </div>
+        </div>
+
+        <button class="close-modal-btn" onclick="closeModal()">Cerrar</button>
+      </div>
+    </div>
   </main>
 
   <script>
@@ -866,6 +956,35 @@
       }, 5200);
     }
 
+    function copyToClipboard(id) {
+      const input = document.getElementById(id);
+      navigator.clipboard.writeText(input.value).then(() => {
+        showToast("<strong>Copiado:</strong> Información copiada al portapapeles.");
+      });
+    }
+
+    function togglePassword(id) {
+      const input = document.getElementById(id);
+      if (input.type === "password") {
+        input.type = "text";
+      } else {
+        input.type = "password";
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('successModal').classList.remove('show');
+    }
+
+    function showSuccessModal(data) {
+      if (data && data.phone_number_id) {
+        document.getElementById('resPhoneId').value = data.phone_number_id || '';
+        document.getElementById('resHandshake').value = data.handshake || '';
+        document.getElementById('resToken').value = data.token || '';
+        document.getElementById('successModal').classList.add('show');
+      }
+    }
+
     function setButtonLoading(isLoading) {
       connectBtn.disabled = isLoading;
       connectBtn.style.opacity = isLoading ? "0.72" : "1";
@@ -905,7 +1024,11 @@
           throw new Error("n8n respondió con estado HTTP " + response.status);
         }
 
-        return true;
+        try {
+          return JSON.parse(rawResponse);
+        } catch(e) {
+          return { status: "success" };
+        }
       } catch (err) {
         console.error("Error enviando a n8n:", err);
         showToast("<strong>Error:</strong> no se pudo enviar la información a n8n. Revisa la URL del webhook, CORS y el header de autenticación.");
@@ -922,13 +1045,16 @@
         if (data && data.type === "WA_EMBEDDED_SIGNUP") {
           const userWebhookUrl = document.getElementById("webhookUrl") ? document.getElementById("webhookUrl").value.trim() : "";
           const handshake = document.getElementById("handshake") ? document.getElementById("handshake").value.trim() : "";
-          await postToN8n(N8N_ONBOARDING_WEBHOOK, {
+          const res = await postToN8n(N8N_ONBOARDING_WEBHOOK, {
             client,
             user_webhook_url: userWebhookUrl,
             handshake: handshake,
             embedded_event: data,
             received_at: new Date().toISOString()
           });
+          if (res && res.data) {
+            showSuccessModal(res.data);
+          }
         }
       } catch (err) {
         console.warn("Mensaje de Facebook ignorado porque no era JSON válido:", event.data);
@@ -946,7 +1072,7 @@
         if (response.authResponse) {
           const code = response.authResponse.code;
 
-          await postToN8n(N8N_CODE_WEBHOOK, {
+          const res = await postToN8n(N8N_CODE_WEBHOOK, {
             client,
             user_webhook_url: userWebhookUrl,
             handshake: handshake,
@@ -954,7 +1080,11 @@
             received_at: new Date().toISOString()
           });
 
-          showToast("<strong>Conexión iniciada:</strong> recibimos el código de Meta y fue enviado a n8n para continuar el proceso.");
+          if (res && res.data && res.data.phone_number_id) {
+            showSuccessModal(res.data);
+          } else {
+            showToast("<strong>Conexión iniciada:</strong> recibimos el código de Meta y fue enviado a n8n para continuar el proceso.");
+          }
         } else {
           await postToN8n(N8N_CODE_WEBHOOK, {
             client,
