@@ -898,6 +898,9 @@
           body: JSON.stringify(payload)
         });
 
+        const rawResponse = await response.text();
+        console.log("Respuesta raw de n8n:", rawResponse);
+
         if (!response.ok) {
           throw new Error("n8n respondió con estado HTTP " + response.status);
         }
