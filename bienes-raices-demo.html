@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Automatización de Bienes Raíces - AILink Demo</title>
+  <title>Propuesta Exclusiva - Pepito Rosales</title>
   
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -129,33 +129,33 @@
     </div>
   </nav>
 
-  <!-- VSL Main Section (Compact Above-The-Fold Layout) -->
+  <!-- VSL Main Section (Compact Above-The-Fold Layout with Hardcoded Client Details) -->
   <section id="video-presentation" class="relative h-screen min-h-[620px] flex flex-col items-center justify-center pt-24 pb-4 px-4 overflow-hidden text-center">
     <!-- Ambient Background Gradients -->
     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-luxury-500/5 blur-[120px] pointer-events-none"></div>
     
     <div class="max-w-3xl w-full mx-auto flex flex-col items-center space-y-3.5 relative z-10">
       
-      <!-- Attention Grabber (Adjusted padding to prevent cutoff) -->
+      <!-- Attention Grabber -->
       <div class="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-full glass-badge text-luxury-400 text-[10px] font-bold uppercase tracking-widest mt-2">
         <i class="fa-solid fa-circle-play text-red-500 animate-pulse"></i>
-        <span>Presentación de Video Exclusiva</span>
+        <span>Presentación de Video Personalizada</span>
       </div>
       
-      <!-- Headline (Focused on Real Estate AI Solutions, no location filtering) -->
+      <!-- Headline: Customized specifically for Pepito Rosales - Bienes Raíces -->
       <h1 class="font-serif text-2xl sm:text-3xl md:text-4xl font-bold text-white leading-tight max-w-2xl text-glow">
-        Optimiza tu Inventario y Filtra Leads en <span class="text-transparent bg-clip-text bg-gradient-to-r from-luxury-400 to-luxury-200">Piloto Automático</span>
+        Propuesta exclusiva para <span class="text-transparent bg-clip-text bg-gradient-to-r from-luxury-400 to-luxury-200">Pepito Rosales - Bienes Raíces</span>
       </h1>
       
       <!-- Subheadline -->
       <p class="text-gray-400 text-xs sm:text-sm max-w-xl leading-relaxed">
-        Descubre cómo nuestra Inteligencia Artificial organiza tu información y evita que sigas perdiendo clientes.
+        Mira el video completo a continuación para ver cómo optimizar tu negocio.
       </p>
 
       <!-- Video Container optimized for 9:16 Portrait Video Above-The-Fold -->
       <div class="w-full max-w-[260px] sm:max-w-[280px] aspect-[9/16] rounded-2xl overflow-hidden glass-card p-1.5 shadow-2xl shadow-luxury-500/5 transition-all duration-300">
         <div class="relative w-full h-full rounded-xl overflow-hidden bg-black">
-          <!-- The Video -->
+          <!-- The Video (Static Local Source) -->
           <video id="promoVideo" class="w-full h-full object-cover" autoplay loop muted playsinline>
             <source src="Escena_inicial_-_2026-07-12_202607112342.mp4" type="video/mp4">
             Tu navegador no soporta reproducción de videos.
@@ -187,7 +187,7 @@
     </div>
   </section>
 
-  <!-- Solutions & Features Section (Refocused on Real Estate AI System) -->
+  <!-- Solutions & Features Section -->
   <section id="soluciones" class="py-12 px-6 relative bg-gradient-to-b from-luxury-dark via-gray-950 to-luxury-dark border-t border-white/5">
     <div class="max-w-7xl mx-auto">
       <div class="text-center max-w-2xl mx-auto mb-10 space-y-2">
@@ -279,10 +279,10 @@
     playPauseBtn.addEventListener('click', () => {
       if (video.paused) {
         video.play();
-        playPauseIcon.className = 'fa-solid fa-pause';
+        playPauseIcon.className = 'fa-solid fa-pause text-xs';
       } else {
         video.pause();
-        playPauseIcon.className = 'fa-solid fa-play';
+        playPauseIcon.className = 'fa-solid fa-play text-xs';
       }
     });
 
@@ -290,10 +290,10 @@
     muteBtn.addEventListener('click', () => {
       if (video.muted) {
         video.muted = false;
-        muteIcon.className = 'fa-solid fa-volume-high';
+        muteIcon.className = 'fa-solid fa-volume-high text-xs';
       } else {
         video.muted = true;
-        muteIcon.className = 'fa-solid fa-volume-xmark';
+        muteIcon.className = 'fa-solid fa-volume-xmark text-xs';
       }
     });
   </script>
