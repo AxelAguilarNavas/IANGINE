@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Automatización de Bienes Raíces - AILink Demo</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- FontAwesome for Premium Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            serif: ['"Playfair Display"', 'serif'],
+          },
+          colors: {
+            luxury: {
+              50: '#fbf9f4',
+              100: '#f5efe0',
+              200: '#e7dcbe',
+              300: '#d5c292',
+              400: '#c1a66b',
+              500: '#b08e50', // Luxury Gold
+              600: '#9d7641',
+              700: '#835d35',
+              800: '#6b4b2e',
+              900: '#583e29',
+              dark: '#0c0f14', // Deep Slate Dark
+              card: 'rgba(18, 24, 38, 0.65)',
+            }
+          },
+          animation: {
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'float': 'float 6s ease-in-out infinite',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-10px)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Premium custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0c0f14;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #b08e50;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #9d7641;
+    }
+
+    /* Glassmorphism custom styling */
+    .glass-nav {
+      background: rgba(12, 15, 20, 0.75);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .glass-card {
+      background: rgba(20, 26, 38, 0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-badge {
+      background: rgba(176, 142, 80, 0.15);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      border: 1px solid rgba(176, 142, 80, 0.3);
+    }
+
+    .text-glow {
+      text-shadow: 0 0 15px rgba(176, 142, 80, 0.25);
+    }
+  </style>
+</head>
+<body class="bg-luxury-dark text-gray-200 font-sans antialiased overflow-x-hidden">
+
+  <!-- Elegant Navbar -->
+  <nav class="fixed top-0 left-0 right-0 z-50 glass-nav">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+      <a href="#" class="flex items-center space-x-3 group">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-luxury-500 to-luxury-300 flex items-center justify-center shadow-lg shadow-luxury-500/25">
+          <i class="fa-solid fa-hotel text-luxury-dark text-base font-bold"></i>
+        </div>
+        <div>
+          <span class="font-serif font-bold text-lg tracking-wider text-white group-hover:text-luxury-400 transition-colors">IANGINE</span>
+          <span class="block text-[8px] uppercase tracking-[0.25em] text-luxury-500 font-bold">Bienes Raíces</span>
+        </div>
+      </a>
+      
+      <div class="hidden md:flex items-center space-x-8 text-xs font-medium tracking-wide">
+        <a href="#video-presentation" class="text-gray-300 hover:text-luxury-400 transition-colors">Video VSL</a>
+        <a href="#soluciones" class="text-gray-300 hover:text-luxury-400 transition-colors">Soluciones</a>
+      </div>
+
+      <div>
+        <a href="https://wa.me/50488744474?text=Hola.%20Quiero%20informaci%C3%B3n%20de%20los%20productos%20disponibles" 
+           target="_blank" 
+           class="px-4 py-2 rounded-full bg-gradient-to-r from-luxury-500 to-luxury-400 hover:from-luxury-600 hover:to-luxury-500 text-luxury-dark font-semibold text-xs tracking-wide shadow-lg shadow-luxury-500/20 active:scale-95 transition transform duration-200 flex items-center space-x-1.5">
+          <i class="fa-brands fa-whatsapp text-sm"></i>
+          <span>Solicitar Demo</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- VSL Main Section (Compact Above-The-Fold Layout) -->
+  <section id="video-presentation" class="relative h-screen min-h-[620px] flex flex-col items-center justify-center pt-24 pb-4 px-4 overflow-hidden text-center">
+    <!-- Ambient Background Gradients -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-luxury-500/5 blur-[120px] pointer-events-none"></div>
+    
+    <div class="max-w-3xl w-full mx-auto flex flex-col items-center space-y-3.5 relative z-10">
+      
+      <!-- Attention Grabber (Adjusted padding to prevent cutoff) -->
+      <div class="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-full glass-badge text-luxury-400 text-[10px] font-bold uppercase tracking-widest mt-2">
+        <i class="fa-solid fa-circle-play text-red-500 animate-pulse"></i>
+        <span>Presentación de Video Exclusiva</span>
+      </div>
+      
+      <!-- Headline (Focused on Real Estate AI Solutions, no location filtering) -->
+      <h1 class="font-serif text-2xl sm:text-3xl md:text-4xl font-bold text-white leading-tight max-w-2xl text-glow">
+        Optimiza tu Inventario y Filtra Leads en <span class="text-transparent bg-clip-text bg-gradient-to-r from-luxury-400 to-luxury-200">Piloto Automático</span>
+      </h1>
+      
+      <!-- Subheadline -->
+      <p class="text-gray-400 text-xs sm:text-sm max-w-xl leading-relaxed">
+        Descubre cómo nuestra Inteligencia Artificial organiza tu información y evita que sigas perdiendo clientes.
+      </p>
+
+      <!-- Video Container optimized for 9:16 Portrait Video Above-The-Fold -->
+      <div class="w-full max-w-[260px] sm:max-w-[280px] aspect-[9/16] rounded-2xl overflow-hidden glass-card p-1.5 shadow-2xl shadow-luxury-500/5 transition-all duration-300">
+        <div class="relative w-full h-full rounded-xl overflow-hidden bg-black">
+          <!-- The Video -->
+          <video id="promoVideo" class="w-full h-full object-cover" autoplay loop muted playsinline>
+            <source src="Escena_inicial_-_2026-07-12_202607112342.mp4" type="video/mp4">
+            Tu navegador no soporta reproducción de videos.
+          </video>
+          
+          <!-- Subtle shade overlay at the bottom for controls legibility -->
+          <div class="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/80 to-transparent pointer-events-none"></div>
+
+          <!-- Video custom player controls overlay -->
+          <div class="absolute bottom-2 left-3 right-3 flex items-center justify-between z-20">
+            <button id="playPauseBtn" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 backdrop-blur-md text-white flex items-center justify-center transition-all">
+              <i class="fa-solid fa-pause text-xs" id="playPauseIcon"></i>
+            </button>
+            <div class="flex items-center space-x-2">
+              <button id="muteBtn" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 backdrop-blur-md text-white flex items-center justify-center transition-all">
+                <i class="fa-solid fa-volume-xmark text-xs" id="muteIcon"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Info notice below video -->
+      <p class="text-[10px] text-gray-500 flex items-center gap-1 justify-center">
+        <i class="fa-solid fa-volume-high text-luxury-500/80"></i>
+        Activa el audio en la esquina del video para escuchar la propuesta.
+      </p>
+
+    </div>
+  </section>
+
+  <!-- Solutions & Features Section (Refocused on Real Estate AI System) -->
+  <section id="soluciones" class="py-12 px-6 relative bg-gradient-to-b from-luxury-dark via-gray-950 to-luxury-dark border-t border-white/5">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center max-w-2xl mx-auto mb-10 space-y-2">
+        <span class="text-luxury-500 font-bold uppercase tracking-widest text-[10px]">Automatización Inteligente</span>
+        <h2 class="font-serif text-xl md:text-3xl font-bold text-white">¿Cómo Funciona para tu Negocio?</h2>
+        <div class="h-0.5 w-12 bg-luxury-500 mx-auto rounded-full mt-1.5"></div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+        <!-- Feature Card 1 -->
+        <div class="glass-card p-5 rounded-xl space-y-2 hover:border-luxury-500/30 transition-all duration-300 group">
+          <div class="w-8 h-8 rounded-lg bg-luxury-500/10 flex items-center justify-center text-luxury-400 group-hover:bg-luxury-500 group-hover:text-luxury-dark transition-all duration-300">
+            <i class="fa-solid fa-rotate text-sm"></i>
+          </div>
+          <h3 class="font-serif text-base font-semibold text-white">Inventario Actualizado</h3>
+          <p class="text-gray-400 text-xs leading-relaxed">
+            Tu equipo sabrá al instante qué propiedades siguen disponibles, eliminando confusiones y evitando la pérdida de clientes.
+          </p>
+        </div>
+
+        <!-- Feature Card 2 -->
+        <div class="glass-card p-5 rounded-xl space-y-2 hover:border-luxury-500/30 transition-all duration-300 group">
+          <div class="w-8 h-8 rounded-lg bg-luxury-500/10 flex items-center justify-center text-luxury-400 group-hover:bg-luxury-500 group-hover:text-luxury-dark transition-all duration-300">
+            <i class="fa-solid fa-filter text-sm"></i>
+          </div>
+          <h3 class="font-serif text-base font-semibold text-white">Filtrado de Leads</h3>
+          <p class="text-gray-400 text-xs leading-relaxed">
+            La IA califica automáticamente a los prospectos, identificando a los correctos para que tu equipo se enfoque solo en cierres.
+          </p>
+        </div>
+
+        <!-- Feature Card 3 -->
+        <div class="glass-card p-5 rounded-xl space-y-2 hover:border-luxury-500/30 transition-all duration-300 group">
+          <div class="w-8 h-8 rounded-lg bg-luxury-500/10 flex items-center justify-center text-luxury-400 group-hover:bg-luxury-500 group-hover:text-luxury-dark transition-all duration-300">
+            <i class="fa-solid fa-folder-open text-sm"></i>
+          </div>
+          <h3 class="font-serif text-base font-semibold text-white">Información Organizada</h3>
+          <p class="text-gray-400 text-xs leading-relaxed">
+            Centraliza y estructura los datos clave de tu agencia en un solo lugar, accesible e integrado de forma automática.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Big Call To Action at Bottom -->
+  <section class="py-16 px-6 bg-luxury-dark relative border-t border-white/5 overflow-hidden">
+    <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] rounded-full bg-luxury-500/5 blur-[120px] pointer-events-none"></div>
+
+    <div class="max-w-3xl mx-auto text-center space-y-6 relative z-10">
+      <h2 class="font-serif text-2xl md:text-4xl font-bold text-white leading-tight">
+        ¿Listo para implementar esta demostración en tu negocio?
+      </h2>
+      <p class="text-gray-400 max-w-lg mx-auto text-sm">
+        Haz clic abajo para contactarnos por WhatsApp y ver cómo podemos adaptar la solución a tu agencia de bienes raíces.
+      </p>
+
+      <div class="pt-4 flex flex-col items-center">
+        <!-- Big Clear WhatsApp Button -->
+        <a href="https://wa.me/50488744474?text=Hola.%20Quiero%20informaci%C3%B3n%20de%20los%20productos%20disponibles" 
+           target="_blank" 
+           class="inline-flex items-center space-x-4 px-8 py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold text-lg tracking-wide shadow-xl shadow-emerald-500/20 active:scale-95 transition transform duration-200 hover:shadow-emerald-500/35">
+          <i class="fa-brands fa-whatsapp text-2xl"></i>
+          <span>Enviar Mensaje de WhatsApp</span>
+        </a>
+        
+        <!-- Disclaimer text below the button -->
+        <p class="text-gray-500 text-[11px] md:text-xs mt-6 max-w-md mx-auto leading-relaxed px-4">
+          La página web y el WhatsApp solo son parte de un Demo para AILink y bajo ninguna circunstancia representa la realidad de la agencia o alguna propuesta real.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-8 text-center text-xs text-gray-600 border-t border-white/5 bg-gray-950">
+    <p>&copy; 2026 IANGINE Real Estate Solutions. Todos los derechos reservados.</p>
+  </footer>
+
+  <!-- Script for Video Player controls -->
+  <script>
+    const video = document.getElementById('promoVideo');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const playPauseIcon = document.getElementById('playPauseIcon');
+    const muteBtn = document.getElementById('muteBtn');
+    const muteIcon = document.getElementById('muteIcon');
+
+    // Play / Pause Logic
+    playPauseBtn.addEventListener('click', () => {
+      if (video.paused) {
+        video.play();
+        playPauseIcon.className = 'fa-solid fa-pause';
+      } else {
+        video.pause();
+        playPauseIcon.className = 'fa-solid fa-play';
+      }
+    });
+
+    // Mute / Unmute Logic
+    muteBtn.addEventListener('click', () => {
+      if (video.muted) {
+        video.muted = false;
+        muteIcon.className = 'fa-solid fa-volume-high';
+      } else {
+        video.muted = true;
+        muteIcon.className = 'fa-solid fa-volume-xmark';
+      }
+    });
+  </script>
+</body>
+</html>
