@@ -194,6 +194,116 @@
       </form>
     </section>
 
+    <!-- Tracking de UTMs y eventos (visita, intento de agendar, cita agendada) -->
+    <script>
+      // Webhook del workflow "UTM - Tracking a Airtable" en n8n.
+      const TRACKING_WEBHOOK = "https://n8n.srv902776.hstgr.cloud/webhook/utm-tracking";
+      const SISTEMA = "IANGINE.com";
+
+      const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"];
+
+      function leerUtmDeUrl() {
+        const params = new URLSearchParams(location.search);
+        const utm = {};
+        UTM_KEYS.forEach((k) => {
+          const v = params.get(k);
+          if (v) utm[k] = v;
+        });
+        return utm;
+      }
+
+      // Guarda los UTMs en localStorage con la fecha de ingreso.
+      // "primera_visita" se escribe una sola vez (primera atribucion);
+      // "ultima_visita" se actualiza cada vez que llegan UTMs nuevos.
+      function guardarUtm() {
+        const utm = leerUtmDeUrl();
+        if (Object.keys(utm).length === 0) return;
+        const registro = { ...utm, fecha_ingreso: new Date().toISOString() };
+        if (!localStorage.getItem("iangine_utm_primera_visita")) {
+          localStorage.setItem("iangine_utm_primera_visita", JSON.stringify(registro));
+        }
+        localStorage.setItem("iangine_utm_ultima_visita", JSON.stringify(registro));
+      }
+
+      function obtenerAtribucion() {
+        let primera = null, ultima = null;
+        try {
+          primera = JSON.parse(localStorage.getItem("iangine_utm_primera_visita"));
+          ultima = JSON.parse(localStorage.getItem("iangine_utm_ultima_visita"));
+        } catch (e) {}
+        return { utm_primera_visita: primera, utm_ultima_visita: ultima };
+      }
+
+      // El ID de contacto lo genera/reutiliza n8n (una fila por visitante en
+      // Airtable "Contactos"). Se persiste en localStorage para ligar todos
+      // los eventos del mismo visitante, incluida la cita que agende despues.
+      function obtenerContactoId() {
+        return localStorage.getItem("iangine_contacto_id") || null;
+      }
+
+      function guardarContactoId(id) {
+        if (id) localStorage.setItem("iangine_contacto_id", id);
+      }
+
+      function enviarEvento(evento, datos = {}) {
+        const payload = {
+          evento,
+          sistema: SISTEMA,
+          contacto_id: obtenerContactoId(),
+          fecha: new Date().toISOString(),
+          pagina: location.href,
+          ...obtenerAtribucion(),
+          ...datos,
+        };
+        try {
+          fetch(TRACKING_WEBHOOK, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+            keepalive: true,
+          })
+            .then((r) => r.json())
+            .then((r) => {
+              if (r && r.contacto_id) guardarContactoId(r.contacto_id);
+            })
+            .catch(() => {});
+        } catch (e) {}
+      }
+
+      guardarUtm();
+
+      // Registrar la visita una sola vez por sesion de navegacion.
+      if (!sessionStorage.getItem("iangine_visita_enviada")) {
+        sessionStorage.setItem("iangine_visita_enviada", "1");
+        enviarEvento("visita");
+      }
+
+      // El usuario vio el calendario (al menos ~200px visibles en pantalla).
+      let agendaVista = false;
+      new IntersectionObserver(
+        (entries) => {
+          if (!agendaVista && entries.some((e) => e.isIntersecting)) {
+            agendaVista = true;
+            enviarEvento("vio_agenda");
+          }
+        },
+        { threshold: 0.25 }
+      ).observe(document.getElementById("my-cal-inline-30min"));
+
+      // Intento de agendar: primer clic dentro del iframe del calendario.
+      // Un clic en un iframe le quita el foco a la ventana, asi se detecta.
+      let intentoAgendarEnviado = false;
+      window.addEventListener("blur", () => {
+        if (intentoAgendarEnviado) return;
+        const el = document.activeElement;
+        const contenedorCal = document.getElementById("my-cal-inline-30min");
+        if (el && el.tagName === "IFRAME" && contenedorCal.contains(el)) {
+          intentoAgendarEnviado = true;
+          enviarEvento("intento_agendar");
+        }
+      });
+    </script>
+
     <!-- Cal inline embed code begins -->
     <script type="text/javascript">
       (function (C, A, L) {
@@ -232,11 +342,35 @@
 
       Cal.ns["30min"]("inline", {
         elementOrSelector: "#my-cal-inline-30min",
-        config: { layout: "month_view" },
+        // Los UTMs guardados se reenvian a Cal.com para que la reserva
+        // quede marcada con la fuente (video, red social, etc.).
+        config: {
+          layout: "month_view",
+          ...((obtenerAtribucion().utm_ultima_visita &&
+            Object.fromEntries(
+              Object.entries(obtenerAtribucion().utm_ultima_visita).filter(([k]) =>
+                k.startsWith("utm_")
+              )
+            )) ||
+            {}),
+        },
         calLink: "axl-aguilar/30min",
       });
 
       Cal.ns["30min"]("ui", { hideEventTypeDetails: false, layout: "month_view" });
+
+      // Cita agendada con exito en el calendario embebido.
+      Cal.ns["30min"]("on", {
+        action: "bookingSuccessful",
+        callback: (e) => {
+          const data = (e && e.detail && e.detail.data) || {};
+          enviarEvento("cita_agendada", {
+            cal_fecha_cita: data.date || null,
+            cal_evento: (data.eventType && data.eventType.title) || null,
+            cal_confirmada: data.confirmed !== undefined ? data.confirmed : null,
+          });
+        },
+      });
     </script>
     <!-- Cal inline embed code ends -->
 
@@ -276,7 +410,9 @@
           codigo: form.codigo.value,
           telefono: form.telefono.value.trim(),
           descripcion: form.descripcion.value.trim(),
-          consentimiento: form.consentimiento.checked
+          consentimiento: form.consentimiento.checked,
+          ...obtenerAtribucion(),
+          fecha_envio: new Date().toISOString()
         };
 
         try {
@@ -289,6 +425,13 @@
             }
           );
           alert("✅ Tu mensaje ha sido enviado. Nos pondremos en contacto pronto.");
+          enviarEvento("formulario_enviado", {
+            nombre: formData.nombre,
+            apellido: formData.apellido,
+            correo: formData.correo,
+            telefono: `${formData.codigo}${formData.telefono}`,
+            empresa: formData.empresa,
+          });
           form.reset();
         } catch (error) {
           alert("❌ Hubo un error al enviar el mensaje. Intenta de nuevo.");
