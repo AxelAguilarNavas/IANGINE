@@ -272,11 +272,8 @@
 
       guardarUtm();
 
-      // Registrar la visita una sola vez por sesion de navegacion.
-      if (!sessionStorage.getItem("iangine_visita_enviada")) {
-        sessionStorage.setItem("iangine_visita_enviada", "1");
-        enviarEvento("visita");
-      }
+      // Registrar una visita en cada carga de la página, incluido refresh.
+      enviarEvento("visita");
 
       // El usuario vio el calendario (al menos ~200px visibles en pantalla).
       let agendaVista = false;
