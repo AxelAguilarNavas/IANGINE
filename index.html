@@ -24,10 +24,16 @@
         Inteligencia Artificial para transformar la forma en que trabajan y
         viven.
       </p>
-      <button type="button" onclick="document.getElementById('contacto').scrollIntoView({behavior:'smooth'})"
-        class="mt-8 w-full sm:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-700 active:scale-95 rounded-xl shadow-xl transition transform duration-300">
-        Contáctanos
-      </button>
+      <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
+        <button type="button" onclick="document.getElementById('agenda').scrollIntoView({behavior:'smooth'})"
+          class="w-full sm:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-700 active:scale-95 rounded-xl shadow-xl transition transform duration-300 font-medium">
+          Agendar Cita
+        </button>
+        <button type="button" onclick="document.getElementById('contacto').scrollIntoView({behavior:'smooth'})"
+          class="w-full sm:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-700 active:scale-95 rounded-xl shadow-xl transition transform duration-300 font-medium">
+          Contáctanos
+        </button>
+      </div>
     </div>
   </header>
 
