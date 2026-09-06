@@ -221,19 +221,46 @@
     // El ID de contacto lo genera/reutiliza n8n (una fila por visitante en
     // Airtable "Contactos"). Se persiste en localStorage para ligar todos
     // los eventos del mismo visitante, incluida la cita que agende despues.
+    let contactoIdResolver = null;
+    const contactoIdPromise = new Promise((resolve) => {
+      contactoIdResolver = resolve;
+    });
+
     function obtenerContactoId() {
       return localStorage.getItem("iangine_contacto_id") || null;
     }
 
-    function guardarContactoId(id) {
-      if (id) localStorage.setItem("iangine_contacto_id", id);
+    if (obtenerContactoId() && contactoIdResolver) {
+      contactoIdResolver(obtenerContactoId());
+      contactoIdResolver = null;
     }
 
-    function enviarEvento(evento, datos = {}) {
+    function guardarContactoId(id) {
+      if (id) {
+        localStorage.setItem("iangine_contacto_id", id);
+        if (contactoIdResolver) {
+          contactoIdResolver(id);
+          contactoIdResolver = null;
+        }
+      }
+    }
+
+    async function enviarEvento(evento, datos = {}) {
+      let cid = obtenerContactoId();
+      if (!cid && evento === "cita_agendada" && contactoIdResolver) {
+        try {
+          cid = await Promise.race([
+            contactoIdPromise,
+            new Promise((res) => setTimeout(() => res(null), 1500)),
+          ]);
+        } catch (_) { }
+        cid = cid || obtenerContactoId();
+      }
+
       const payload = {
         evento,
         sistema: SISTEMA,
-        contacto_id: obtenerContactoId(),
+        contacto_id: cid,
         fecha: new Date().toISOString(),
         pagina: location.href,
         ...obtenerAtribucion(),
@@ -340,18 +367,37 @@
 
     Cal.ns["30min"]("ui", { hideEventTypeDetails: false, layout: "month_view" });
 
-    // Cita agendada con exito en el calendario embebido.
-    Cal.ns["30min"]("on", {
-      action: "bookingSuccessful",
-      callback: (e) => {
-        const data = (e && e.detail && e.detail.data) || {};
-        enviarEvento("cita_agendada", {
-          cal_fecha_cita: data.date || null,
-          cal_evento: (data.eventType && data.eventType.title) || null,
-          cal_confirmada: data.confirmed !== undefined ? data.confirmed : null,
-        });
-      },
-    });
+    // Cita agendada en el calendario embebido (soporte unificado bookingSuccessful y bookingSuccessfulV2).
+    const citasProcesadas = new Set();
+
+    function procesarCitaAgendada(e) {
+      const data = (e && e.detail && e.detail.data) || {};
+      const booking = data.booking || {};
+      const responses = booking.responses || data.responses || {};
+
+      const uid = booking.uid || data.uid || `cal_fallback_${Date.now()}`;
+
+      if (citasProcesadas.has(uid)) return;
+      citasProcesadas.add(uid);
+
+      const status = booking.status || data.status || null;
+      const confirmada = status ? status === "ACCEPTED" : (data.confirmed !== undefined ? data.confirmed : null);
+
+      enviarEvento("cita_agendada", {
+        cal_booking_uid: booking.uid || data.uid || null,
+        cal_evento: (data.eventType && data.eventType.title) || booking.title || data.title || null,
+        cal_fecha_cita: booking.startTime || data.startTime || data.date || null,
+        cal_fecha_fin: booking.endTime || data.endTime || null,
+        cal_status: status,
+        cal_confirmada: confirmada,
+        telefono: responses.attendeePhoneNumber || null,
+        nombre: responses.name || null,
+        correo: responses.email || booking.userPrimaryEmail || null,
+      });
+    }
+
+    Cal.ns["30min"]("on", { action: "bookingSuccessful", callback: procesarCitaAgendada });
+    Cal.ns["30min"]("on", { action: "bookingSuccessfulV2", callback: procesarCitaAgendada });
   </script>
   <!-- Cal inline embed code ends -->
 
