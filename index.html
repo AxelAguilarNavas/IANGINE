@@ -185,6 +185,38 @@
     const SISTEMA = "IANGINE.com";
 
     const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"];
+    const SUBSCRIBER_ID_KEY = "iangine_subscriber_id";
+    const SUBSCRIBER_ID_REGEX = /^[a-zA-Z0-9_-]{1,64}$/;
+
+    function validarSubscriberId(id) {
+      if (typeof id !== "string") return null;
+      const limpio = id.trim();
+      if (SUBSCRIBER_ID_REGEX.test(limpio)) {
+        return limpio;
+      }
+      return null;
+    }
+
+    function obtenerSubscriberId() {
+      try {
+        const almacenado = localStorage.getItem(SUBSCRIBER_ID_KEY);
+        return validarSubscriberId(almacenado);
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function procesarSubscriberIdUrl() {
+      try {
+        const params = new URLSearchParams(location.search);
+        const idEnUrl = params.get("subscriber_id");
+        if (!idEnUrl) return;
+        const idValido = validarSubscriberId(idEnUrl);
+        if (idValido) {
+          localStorage.setItem(SUBSCRIBER_ID_KEY, idValido);
+        }
+      } catch (_) { }
+    }
 
     function leerUtmDeUrl() {
       const params = new URLSearchParams(location.search);
@@ -261,6 +293,7 @@
         evento,
         sistema: SISTEMA,
         contacto_id: cid,
+        subscriber_id: obtenerSubscriberId(),
         fecha: new Date().toISOString(),
         pagina: location.href,
         ...obtenerAtribucion(),
@@ -282,6 +315,7 @@
     }
 
     guardarUtm();
+    procesarSubscriberIdUrl();
 
     // Registrar una visita en cada carga de la página, incluido refresh.
     enviarEvento("visita");
@@ -441,6 +475,7 @@
         telefono: form.telefono.value.trim(),
         descripcion: form.descripcion.value.trim(),
         consentimiento: form.consentimiento.checked,
+        subscriber_id: obtenerSubscriberId(),
         ...obtenerAtribucion(),
         fecha_envio: new Date().toISOString()
       };

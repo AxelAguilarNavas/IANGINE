@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#07111f" />
+  <title>Decibelímetro Digital</title>
+  <style>
+    :root {
+      --bg: #07111f;
+      --panel: rgba(13, 27, 46, 0.86);
+      --panel-2: rgba(18, 36, 60, 0.9);
+      --text: #eef6ff;
+      --muted: #93a8bf;
+      --green: #34d399;
+      --orange: #f59e0b;
+      --red: #ef4444;
+
+      /* Paleta compartida con "Escala de intensidad sonora" */
+      --scale-1: #22c55e;
+      --scale-2: #34d399;
+      --scale-3: #84cc16;
+      --scale-4: #facc15;
+      --scale-5: #f59e0b;
+      --scale-6: #fb923c;
+      --scale-7: #f97316;
+      --scale-8: #ef4444;
+      --scale-9: #b91c1c;
+
+      --accent: #60a5fa;
+      --border: rgba(148, 163, 184, 0.16);
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+      --level-color: var(--green);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(96, 165, 250, .14), transparent 30%),
+        radial-gradient(circle at 85% 20%, rgba(52, 211, 153, .10), transparent 28%),
+        linear-gradient(180deg, #07111f 0%, #091421 55%, #07101c 100%);
+      padding: 24px;
+    }
+
+    .app {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      color: var(--accent);
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      font-size: .75rem;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3.7rem);
+      line-height: .95;
+      letter-spacing: -.045em;
+    }
+
+    .subtitle {
+      margin: 12px 0 0;
+      color: var(--muted);
+      max-width: 720px;
+      line-height: 1.6;
+    }
+
+    .status-chip {
+      flex: 0 0 auto;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.045);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-weight: 700;
+      font-size: .82rem;
+      white-space: nowrap;
+    }
+
+    .status-chip.active {
+      color: var(--green);
+      border-color: rgba(52,211,153,.3);
+      background: rgba(52,211,153,.08);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(300px, .8fr);
+      gap: 20px;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(17,34,57,.9), rgba(10,23,39,.92));
+      border-radius: 26px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .meter-card {
+      padding: clamp(22px, 4vw, 38px);
+      min-height: 630px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .meter-wrap {
+      position: relative;
+      width: min(470px, 92%);
+      aspect-ratio: 1;
+      margin: 10px auto 0;
+      display: grid;
+      place-items: center;
+    }
+
+    .ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background:
+        conic-gradient(
+          from 225deg,
+          var(--scale-1) 0deg 40.5deg,
+          var(--scale-2) 40.5deg 81deg,
+          var(--scale-3) 81deg 108deg,
+          var(--scale-4) 108deg 135deg,
+          var(--scale-5) 135deg 162deg,
+          var(--scale-6) 162deg 189deg,
+          var(--scale-7) 189deg 216deg,
+          var(--scale-8) 216deg 243deg,
+          var(--scale-9) 243deg 270deg,
+          rgba(255,255,255,.07) 270deg 360deg
+        );
+      -webkit-mask: radial-gradient(circle, transparent 57%, #000 58%);
+      mask: radial-gradient(circle, transparent 57%, #000 58%);
+      filter: drop-shadow(0 0 24px rgba(96,165,250,.08));
+      transform: rotate(0deg);
+    }
+
+    .ring-cover {
+      position: absolute;
+      inset: 8%;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,.05);
+      background: radial-gradient(circle at 50% 40%, rgba(30,55,85,.65), rgba(7,17,31,.92) 68%);
+      box-shadow: inset 0 0 70px rgba(0,0,0,.25);
+    }
+
+    .needle {
+      position: absolute;
+      width: 40%;
+      height: 4px;
+      left: 50%;
+      top: 50%;
+      transform-origin: 0% 50%;
+      transform: rotate(225deg);
+      transition: transform 80ms linear, background 160ms ease;
+      border-radius: 999px;
+      background: var(--level-color);
+      box-shadow: 0 0 18px color-mix(in srgb, var(--level-color) 65%, transparent);
+      z-index: 3;
+    }
+
+    .needle::after {
+      content: "";
+      position: absolute;
+      right: -5px;
+      top: 50%;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      transform: translateY(-50%);
+      background: var(--level-color);
+    }
+
+    .hub {
+      position: absolute;
+      z-index: 4;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 5px solid rgba(255,255,255,.22);
+      background: #fff;
+      box-shadow: 0 0 24px rgba(255,255,255,.22);
+    }
+
+    .reading {
+      position: relative;
+      z-index: 5;
+      text-align: center;
+      margin-top: 46px;
+    }
+
+    .db-number {
+      font-size: clamp(4.5rem, 12vw, 8.4rem);
+      font-weight: 900;
+      line-height: .8;
+      letter-spacing: -.07em;
+      color: var(--level-color);
+      text-shadow: 0 0 32px color-mix(in srgb, var(--level-color) 25%, transparent);
+      transition: color 150ms ease;
+    }
+
+    .db-unit {
+      margin-top: 17px;
+      font-size: 1rem;
+      color: var(--muted);
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    .level-label {
+      margin: 12px auto 0;
+      width: fit-content;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--level-color) 13%, transparent);
+      color: var(--level-color);
+      font-weight: 900;
+      letter-spacing: .04em;
+    }
+
+    .bar {
+      height: 16px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255,255,255,.07);
+      margin-top: auto;
+      border: 1px solid rgba(255,255,255,.05);
+    }
+
+    .bar > div {
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(
+        90deg,
+        var(--scale-1) 0% 15%,
+        var(--scale-2) 15% 30%,
+        var(--scale-3) 30% 40%,
+        var(--scale-4) 40% 50%,
+        var(--scale-5) 50% 60%,
+        var(--scale-6) 60% 70%,
+        var(--scale-7) 70% 80%,
+        var(--scale-8) 80% 90%,
+        var(--scale-9) 90% 100%
+      );
+      transition: width 80ms linear;
+    }
+
+    .scale {
+      display: flex;
+      justify-content: space-between;
+      color: #71869c;
+      font-size: .73rem;
+      margin-top: 8px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    button {
+      appearance: none;
+      border: none;
+      border-radius: 14px;
+      padding: 13px 18px;
+      font: inherit;
+      font-weight: 850;
+      cursor: pointer;
+      transition: transform .15s ease, opacity .15s ease, background .15s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+    .primary {
+      background: #eaf4ff;
+      color: #07111f;
+    }
+
+    .secondary {
+      color: #d8e8f8;
+      background: rgba(255,255,255,.07);
+      border: 1px solid var(--border);
+    }
+
+    .side {
+      display: grid;
+      gap: 20px;
+      align-content: start;
+    }
+
+    .info-card { padding: 24px; }
+
+    .info-card h2 {
+      margin: 0 0 15px;
+      font-size: 1.1rem;
+      letter-spacing: -.01em;
+    }
+
+    .comparison {
+      display: flex;
+      gap: 15px;
+      align-items: flex-start;
+    }
+
+    .comparison-icon {
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      background: rgba(96,165,250,.1);
+      border: 1px solid rgba(96,165,250,.15);
+      font-size: 1.55rem;
+      flex: 0 0 auto;
+    }
+
+    .comparison strong {
+      display: block;
+      font-size: 1.08rem;
+      margin-bottom: 5px;
+    }
+
+    .comparison p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: .92rem;
+    }
+
+
+    .proportion-chart {
+      position: relative;
+      margin-top: 10px;
+      padding-top: 38px;
+    }
+
+    .proportion-pointer {
+      position: absolute;
+      top: 0;
+      left: 0%;
+      width: 2px;
+      height: 42px;
+      background: #ffffff;
+      transform: translateX(-50%);
+      transition: left 220ms ease;
+      z-index: 5;
+      box-shadow: 0 0 14px rgba(255,255,255,.38);
+    }
+
+    .proportion-pointer::before {
+      content: "";
+      position: absolute;
+      top: 27px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-top: 11px solid #ffffff;
+      filter: drop-shadow(0 2px 5px rgba(0,0,0,.35));
+    }
+
+    .pointer-value {
+      position: absolute;
+      top: -7px;
+      left: 50%;
+      transform: translate(-50%, -100%);
+      padding: 5px 8px;
+      border-radius: 9px;
+      background: #f8fbff;
+      color: #07111f;
+      font-size: .76rem;
+      font-weight: 900;
+      white-space: nowrap;
+      box-shadow: 0 6px 18px rgba(0,0,0,.2);
+    }
+
+    .proportion-track {
+      display: flex;
+      width: 100%;
+      height: 24px;
+      overflow: hidden;
+      border-radius: 9px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+    }
+
+    .proportion-segment {
+      height: 100%;
+      position: relative;
+      min-width: 2px;
+    }
+
+    .proportion-segment.s1 { width: 15%; background: var(--scale-1); }
+    .proportion-segment.s2 { width: 15%; background: var(--scale-2); }
+    .proportion-segment.s3 { width: 10%; background: var(--scale-3); }
+    .proportion-segment.s4 { width: 10%; background: var(--scale-4); }
+    .proportion-segment.s5 { width: 10%; background: var(--scale-5); }
+    .proportion-segment.s6 { width: 10%; background: var(--scale-6); }
+    .proportion-segment.s7 { width: 10%; background: var(--scale-7); }
+    .proportion-segment.s8 { width: 10%; background: var(--scale-8); }
+    .proportion-segment.s9 { width: 10%; background: var(--scale-9); }
+
+    .proportion-scale {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      margin-top: 7px;
+      color: #71869c;
+      font-size: .68rem;
+    }
+
+    .proportion-scale span:last-child {
+      text-align: right;
+    }
+
+    .proportion-scale span:not(:first-child):not(:last-child) {
+      text-align: center;
+    }
+
+    .proportion-legend {
+      margin-top: 18px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .proportion-current {
+      padding: 13px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.045);
+      border: 1px solid var(--border);
+    }
+
+    .proportion-current strong {
+      display: block;
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+
+    .proportion-current p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: .88rem;
+    }
+
+    .alert {
+      margin-top: 17px;
+      border-radius: 17px;
+      padding: 15px 16px;
+      border: 1px solid rgba(52,211,153,.2);
+      background: rgba(52,211,153,.07);
+      color: #b8f6db;
+      line-height: 1.45;
+      font-weight: 700;
+      transition: all .2s ease;
+    }
+
+    .alert.medium {
+      border-color: rgba(245,158,11,.28);
+      background: rgba(245,158,11,.09);
+      color: #fbd38d;
+    }
+
+    .alert.danger {
+      border-color: rgba(239,68,68,.36);
+      background: rgba(239,68,68,.11);
+      color: #fecaca;
+      box-shadow: 0 0 34px rgba(239,68,68,.08);
+    }
+
+    .levels {
+      display: grid;
+      gap: 9px;
+    }
+
+    .level-row {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 12px;
+      align-items: center;
+      color: var(--muted);
+      font-size: .88rem;
+    }
+
+    .pill {
+      display: inline-flex;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 5px 8px;
+      font-weight: 900;
+      color: #07111f;
+      font-size: .76rem;
+    }
+
+    .green { background: var(--green); }
+    .orange { background: var(--orange); }
+    .red { background: var(--red); color: white; }
+
+    .calibration {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    input {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.055);
+      color: var(--text);
+      border-radius: 13px;
+      padding: 12px 13px;
+      font: inherit;
+      outline: none;
+    }
+
+    input:focus { border-color: rgba(96,165,250,.55); }
+
+    .fineprint {
+      color: #71869c;
+      font-size: .78rem;
+      line-height: 1.5;
+      margin: 12px 0 0;
+    }
+
+    .error {
+      display: none;
+      margin-top: 16px;
+      padding: 13px 15px;
+      border-radius: 14px;
+      color: #fecaca;
+      background: rgba(239,68,68,.1);
+      border: 1px solid rgba(239,68,68,.2);
+      line-height: 1.45;
+      font-size: .9rem;
+    }
+
+    @media (max-width: 850px) {
+      body { padding: 14px; }
+      .header { flex-direction: column; }
+      .grid { grid-template-columns: 1fr; }
+      .meter-card { min-height: 560px; }
+      .status-chip { align-self: flex-start; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <header class="header">
+      <div>
+        <div class="eyebrow">Medición de sonido</div>
+        <h1>Decibelímetro digital</h1>
+        <p class="subtitle">
+          Mide el nivel capturado por tu micrófono en tiempo real y compara el resultado
+          con sonidos cotidianos. Para mediciones SPL reales, calibra el sistema con un sonómetro de referencia.
+        </p>
+      </div>
+      <div id="micStatus" class="status-chip">Micrófono inactivo</div>
+    </header>
+
+    <section class="grid">
+      <article class="card meter-card">
+        <div class="meter-wrap" aria-label="Medidor de decibeles">
+          <div class="ring"></div>
+          <div class="ring-cover"></div>
+          <div id="needle" class="needle"></div>
+          <div class="hub"></div>
+
+          <div class="reading">
+            <div id="dbValue" class="db-number">--</div>
+            <div class="db-unit">dB estimados</div>
+            <div id="levelLabel" class="level-label">Esperando micrófono</div>
+          </div>
+        </div>
+
+        <div class="bar" aria-hidden="true"><div id="levelBar"></div></div>
+        <div class="scale"><span>30</span><span>50</span><span>70</span><span>85</span><span>100</span><span>120+</span></div>
+
+        <div class="controls">
+          <button id="startBtn" class="primary">Activar micrófono</button>
+          <button id="stopBtn" class="secondary" disabled>Detener</button>
+        </div>
+
+        <div id="errorBox" class="error"></div>
+      </article>
+
+      <aside class="side">
+        <section class="card info-card">
+          <h2>Escala de intensidad sonora</h2>
+
+          <div class="proportion-chart">
+            <div id="proportionPointer" class="proportion-pointer" style="left:0%;">
+              <div id="pointerValue" class="pointer-value">-- dB</div>
+            </div>
+
+            <div class="proportion-track" aria-label="Escala proporcional de intensidad sonora">
+              <div class="proportion-segment s1" title="30–45 dB: ambiente silencioso"></div>
+              <div class="proportion-segment s2" title="45–60 dB: hogar u oficina tranquila"></div>
+              <div class="proportion-segment s3" title="60–70 dB: conversación normal"></div>
+              <div class="proportion-segment s4" title="70–80 dB: ciudad o tráfico ruidoso"></div>
+              <div class="proportion-segment s5" title="80–90 dB: tráfico pesado"></div>
+              <div class="proportion-segment s6" title="90–100 dB: motocicleta o herramienta"></div>
+              <div class="proportion-segment s7" title="100–110 dB: discoteca o concierto fuerte"></div>
+              <div class="proportion-segment s8" title="110–120 dB: concierto muy fuerte"></div>
+              <div class="proportion-segment s9" title="120–130+ dB: sirena o avión a reacción"></div>
+            </div>
+
+            <div class="proportion-scale">
+              <span>30</span>
+              <span>50</span>
+              <span>70</span>
+              <span>90</span>
+              <span>110</span>
+              <span>130+</span>
+            </div>
+          </div>
+
+          <div class="proportion-legend">
+            <div class="proportion-current">
+              <strong id="comparisonTitle">Sin medición</strong>
+              <p id="comparisonText">Activa el micrófono para comenzar.</p>
+            </div>
+          </div>
+
+          <div id="alertBox" class="alert">
+            Nivel bajo: sin indicios de riesgo auditivo por intensidad.
+          </div>
+
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+            <div style="color:var(--muted);font-size:.8rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;">
+              Rango detectado (últimos 5 s)
+            </div>
+            <div id="rangeValue" style="font-size:1.7rem;font-weight:900;margin-top:6px;">
+              -- dB
+            </div>
+            <div id="averageValue" class="fineprint" style="margin-top:4px;">
+              Promedio estabilizado: -- dB
+            </div>
+          </div>
+        </section>
+
+        <section class="card info-card">
+          <h2>Niveles de referencia</h2>
+          <div class="levels">
+            <div class="level-row"><span class="pill green">&lt; 70 dB</span><span>Ambiente relativamente bajo o moderado.</span></div>
+            <div class="level-row"><span class="pill orange">70–84</span><span>Ruido elevado; limita la exposición prolongada.</span></div>
+            <div class="level-row"><span class="pill red">≥ 85 dB</span><span>Puede existir riesgo auditivo con suficiente exposición.</span></div>
+          </div>
+        </section>
+
+        <section class="card info-card">
+          <h2>Calibración opcional</h2>
+          <p class="fineprint" style="margin-top:0">
+            Los navegadores entregan amplitud digital (dBFS), no dB SPL absolutos. Si tienes un sonómetro real,
+            coloca ambos dispositivos juntos, introduce aquí la lectura del sonómetro y pulsa “Calibrar”.
+          </p>
+          <div class="calibration">
+            <input id="referenceDb" type="number" min="20" max="140" step="0.1" placeholder="Ej. 72.5 dB" />
+            <button id="calibrateBtn" class="secondary">Calibrar</button>
+          </div>
+          <p id="calibrationStatus" class="fineprint">
+            Sin calibración externa: se usa una conversión orientativa.
+          </p>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const dbValue = document.getElementById("dbValue");
+      const levelLabel = document.getElementById("levelLabel");
+      const levelBar = document.getElementById("levelBar");
+      const needle = document.getElementById("needle");
+      const micStatus = document.getElementById("micStatus");
+      const startBtn = document.getElementById("startBtn");
+      const stopBtn = document.getElementById("stopBtn");
+      const errorBox = document.getElementById("errorBox");
+      const alertBox = document.getElementById("alertBox");
+      const comparisonTitle = document.getElementById("comparisonTitle");
+      const comparisonText = document.getElementById("comparisonText");
+      const proportionPointer = document.getElementById("proportionPointer");
+      const pointerValue = document.getElementById("pointerValue");
+      const referenceDb = document.getElementById("referenceDb");
+      const calibrateBtn = document.getElementById("calibrateBtn");
+      const calibrationStatus = document.getElementById("calibrationStatus");
+      const rangeValue = document.getElementById("rangeValue");
+      const averageValue = document.getElementById("averageValue");
+
+      let audioContext = null;
+      let analyser = null;
+      let stream = null;
+      let source = null;
+      let animationId = null;
+      let dataArray = null;
+      let smoothedDb = 0;
+      let lastDbfs = -100;
+      let lastUiUpdate = 0;
+      let recentReadings = [];
+      let lastDisplayedDb = null;
+
+      // Ajustes para que el medidor sea menos sensible a picos instantáneos.
+      const UI_UPDATE_MS = 250;      // 4 actualizaciones por segundo
+      const EMA_ALPHA = 0.08;        // Suavizado fuerte
+      const DISPLAY_DEADBAND = 0.6;  // Ignora cambios menores a 0.6 dB
+      const RANGE_WINDOW_MS = 5000;  // Rango móvil de 5 segundos
+
+      // Valor orientativo únicamente. Cada micrófono/dispositivo tiene distinta ganancia y sensibilidad.
+      let calibrationOffset = Number(localStorage.getItem("dbCalibrationOffset")) || 100;
+      let isCalibrated = localStorage.getItem("dbCalibrationDone") === "true";
+
+      if (isCalibrated) {
+        calibrationStatus.textContent =
+          "Calibración guardada en este navegador. Offset actual: " +
+          calibrationOffset.toFixed(1) + " dB.";
+      }
+
+      const soundReferences = [
+        { max: 30, icon: "🤫", title: "Susurro / habitación muy silenciosa", text: "Un entorno tranquilo suele encontrarse aproximadamente entre 20 y 30 dB." },
+        { max: 45, icon: "📚", title: "Biblioteca tranquila", text: "Ambiente silencioso con poco ruido de fondo." },
+        { max: 60, icon: "🏠", title: "Oficina tranquila / hogar", text: "Ruido ambiental moderado, normalmente cómodo." },
+        { max: 70, icon: "🗣️", title: "Conversación normal", text: "Similar a hablar a una distancia corta o a una oficina activa." },
+        { max: 80, icon: "🏙️", title: "Ciudad o tráfico ruidoso", text: "Tráfico intenso, calles concurridas o aspiradora cercana." },
+        { max: 85, icon: "🚚", title: "Tráfico pesado", text: "Nivel elevado. La duración de la exposición empieza a importar." },
+        { max: 95, icon: "🏍️", title: "Motocicleta / herramienta ruidosa", text: "Puede producir daño auditivo si la exposición se prolonga." },
+        { max: 105, icon: "🎧", title: "Discoteca / concierto fuerte", text: "Nivel muy alto; el tiempo seguro de exposición se reduce notablemente." },
+        { max: 115, icon: "🪚", title: "Concierto muy fuerte / motosierra", text: "Exposición peligrosa; usa protección auditiva." },
+        { max: 125, icon: "🚨", title: "Sirena cercana / primera fila en concierto", text: "Nivel extremadamente alto y potencialmente dañino en poco tiempo." },
+        { max: 141, icon: "✈️", title: "Avión a reacción despegando a corta distancia", text: "Puede superar 120 dB según distancia y condiciones. Es un nivel peligroso." }
+      ];
+
+      function getScaleColor(db) {
+        if (db < 45) return "var(--scale-1)";
+        if (db < 60) return "var(--scale-2)";
+        if (db < 70) return "var(--scale-3)";
+        if (db < 80) return "var(--scale-4)";
+        if (db < 90) return "var(--scale-5)";
+        if (db < 100) return "var(--scale-6)";
+        if (db < 110) return "var(--scale-7)";
+        if (db < 120) return "var(--scale-8)";
+        return "var(--scale-9)";
+      }
+
+      function setTheme(db) {
+        const color = getScaleColor(db);
+        let label = "Bajo";
+        let alertClass = "";
+        let alertText = "Nivel bajo: sin indicios de riesgo auditivo por intensidad.";
+
+        if (db >= 120) {
+          label = "Extremo";
+          alertClass = "danger";
+          alertText = "⚠️ Nivel extremo: aléjate de la fuente sonora y utiliza protección auditiva.";
+        } else if (db >= 110) {
+          label = "Muy peligroso";
+          alertClass = "danger";
+          alertText = "⚠️ Nivel muy peligroso: una exposición breve puede ser perjudicial.";
+        } else if (db >= 100) {
+          label = "Muy alto";
+          alertClass = "danger";
+          alertText = "⚠️ Nivel muy alto: reduce la exposición y utiliza protección auditiva.";
+        } else if (db >= 90) {
+          label = "Peligro";
+          alertClass = "danger";
+          alertText = "⚠️ Peligro auditivo: limita el tiempo de exposición.";
+        } else if (db >= 85) {
+          label = "Peligro";
+          alertClass = "danger";
+          alertText = "⚠️ Peligro auditivo: este nivel puede dañar la audición con suficiente exposición.";
+        } else if (db >= 80) {
+          label = "Alto";
+          alertClass = "medium";
+          alertText = "⚠️ Nivel alto: evita una exposición prolongada.";
+        } else if (db >= 70) {
+          label = "Elevado";
+          alertClass = "medium";
+          alertText = "⚠️ Nivel elevado: la duración de la exposición empieza a ser importante.";
+        } else if (db >= 60) {
+          label = "Moderado";
+        } else if (db >= 45) {
+          label = "Bajo";
+        } else {
+          label = "Muy bajo";
+        }
+
+        document.documentElement.style.setProperty("--level-color", color);
+        levelLabel.textContent = label;
+        alertBox.className = "alert " + alertClass;
+        alertBox.textContent = alertText;
+      }
+
+      function setComparison(db) {
+        const item = soundReferences.find(ref => db <= ref.max) || soundReferences[soundReferences.length - 1];
+        comparisonTitle.textContent = item.title;
+        comparisonText.textContent = item.text;
+      }
+
+      function updateVisuals(db) {
+        const safeDb = Math.max(0, Math.min(140, db));
+        dbValue.textContent = safeDb.toFixed(1);
+
+        // Escala visual 30–130 dB.
+        const percent = Math.max(0, Math.min(100, ((safeDb - 30) / 100) * 100));
+        levelBar.style.width = percent + "%";
+
+        // Indicador triangular de la escala proporcional 30–130 dB.
+        const pointerPercent = Math.max(0, Math.min(100, ((safeDb - 30) / 100) * 100));
+        proportionPointer.style.left = pointerPercent + "%";
+        pointerValue.textContent = safeDb.toFixed(1) + " dB";
+
+        // Aguja: 225° a 495° (270° de recorrido).
+        const normalized = Math.max(0, Math.min(1, (safeDb - 30) / 100));
+        needle.style.transform = `rotate(${225 + normalized * 270}deg)`;
+
+        setTheme(safeDb);
+        setComparison(safeDb);
+      }
+
+      function calculateLevel(timestamp = 0) {
+        if (!analyser) return;
+
+        analyser.getFloatTimeDomainData(dataArray);
+
+        let sumSquares = 0;
+        for (let i = 0; i < dataArray.length; i++) {
+          const sample = dataArray[i];
+          sumSquares += sample * sample;
+        }
+
+        const rms = Math.sqrt(sumSquares / dataArray.length);
+        const dbfs = rms > 0 ? 20 * Math.log10(rms) : -100;
+        lastDbfs = dbfs;
+
+        let estimatedSpl = dbfs + calibrationOffset;
+        estimatedSpl = Math.max(0, Math.min(140, estimatedSpl));
+
+        // Suavizado exponencial fuerte. Esto evita que cada sílaba o consonante
+        // provoque saltos bruscos en pantalla.
+        if (smoothedDb === 0) {
+          smoothedDb = estimatedSpl;
+        } else {
+          smoothedDb = smoothedDb + EMA_ALPHA * (estimatedSpl - smoothedDb);
+        }
+
+        const now = performance.now();
+
+        // Guardamos el nivel estabilizado para calcular el rango de los últimos 5 segundos.
+        recentReadings.push({ time: now, db: smoothedDb });
+        recentReadings = recentReadings.filter(item => now - item.time <= RANGE_WINDOW_MS);
+
+        // Actualizamos la UI solo 4 veces por segundo.
+        if (now - lastUiUpdate >= UI_UPDATE_MS) {
+          lastUiUpdate = now;
+
+          let displayedDb = smoothedDb;
+
+          // Pequeña zona muerta para que el número no esté vibrando continuamente.
+          if (
+            lastDisplayedDb !== null &&
+            Math.abs(displayedDb - lastDisplayedDb) < DISPLAY_DEADBAND
+          ) {
+            displayedDb = lastDisplayedDb;
+          } else {
+            lastDisplayedDb = displayedDb;
+          }
+
+          updateVisuals(displayedDb);
+
+          if (recentReadings.length) {
+            const values = recentReadings.map(item => item.db);
+            const min = Math.min(...values);
+            const max = Math.max(...values);
+            const avg = values.reduce((a, b) => a + b, 0) / values.length;
+
+            rangeValue.textContent = `${min.toFixed(1)} – ${max.toFixed(1)} dB`;
+            averageValue.textContent = `Promedio estabilizado: ${avg.toFixed(1)} dB`;
+          }
+        }
+
+        animationId = requestAnimationFrame(calculateLevel);
+      }
+
+      async function startMeter() {
+        errorBox.style.display = "none";
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          showError("Este navegador no permite acceso al micrófono mediante getUserMedia. Prueba con una versión reciente de Chrome, Edge, Firefox o Safari.");
+          return;
+        }
+
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+              echoCancellation: false,
+              noiseSuppression: false,
+              autoGainControl: false
+            }
+          });
+
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          await audioContext.resume();
+
+          analyser = audioContext.createAnalyser();
+          analyser.fftSize = 2048;
+          analyser.smoothingTimeConstant = 0.3;
+
+          source = audioContext.createMediaStreamSource(stream);
+          source.connect(analyser);
+
+          dataArray = new Float32Array(analyser.fftSize);
+
+          micStatus.textContent = "Micrófono activo";
+          micStatus.classList.add("active");
+          startBtn.disabled = true;
+          stopBtn.disabled = false;
+          smoothedDb = 0;
+          recentReadings = [];
+          lastDisplayedDb = null;
+          lastUiUpdate = 0;
+          rangeValue.textContent = "-- dB";
+          averageValue.textContent = "Promedio estabilizado: -- dB";
+
+          calculateLevel();
+        } catch (err) {
+          console.error(err);
+          let message = "No se pudo acceder al micrófono.";
+
+          if (err && err.name === "NotAllowedError") {
+            message += " Debes permitir el acceso al micrófono en los permisos del navegador.";
+          } else if (err && err.name === "NotFoundError") {
+            message += " No se detectó ningún micrófono disponible.";
+          } else if (!window.isSecureContext) {
+            message += " Abre la página desde HTTPS o localhost; muchos navegadores bloquean el micrófono en contextos no seguros.";
+          }
+
+          showError(message);
+        }
+      }
+
+      function stopMeter() {
+        if (animationId) cancelAnimationFrame(animationId);
+        animationId = null;
+
+        if (source) {
+          try { source.disconnect(); } catch (_) {}
+          source = null;
+        }
+
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+          stream = null;
+        }
+
+        if (audioContext) {
+          audioContext.close().catch(() => {});
+          audioContext = null;
+        }
+
+        analyser = null;
+        dataArray = null;
+        smoothedDb = 0;
+        recentReadings = [];
+        lastDisplayedDb = null;
+        lastUiUpdate = 0;
+
+        micStatus.textContent = "Micrófono inactivo";
+        micStatus.classList.remove("active");
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+
+        dbValue.textContent = "--";
+        levelLabel.textContent = "Esperando micrófono";
+        levelBar.style.width = "0%";
+        needle.style.transform = "rotate(225deg)";
+        comparisonTitle.textContent = "Sin medición";
+        comparisonText.textContent = "Activa el micrófono para comenzar.";
+        proportionPointer.style.left = "0%";
+        pointerValue.textContent = "-- dB";
+        rangeValue.textContent = "-- dB";
+        averageValue.textContent = "Promedio estabilizado: -- dB";
+        alertBox.className = "alert";
+        alertBox.textContent = "Nivel bajo: sin indicios de riesgo auditivo por intensidad.";
+        document.documentElement.style.setProperty("--level-color", "var(--scale-1)");
+      }
+
+      function calibrate() {
+        const reference = Number(referenceDb.value);
+
+        if (!analyser || !stream) {
+          showError("Primero activa el micrófono y mantén una fuente de sonido estable.");
+          return;
+        }
+
+        if (!Number.isFinite(reference) || reference < 20 || reference > 140) {
+          showError("Introduce una lectura de referencia válida entre 20 y 140 dB.");
+          return;
+        }
+
+        calibrationOffset = reference - lastDbfs;
+        localStorage.setItem("dbCalibrationOffset", calibrationOffset);
+        localStorage.setItem("dbCalibrationDone", "true");
+        isCalibrated = true;
+
+        calibrationStatus.textContent =
+          "Calibrado correctamente. Offset guardado: " +
+          calibrationOffset.toFixed(1) + " dB.";
+
+        errorBox.style.display = "none";
+      }
+
+      function showError(message) {
+        errorBox.textContent = message;
+        errorBox.style.display = "block";
+      }
+
+      startBtn.addEventListener("click", startMeter);
+      stopBtn.addEventListener("click", stopMeter);
+      calibrateBtn.addEventListener("click", calibrate);
+
+      window.addEventListener("beforeunload", () => {
+        if (stream) stream.getTracks().forEach(track => track.stop());
+      });
+    })();
+  </script>
+</body>
+</html>
