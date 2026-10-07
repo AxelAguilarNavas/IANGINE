@@ -1,0 +1,2031 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Binaural Soundstage Visualizer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          },
+          colors: {
+            dark: {
+              900: '#060a12',
+              800: '#0c1322',
+              700: '#141e34',
+              600: '#1d2b49'
+            },
+            cyanGlow: '#00f2fe',
+            neonGreen: '#10b981',
+            neonAmber: '#f59e0b',
+            neonRose: '#f43f5e'
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      background-color: #060a12;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(0, 242, 254, 0.05) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.06) 0px, transparent 50%);
+    }
+    .grid-bg {
+      background-size: 32px 32px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #0c1322;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+    .pulse-glow {
+      box-shadow: 0 0 25px -5px rgba(0, 242, 254, 0.4);
+    }
+    .glow-text-cyan {
+      text-shadow: 0 0 12px rgba(0, 242, 254, 0.6);
+    }
+  </style>
+</head>
+<body class="min-h-full text-slate-200 font-sans grid-bg flex flex-col selection:bg-cyan-500/30 selection:text-cyan-200">
+
+  <header class="border-b border-slate-800/80 bg-dark-900/80 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 ring-1 ring-white/20">
+          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-2">
+              Binaural Stage <span class="text-xs px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 font-mono border border-cyan-500/30">PRO DSP</span>
+            </h1>
+          </div>
+          <p class="text-xs text-slate-400 hidden sm:block">Analizador de Posicionamiento Acústico 360° en Tiempo Real (ILD / ITD / HRTF)</p>
+        </div>
+      </div>
+
+      <!-- Action status & master run button -->
+      <div class="flex items-center gap-3">
+        <div id="statusBadge" class="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700/60 text-xs font-mono text-slate-400">
+          <span class="w-2 h-2 rounded-full bg-slate-500" id="statusDot"></span>
+          <span id="statusText">INACTIVO</span>
+        </div>
+
+        <button id="btnMainToggle" class="px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-dark-900 font-bold text-xs sm:text-sm tracking-wide transition-all shadow-lg shadow-cyan-500/20 active:scale-95 flex items-center gap-2">
+          <svg id="btnPlayIcon" class="w-4 h-4 text-dark-900" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
+          </svg>
+          <span id="btnMainToggleText">INICIAR ANÁLISIS</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 w-full flex-1 flex flex-col gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      
+      <!-- Panel de Control y Configuración de Hardware (Col 1-4 en Desktop) -->
+      <div class="lg:col-span-4 flex flex-col gap-5">
+        
+        <!-- Hardware Setup Card -->
+        <div class="bg-dark-800/90 border border-slate-800 rounded-2xl p-5 shadow-xl backdrop-blur-sm">
+          <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800">
+            <div class="flex items-center gap-2">
+              <div class="w-2 h-2 rounded-full bg-cyan-400 shadow-sm shadow-cyan-400"></div>
+              <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300">Asignación de Micrófonos</h2>
+            </div>
+            <button id="btnRefreshDevices" title="Autorizar y detectar micrófonos" class="text-xs text-slate-400 hover:text-cyan-300 p-1.5 rounded-lg bg-dark-700 hover:bg-dark-600 transition flex items-center gap-1 border border-slate-700/50 disabled:opacity-50 disabled:cursor-wait">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              <span id="btnRefreshDevicesText">Autorizar</span>
+            </button>
+          </div>
+
+          <div class="space-y-4 text-xs">
+            <!-- Left Mic Input Selector -->
+            <div>
+              <label for="micLeftSelect" class="flex items-center justify-between text-slate-400 mb-1.5 font-medium">
+                <span class="flex items-center gap-1.5 text-cyan-300">
+                  <span class="w-2 h-2 rounded-full bg-cyan-400"></span> Canal Izquierdo (L - Oreja Izq)
+                </span>
+                <span id="levelLeftBadge" class="font-mono text-[10px] text-slate-500">-∞ dB</span>
+              </label>
+              <select id="micLeftSelect" class="w-full bg-dark-700 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 transition">
+                <option value="">Detectando dispositivos...</option>
+              </select>
+              <p id="micLeftInfo" class="mt-1.5 text-[10px] font-mono text-slate-500">Sin verificar</p>
+            </div>
+
+            <!-- Right Mic Input Selector -->
+            <div>
+              <label for="micRightSelect" class="flex items-center justify-between text-slate-400 mb-1.5 font-medium">
+                <span class="flex items-center gap-1.5 text-blue-400">
+                  <span class="w-2 h-2 rounded-full bg-blue-500"></span> Canal Derecho (R - Oreja Der)
+                </span>
+                <span id="levelRightBadge" class="font-mono text-[10px] text-slate-500">-∞ dB</span>
+              </label>
+              <select id="micRightSelect" class="w-full bg-dark-700 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500 transition">
+                <option value="">Detectando dispositivos...</option>
+              </select>
+              <p id="micRightInfo" class="mt-1.5 text-[10px] font-mono text-slate-500">Sin verificar</p>
+            </div>
+
+            <div id="micInventoryStatus" role="status" aria-live="polite" class="rounded-lg border border-slate-800 bg-dark-900/70 px-3 py-2 text-[10px] leading-relaxed text-slate-400">
+              Autoriza el acceso para identificar todas las entradas disponibles.
+            </div>
+
+            <label class="flex items-start gap-2 rounded-lg border border-slate-800 bg-dark-900/50 px-3 py-2 cursor-pointer">
+              <input id="stereoInterfaceMode" type="checkbox" class="mt-0.5 accent-cyan-400">
+              <span>
+                <span class="block text-[11px] font-semibold text-slate-300">Interfaz estéreo sincronizada</span>
+                <span class="block mt-0.5 text-[9px] leading-relaxed text-slate-500">Usa los canales 1=L y 2=R de un único dispositivo de dos canales.</span>
+              </span>
+            </label>
+
+            <!-- Mode selector: Hardware vs Test Synthesizer -->
+            <div class="pt-2 border-t border-slate-800">
+              <label class="block text-slate-400 mb-2 font-medium">Modo de Entrada:</label>
+              <div class="grid grid-cols-2 gap-2 p-1 bg-dark-900/90 rounded-xl border border-slate-800">
+                <button id="modeHardware" class="py-1.5 text-[11px] font-semibold rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 transition">
+                  Micrófonos USB
+                </button>
+                <button id="modeSynthetic" class="py-1.5 text-[11px] font-semibold rounded-lg text-slate-400 hover:text-white transition">
+                  Generador de Prueba
+                </button>
+              </div>
+            </div>
+
+            <!-- Synthetic audio simulation controls -->
+            <div id="syntheticControls" class="p-3.5 bg-dark-900/90 rounded-xl border border-dashed border-cyan-500/40 space-y-3 hidden shadow-lg">
+              <div class="flex items-center justify-between text-[11px]">
+                <span class="text-amber-400 font-bold flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse" id="synthStatusLed"></span>
+                  Generador Acústico HRTF 3D
+                </span>
+                <span id="synthAngleLabel" class="font-mono text-cyan-300">0° (Frente)</span>
+              </div>
+
+              <!-- Test Sound Type Selection -->
+              <div>
+                <label for="synthSoundType" class="text-[10px] text-slate-400 font-semibold mb-1 block">Tipo de Sonido Espacial:</label>
+                <select id="synthSoundType" class="w-full bg-dark-700 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
+                  <option value="pinkNoise">Pulsos de Ruido Rosa (Ideal HRTF / Puerta)</option>
+                  <option value="doorKnock">Golpes en Puerta / Tics Rítmicos</option>
+                  <option value="sineTone">Tono Senoidal Guiado 440Hz + Armónicos</option>
+                </select>
+              </div>
+
+              <!-- Sound Output Toggle Button & Volume -->
+              <div class="flex items-center gap-2 pt-1">
+                <button id="btnToggleSynthPlay" class="flex-1 py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs tracking-wide transition flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95">
+                  <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
+                  </svg>
+                  <span id="btnSynthPlayText">Emitir Sonido en Audífonos</span>
+                </button>
+              </div>
+
+              <!-- Output Volume Slider -->
+              <div class="space-y-1">
+                <div class="flex justify-between text-[10px]">
+                  <span class="text-slate-400 flex items-center gap-1">
+                    <svg class="w-3 h-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                    </svg>
+                    Volumen Salida (Audífonos)
+                  </span>
+                  <span id="synthVolLabel" class="font-mono text-cyan-400">40%</span>
+                </div>
+                <input type="range" id="synthVolumeSlider" min="0" max="1" value="0.4" step="0.02" class="w-full accent-cyan-400 bg-slate-700 h-1.5 rounded-lg appearance-none cursor-pointer">
+              </div>
+
+              <!-- Azimuth Angle Slider -->
+              <div class="space-y-1 pt-1 border-t border-slate-800">
+                <div class="flex justify-between text-[10px]">
+                  <span class="text-slate-400">Ángulo de Azimut Manual:</span>
+                  <span id="synthAngleDegrees" class="font-mono text-amber-400 font-bold">0°</span>
+                </div>
+                <input type="range" id="synthAngleSlider" min="-180" max="180" value="0" step="1" class="w-full accent-amber-400 bg-slate-700 h-1.5 rounded-lg appearance-none cursor-pointer">
+                <div class="flex justify-between text-[9px] font-mono text-slate-500">
+                  <span>-180° (Atrás)</span>
+                  <span>-90° (L)</span>
+                  <span>0° (Frente)</span>
+                  <span>+90° (R)</span>
+                  <span>+180°</span>
+                </div>
+              </div>
+
+              <!-- Auto Orbit Button -->
+              <button id="btnSynthAutoOrbit" class="w-full py-1.5 text-[10px] font-mono rounded-lg bg-dark-700 hover:bg-dark-600 text-slate-300 border border-slate-600/70 transition flex items-center justify-center gap-1">
+                <svg class="w-3 h-3 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span>Auto-Orbitar Sonido 360° (Giro Continuo)</span>
+              </button>
+
+              <div class="text-[9px] text-slate-500 italic bg-dark-800/80 p-2 rounded border border-slate-800">
+                💡 Al activar este generador, el sonido se enviará a tus audífonos modelado con el motor <strong>HRTF de Web Audio</strong>. Las orejas artificiales lo registrarán en los micrófonos, o puedes usarlo para calibración directa.
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="bg-dark-800/90 border border-slate-800 rounded-2xl p-5 shadow-xl backdrop-blur-sm space-y-4">
+          <div class="flex items-center gap-2 pb-3 border-b border-slate-800">
+            <div class="w-2 h-2 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400"></div>
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300">Calibración & DSP</h2>
+          </div>
+
+          <!-- Noise Gate Threshold -->
+          <div class="space-y-1.5">
+            <div class="flex justify-between text-xs">
+              <span class="text-slate-400">Umbral de Ruido (Gate)</span>
+              <span id="noiseThresholdVal" class="font-mono text-cyan-400 text-[11px]">-48 dB</span>
+            </div>
+            <input type="range" id="noiseThresholdSlider" min="-70" max="-20" value="-48" step="1" class="w-full accent-cyan-400 bg-slate-700 h-1.5 rounded-lg appearance-none cursor-pointer">
+            <p class="text-[10px] text-slate-500">Ignora el ruido ambiental de fondo de las cápsulas.</p>
+          </div>
+
+          <!-- Temporal Smoothing -->
+          <div class="space-y-1.5">
+            <div class="flex justify-between text-xs">
+              <span class="text-slate-400">Suavizado Temporal (Damping)</span>
+              <span id="smoothingVal" class="font-mono text-cyan-400 text-[11px]">0.75</span>
+            </div>
+            <input type="range" id="smoothingSlider" min="0.10" max="0.95" value="0.75" step="0.05" class="w-full accent-cyan-400 bg-slate-700 h-1.5 rounded-lg appearance-none cursor-pointer">
+            <p class="text-[10px] text-slate-500">Estabiliza la inercia del vector acústico para evitar jitter.</p>
+          </div>
+
+          <!-- Pinna Notch Sensitivity -->
+          <div class="space-y-1.5">
+            <div class="flex justify-between text-xs">
+              <span class="text-slate-400">Sensibilidad Frente / Atrás</span>
+              <span id="pinnaSensVal" class="font-mono text-cyan-400 text-[11px]">1.0x</span>
+            </div>
+            <input type="range" id="pinnaSensSlider" min="0.4" max="2.0" value="1.0" step="0.1" class="w-full accent-cyan-400 bg-slate-700 h-1.5 rounded-lg appearance-none cursor-pointer">
+            <p class="text-[10px] text-slate-500">Ajusta la histéresis después de calibrar ambas posiciones.</p>
+          </div>
+
+          <!-- Front / Rear spectral calibration -->
+          <div class="space-y-2 rounded-xl border border-slate-700/70 bg-dark-900/60 p-3">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-slate-300">Calibración Frente / Atrás</span>
+              <button id="btnResetPinnaCalibration" class="text-[9px] text-slate-500 hover:text-rose-300 transition">Restablecer</button>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <button id="btnCalibrateFront" class="rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-2 py-2 text-[10px] font-semibold text-cyan-300 hover:bg-cyan-500/20 disabled:opacity-40">
+                Calibrar frente
+              </button>
+              <button id="btnCalibrateBack" class="rounded-lg border border-amber-500/30 bg-amber-500/10 px-2 py-2 text-[10px] font-semibold text-amber-300 hover:bg-amber-500/20 disabled:opacity-40">
+                Calibrar atrás
+              </button>
+            </div>
+            <p id="pinnaCalibrationStatus" role="status" aria-live="polite" class="text-[9px] leading-relaxed text-slate-500">
+              Sin calibrar: las fuentes se consideran frontales para evitar falsos posteriores.
+            </p>
+          </div>
+
+          <!-- Balance Trim / Calibración de cápsulas -->
+          <div class="space-y-1.5 pt-2 border-t border-slate-800">
+            <div class="flex justify-between text-xs">
+              <span class="text-slate-400">Calibración Offset L/R</span>
+              <span id="trimVal" class="font-mono text-cyan-400 text-[11px]">0.0 dB</span>
+            </div>
+            <input type="range" id="trimSlider" min="-6.0" max="6.0" value="0.0" step="0.2" class="w-full accent-cyan-400 bg-slate-700 h-1.5 rounded-lg appearance-none cursor-pointer">
+            <p class="text-[10px] text-slate-500">Compensa diferencias de sensibilidad entre ambos micrófonos USB.</p>
+          </div>
+
+        </div>
+
+        <!-- System Message Box -->
+        <div id="noticeBox" class="p-3.5 rounded-xl bg-dark-900 border border-slate-800 text-xs text-slate-400 space-y-1">
+          <div class="flex items-center gap-1.5 text-cyan-300 font-semibold">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Consejo de Medición</span>
+          </div>
+          <p class="text-[11px] leading-relaxed text-slate-400">
+            Asegúrate de que los micrófonos estén aislados mecánicamente de la mesa y bien sellados dentro de las orejas de silicona para evitar resonancias espurias.
+          </p>
+        </div>
+
+      </div>
+
+      <div class="lg:col-span-8 flex flex-col gap-5">
+        
+        <!-- Radar & Soundstage Card -->
+        <div class="bg-dark-800/90 border border-slate-800 rounded-2xl p-5 shadow-2xl backdrop-blur-sm relative overflow-hidden flex flex-col items-center">
+          
+          <!-- Top bar with telemetry pills -->
+          <div class="w-full flex flex-wrap items-center justify-between gap-3 pb-3 mb-2 border-b border-slate-800/80">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold tracking-wider text-slate-300 uppercase">Escena Sonora 2D (Binaural Radar)</span>
+              <span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-mono border border-emerald-500/20">ITD + ILD + HRTF</span>
+            </div>
+            
+            <div class="flex items-center gap-2 font-mono text-xs">
+              <span class="text-slate-400 text-[11px]">Zona Estimada:</span>
+              <span id="zoneBadge" class="px-2.5 py-1 rounded-lg bg-dark-900 border border-cyan-500/30 text-cyan-300 font-bold shadow-sm">
+                CENTRO
+              </span>
+            </div>
+          </div>
+
+          <!-- Canvas Container -->
+          <div class="relative w-full aspect-square max-w-[500px] flex items-center justify-center my-2">
+            <canvas id="radarCanvas" width="600" height="600" class="w-full h-full rounded-2xl bg-dark-900 border border-slate-800/80 shadow-inner"></canvas>
+            
+            <!-- Floating overlay target info -->
+            <div class="absolute bottom-4 left-4 font-mono text-[10px] bg-dark-900/90 border border-slate-800 p-2 rounded-lg backdrop-blur-md space-y-0.5 pointer-events-none">
+              <div class="text-slate-400">AZIMUT: <span id="overlayAzimuth" class="text-cyan-400 font-bold">0.0°</span></div>
+              <div class="text-slate-400">FRENTE / ATRÁS: <span id="overlayElevation" class="text-blue-400 font-bold">0.00</span></div>
+              <div class="text-slate-400">INTENSIDAD: <span id="overlayEnergy" class="text-emerald-400 font-bold">0%</span></div>
+            </div>
+
+            <!-- Ear orientation indicators -->
+            <div class="absolute left-6 top-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none opacity-60">
+              <span class="text-[10px] font-mono font-bold text-cyan-400">MIC L</span>
+              <span class="text-[9px] text-slate-400">270°</span>
+            </div>
+            <div class="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none opacity-60">
+              <span class="text-[10px] font-mono font-bold text-blue-400">MIC R</span>
+              <span class="text-[9px] text-slate-400">90°</span>
+            </div>
+          </div>
+
+          <!-- VU Meters (Left & Right independent peak meters) -->
+          <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2 pt-3 border-t border-slate-800/80">
+            <!-- Left Channel Meter -->
+            <div class="space-y-1.5 bg-dark-900/60 p-3 rounded-xl border border-slate-800/70">
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-cyan-400 font-bold font-mono">CH-1: OREJA IZQUIERDA</span>
+                <span id="meterLText" class="font-mono text-slate-400 text-[11px]">-∞ dB</span>
+              </div>
+              <div class="w-full h-3 bg-dark-900 rounded-full overflow-hidden p-0.5 border border-slate-800">
+                <div id="meterLBar" class="h-full rounded-full bg-gradient-to-r from-cyan-600 via-cyan-400 to-emerald-400 w-0 transition-all duration-75"></div>
+              </div>
+            </div>
+
+            <!-- Right Channel Meter -->
+            <div class="space-y-1.5 bg-dark-900/60 p-3 rounded-xl border border-slate-800/70">
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-blue-400 font-bold font-mono">CH-2: OREJA DERECHA</span>
+                <span id="meterRText" class="font-mono text-slate-400 text-[11px]">-∞ dB</span>
+              </div>
+              <div class="w-full h-3 bg-dark-900 rounded-full overflow-hidden p-0.5 border border-slate-800">
+                <div id="meterRBar" class="h-full rounded-full bg-gradient-to-r from-blue-600 via-blue-400 to-cyan-400 w-0 transition-all duration-75"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          
+          <!-- Metric 1: ILD -->
+          <div class="bg-dark-800/90 border border-slate-800 p-4 rounded-2xl shadow-lg flex flex-col justify-between">
+            <span class="text-[11px] text-slate-400 font-medium uppercase tracking-wider">ILD (Volumen)</span>
+            <div class="my-1">
+              <span id="valILD" class="text-xl sm:text-2xl font-black font-mono text-cyan-300">0.00</span>
+              <span class="text-xs font-mono text-slate-500 ml-1">dB</span>
+            </div>
+            <span class="text-[10px] text-slate-500">Desbalance interaural</span>
+          </div>
+
+          <!-- Metric 2: ITD -->
+          <div class="bg-dark-800/90 border border-slate-800 p-4 rounded-2xl shadow-lg flex flex-col justify-between">
+            <span class="text-[11px] text-slate-400 font-medium uppercase tracking-wider">ITD (Fase)</span>
+            <div class="my-1">
+              <span id="valITD" class="text-xl sm:text-2xl font-black font-mono text-blue-400">0.00</span>
+              <span class="text-xs font-mono text-slate-500 ml-1">ms</span>
+            </div>
+            <span class="text-[10px] text-slate-500">Retardo temporal interaural</span>
+          </div>
+
+          <!-- Metric 3: Pinna Spectral Ratio -->
+          <div class="bg-dark-800/90 border border-slate-800 p-4 rounded-2xl shadow-lg flex flex-col justify-between">
+            <span class="text-[11px] text-slate-400 font-medium uppercase tracking-wider">Ratio Pinna</span>
+            <div class="my-1">
+              <span id="valPinna" class="text-xl sm:text-2xl font-black font-mono text-amber-400">1.00</span>
+              <span class="text-xs font-mono text-slate-500 ml-1">HF/MF</span>
+            </div>
+            <span class="text-[10px] text-slate-500">Índice espectral calibrado</span>
+          </div>
+
+          <!-- Metric 4: General Signal RMS -->
+          <div class="bg-dark-800/90 border border-slate-800 p-4 rounded-2xl shadow-lg flex flex-col justify-between">
+            <span class="text-[11px] text-slate-400 font-medium uppercase tracking-wider">Potencia RMS</span>
+            <div class="my-1">
+              <span id="valRMS" class="text-xl sm:text-2xl font-black font-mono text-emerald-400">-∞</span>
+              <span class="text-xs font-mono text-slate-500 ml-1">dB</span>
+            </div>
+            <span class="text-[10px] text-slate-500">Energía acústica capturada</span>
+          </div>
+
+        </div>
+
+        <!-- Testing & Troubleshooting Tips Card -->
+        <div class="bg-dark-800/70 border border-slate-800/90 rounded-2xl p-4 text-xs text-slate-400 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0 border border-blue-500/20">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <p>
+              ¿Quieres evaluar tus audífonos? Reproduce en ellos la famosa pista <span class="text-slate-200 font-semibold">"Virtual Barbershop"</span> o <span class="text-slate-200 font-semibold">"Holophonic Door Knock"</span>. El radar debe seguir fielmente la trayectoria circular y reflejar los golpes en la parte posterior (180°).
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Modal / Toast Alert Notification -->
+  <div id="toastMessage" class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 max-w-sm bg-dark-700 border border-slate-700 text-slate-200 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3">
+    <div id="toastIcon" class="w-2 h-2 rounded-full bg-cyan-400 shrink-0"></div>
+    <span id="toastText" class="text-xs">Notificación del sistema</span>
+  </div>
+
+  <script>
+    // State management and elements
+    const micLeftSelect = document.getElementById('micLeftSelect');
+    const micRightSelect = document.getElementById('micRightSelect');
+    const btnRefreshDevices = document.getElementById('btnRefreshDevices');
+    const btnRefreshDevicesText = document.getElementById('btnRefreshDevicesText');
+    const micLeftInfo = document.getElementById('micLeftInfo');
+    const micRightInfo = document.getElementById('micRightInfo');
+    const micInventoryStatus = document.getElementById('micInventoryStatus');
+    const stereoInterfaceMode = document.getElementById('stereoInterfaceMode');
+    const btnMainToggle = document.getElementById('btnMainToggle');
+    const btnMainToggleText = document.getElementById('btnMainToggleText');
+    const btnPlayIcon = document.getElementById('btnPlayIcon');
+    const statusBadge = document.getElementById('statusBadge');
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+
+    const modeHardware = document.getElementById('modeHardware');
+    const modeSynthetic = document.getElementById('modeSynthetic');
+    const syntheticControls = document.getElementById('syntheticControls');
+    const synthSoundType = document.getElementById('synthSoundType');
+    const btnToggleSynthPlay = document.getElementById('btnToggleSynthPlay');
+    const btnSynthPlayText = document.getElementById('btnSynthPlayText');
+    const synthStatusLed = document.getElementById('synthStatusLed');
+    const synthVolumeSlider = document.getElementById('synthVolumeSlider');
+    const synthVolLabel = document.getElementById('synthVolLabel');
+    const synthAngleSlider = document.getElementById('synthAngleSlider');
+    const synthAngleLabel = document.getElementById('synthAngleLabel');
+    const synthAngleDegrees = document.getElementById('synthAngleDegrees');
+    const btnSynthAutoOrbit = document.getElementById('btnSynthAutoOrbit');
+
+    const noiseThresholdSlider = document.getElementById('noiseThresholdSlider');
+    const noiseThresholdVal = document.getElementById('noiseThresholdVal');
+    const smoothingSlider = document.getElementById('smoothingSlider');
+    const smoothingVal = document.getElementById('smoothingVal');
+    const pinnaSensSlider = document.getElementById('pinnaSensSlider');
+    const pinnaSensVal = document.getElementById('pinnaSensVal');
+    const btnCalibrateFront = document.getElementById('btnCalibrateFront');
+    const btnCalibrateBack = document.getElementById('btnCalibrateBack');
+    const btnResetPinnaCalibration = document.getElementById('btnResetPinnaCalibration');
+    const pinnaCalibrationStatus = document.getElementById('pinnaCalibrationStatus');
+    const trimSlider = document.getElementById('trimSlider');
+    const trimVal = document.getElementById('trimVal');
+
+    const radarCanvas = document.getElementById('radarCanvas');
+    const ctx = radarCanvas.getContext('2d');
+
+    const zoneBadge = document.getElementById('zoneBadge');
+    const valILD = document.getElementById('valILD');
+    const valITD = document.getElementById('valITD');
+    const valPinna = document.getElementById('valPinna');
+    const valRMS = document.getElementById('valRMS');
+
+    const overlayAzimuth = document.getElementById('overlayAzimuth');
+    const overlayElevation = document.getElementById('overlayElevation');
+    const overlayEnergy = document.getElementById('overlayEnergy');
+
+    const meterLBar = document.getElementById('meterLBar');
+    const meterRBar = document.getElementById('meterRBar');
+    const meterLText = document.getElementById('meterLText');
+    const meterRText = document.getElementById('meterRText');
+    const levelLeftBadge = document.getElementById('levelLeftBadge');
+    const levelRightBadge = document.getElementById('levelRightBadge');
+
+    const toastMessage = document.getElementById('toastMessage');
+    const toastText = document.getElementById('toastText');
+    const toastIcon = document.getElementById('toastIcon');
+
+    // Web Audio Variables
+    let audioCtx = null;
+    let isRunning = false;
+    let inputMode = 'hardware'; // 'hardware' | 'synthetic'
+    let autoOrbitInterval = null;
+    let microphonePermissionGranted = false;
+    let detectedAudioInputs = [];
+    let startInProgress = false;
+
+    let streamL = null;
+    let streamR = null;
+    let srcNodeL = null;
+    let srcNodeR = null;
+    let inputSplitterNode = null;
+    let trimGainNodeL = null;
+    let trimGainNodeR = null;
+    let analyserL = null;
+    let analyserR = null;
+    let analysisGraphConnected = false;
+    let animationFrameId = null;
+
+    // Advanced 3D Binaural Generator Variables
+    let isSynthAudible = false;
+    let synthPanner3D = null;
+    let synthMasterGain = null;
+    let synthSourceNode = null;
+    let synthIntervalTimer = null;
+    let synthWhiteNoiseBuffer = null;
+
+    // Smoothed target position for sound source
+    let currentX = 0; // -1 (L) to +1 (R)
+    let currentY = 0; // -1 (Atrás) to +1 (Frente)
+    let currentRadius = 0;
+    let soundHistory = []; // Trail history {x, y, alpha, size}
+    let duplicateSignalFrames = 0;
+    let duplicateSignalWarned = false;
+    let frontPinnaBaseline = null;
+    let backPinnaBaseline = null;
+    let frontBackState = 'front';
+    let pinnaCalibrationMode = null;
+    let pinnaCalibrationSamples = [];
+    let pinnaCalibrationStartedAt = 0;
+
+    function showToast(message, type = 'info') {
+      toastText.textContent = message;
+      if (type === 'error') {
+        toastIcon.className = 'w-2 h-2 rounded-full bg-rose-500 shadow-sm shadow-rose-500';
+      } else if (type === 'success') {
+        toastIcon.className = 'w-2 h-2 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400';
+      } else {
+        toastIcon.className = 'w-2 h-2 rounded-full bg-cyan-400 shadow-sm shadow-cyan-400';
+      }
+      toastMessage.classList.remove('translate-y-24', 'opacity-0');
+      setTimeout(() => {
+        toastMessage.classList.add('translate-y-24', 'opacity-0');
+      }, 3500);
+    }
+
+    function mediaDevicesAvailable() {
+      return Boolean(navigator.mediaDevices?.enumerateDevices && navigator.mediaDevices?.getUserMedia);
+    }
+
+    function explainMediaDeviceError(err) {
+      if (!window.isSecureContext) {
+        return "El acceso a micrófonos requiere HTTPS o localhost; no abras este archivo directamente con file://";
+      }
+      if (err?.name === 'NotAllowedError' || err?.name === 'SecurityError') {
+        return "Permiso de micrófono denegado. Habilítalo en la configuración del navegador y vuelve a intentar";
+      }
+      if (err?.name === 'NotFoundError') {
+        return "No se encontró ningún micrófono disponible";
+      }
+      if (err?.name === 'NotReadableError') {
+        return "El micrófono está ocupado por otra aplicación o no puede abrirse";
+      }
+      if (err?.name === 'OverconstrainedError') {
+        return "El micrófono seleccionado ya no está disponible";
+      }
+      return err?.message || "No fue posible acceder a los dispositivos de audio";
+    }
+
+    async function requestMicrophonePermission() {
+      if (!window.isSecureContext || !mediaDevicesAvailable()) {
+        throw new Error("El acceso a micrófonos requiere HTTPS o localhost; no abras este archivo directamente con file://");
+      }
+
+      const permissionStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      permissionStream.getTracks().forEach(track => track.stop());
+      microphonePermissionGranted = true;
+    }
+
+    function setInventoryStatus(message, type = 'info') {
+      const tones = {
+        info: 'border-slate-800 bg-dark-900/70 text-slate-400',
+        success: 'border-emerald-500/30 bg-emerald-500/5 text-emerald-300',
+        warning: 'border-amber-500/30 bg-amber-500/5 text-amber-300',
+        error: 'border-rose-500/30 bg-rose-500/5 text-rose-300'
+      };
+      micInventoryStatus.className = `rounded-lg border px-3 py-2 text-[10px] leading-relaxed ${tones[type] || tones.info}`;
+      micInventoryStatus.textContent = message;
+    }
+
+    function setMicInfo(element, message, type = 'idle') {
+      const colors = {
+        idle: 'text-slate-500',
+        active: 'text-emerald-400',
+        warning: 'text-amber-400',
+        error: 'text-rose-400'
+      };
+      element.className = `mt-1.5 text-[10px] font-mono ${colors[type] || colors.idle}`;
+      element.textContent = message;
+    }
+
+    function selectableAudioInputs(devices) {
+      const inputs = devices.filter(device => device.kind === 'audioinput');
+      const physicalInputs = inputs.filter(device => !['default', 'communications'].includes(device.deviceId));
+      const candidates = physicalInputs.length > 0 ? physicalInputs : inputs;
+      const seen = new Set();
+
+      return candidates.filter(device => {
+        const key = device.deviceId || `${device.groupId}|${device.label}`;
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
+    function selectedDeviceLabel(select) {
+      return select.selectedOptions[0]?.textContent || 'Sin seleccionar';
+    }
+
+    function updateIdleMicInfo() {
+      if (isRunning && inputMode === 'hardware') return;
+      if (stereoInterfaceMode.checked && micLeftSelect.value) {
+        setMicInfo(micLeftInfo, `Canal 1: ${selectedDeviceLabel(micLeftSelect)}`);
+        setMicInfo(micRightInfo, `Canal 2: ${selectedDeviceLabel(micLeftSelect)}`);
+        return;
+      }
+      setMicInfo(micLeftInfo, micLeftSelect.value ? `Seleccionado: ${selectedDeviceLabel(micLeftSelect)}` : 'Sin seleccionar');
+      setMicInfo(micRightInfo, micRightSelect.value ? `Seleccionado: ${selectedDeviceLabel(micRightSelect)}` : 'Sin seleccionar');
+    }
+
+    function enforceDistinctSelection(changedSide, notify = true) {
+      if (stereoInterfaceMode.checked) {
+        micRightSelect.value = micLeftSelect.value;
+        updateIdleMicInfo();
+        return true;
+      }
+      if (!micLeftSelect.value || !micRightSelect.value || micLeftSelect.value !== micRightSelect.value) {
+        updateIdleMicInfo();
+        return true;
+      }
+
+      const selectToChange = changedSide === 'left' ? micRightSelect : micLeftSelect;
+      const prohibitedValue = changedSide === 'left' ? micLeftSelect.value : micRightSelect.value;
+      const alternative = [...selectToChange.options].find(option => option.value && option.value !== prohibitedValue);
+
+      if (alternative) {
+        selectToChange.value = alternative.value;
+        updateIdleMicInfo();
+        if (notify) showToast('L y R deben usar micrófonos físicos diferentes', 'info');
+        return true;
+      }
+
+      setInventoryStatus('Solo se detectó una entrada física. Conecta un segundo micrófono o utiliza una interfaz estéreo.', 'warning');
+      setMicInfo(micRightInfo, 'Se necesita una segunda entrada física', 'warning');
+      return false;
+    }
+
+    async function populateAudioDevices({ requestPermission = false } = {}) {
+      btnRefreshDevices.disabled = true;
+      btnRefreshDevicesText.textContent = requestPermission ? 'Autorizando…' : 'Detectando…';
+
+      try {
+        if (!window.isSecureContext || !mediaDevicesAvailable()) {
+          throw new Error("El acceso a micrófonos requiere HTTPS o localhost; no abras este archivo directamente con file://");
+        }
+
+        // Los navegadores ocultan nombres y, en algunos casos, entradas adicionales
+        // hasta que el usuario concede permiso al menos una vez.
+        if (requestPermission) {
+          await requestMicrophonePermission();
+        }
+
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        detectedAudioInputs = selectableAudioInputs(devices);
+        if (detectedAudioInputs.some(device => device.label)) {
+          microphonePermissionGranted = true;
+        }
+
+        const prevValL = micLeftSelect.value;
+        const prevValR = micRightSelect.value;
+
+        micLeftSelect.innerHTML = '';
+        micRightSelect.innerHTML = '';
+
+        if (detectedAudioInputs.length === 0) {
+          micLeftSelect.innerHTML = '<option value="">Sin micrófonos detectados</option>';
+          micRightSelect.innerHTML = '<option value="">Sin micrófonos detectados</option>';
+          micLeftSelect.disabled = true;
+          micRightSelect.disabled = true;
+          setInventoryStatus('No se encontraron entradas de audio disponibles.', 'error');
+          setMicInfo(micLeftInfo, 'No disponible', 'error');
+          setMicInfo(micRightInfo, 'No disponible', 'error');
+          return false;
+        }
+
+        detectedAudioInputs.forEach((device, idx) => {
+          const label = device.label || `Micrófono ${idx + 1} (${device.deviceId.slice(0, 5)}...)`;
+          const optL = new Option(label, device.deviceId);
+          const optR = new Option(label, device.deviceId);
+          optL.dataset.groupId = device.groupId || '';
+          optR.dataset.groupId = device.groupId || '';
+          micLeftSelect.add(optL);
+          micRightSelect.add(optR);
+        });
+
+        micLeftSelect.disabled = false;
+        micRightSelect.disabled = stereoInterfaceMode.checked || detectedAudioInputs.length < 2;
+
+        if (prevValL && [...micLeftSelect.options].some(o => o.value === prevValL)) {
+          micLeftSelect.value = prevValL;
+        } else {
+          micLeftSelect.selectedIndex = 0;
+        }
+
+        if (prevValR && [...micRightSelect.options].some(o => o.value === prevValR)) {
+          micRightSelect.value = prevValR;
+        } else if (detectedAudioInputs.length > 1) {
+          micRightSelect.selectedIndex = 1;
+        } else {
+          micRightSelect.selectedIndex = 0;
+        }
+
+        const hasDistinctPair = enforceDistinctSelection('left', false);
+        if (hasDistinctPair) updateIdleMicInfo();
+
+        if (stereoInterfaceMode.checked) {
+          setInventoryStatus('Modo estéreo: se verificará que el dispositivo seleccionado entregue al menos dos canales.', 'info');
+        } else if (detectedAudioInputs.length > 1) {
+          setInventoryStatus(`${detectedAudioInputs.length} entradas físicas disponibles. L y R están asignados a dispositivos distintos.`, 'success');
+        } else if (!microphonePermissionGranted) {
+          setInventoryStatus('Solo se ve la entrada predeterminada. Pulsa Autorizar para revelar los demás dispositivos.', 'warning');
+        } else {
+          setInventoryStatus('Solo se detectó una entrada física. Se requieren dos dispositivos o una interfaz estéreo.', 'warning');
+        }
+
+        return true;
+
+      } catch (err) {
+        const message = explainMediaDeviceError(err);
+        setInventoryStatus(message, 'error');
+        showToast(message, "error");
+        return false;
+      } finally {
+        btnRefreshDevices.disabled = false;
+        btnRefreshDevicesText.textContent = microphonePermissionGranted ? 'Refrescar' : 'Autorizar';
+      }
+    }
+
+    btnRefreshDevices.addEventListener('click', async () => {
+      const updated = await populateAudioDevices({ requestPermission: true });
+      if (updated) {
+        showToast("Dispositivos de audio actualizados", "success");
+      }
+    });
+
+    noiseThresholdSlider.addEventListener('input', (e) => {
+      noiseThresholdVal.textContent = `${e.target.value} dB`;
+    });
+
+    smoothingSlider.addEventListener('input', (e) => {
+      smoothingVal.textContent = parseFloat(e.target.value).toFixed(2);
+    });
+
+    pinnaSensSlider.addEventListener('input', (e) => {
+      pinnaSensVal.textContent = `${parseFloat(e.target.value).toFixed(1)}x`;
+    });
+
+    function median(values) {
+      const sorted = [...values].sort((a, b) => a - b);
+      const middle = Math.floor(sorted.length / 2);
+      return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
+    }
+
+    function updatePinnaCalibrationStatus(message = '') {
+      if (message) {
+        pinnaCalibrationStatus.textContent = message;
+        return;
+      }
+      if (frontPinnaBaseline !== null && backPinnaBaseline !== null) {
+        const separation = Math.abs(frontPinnaBaseline - backPinnaBaseline);
+        const average = Math.max(0.0001, (frontPinnaBaseline + backPinnaBaseline) / 2);
+        const confidence = Math.min(100, Math.round((separation / average) * 400));
+        pinnaCalibrationStatus.textContent = `Frente ${frontPinnaBaseline.toFixed(3)} · Atrás ${backPinnaBaseline.toFixed(3)} · separación ${confidence}%`;
+      } else if (frontPinnaBaseline !== null) {
+        pinnaCalibrationStatus.textContent = `Frente ${frontPinnaBaseline.toFixed(3)} guardado. Falta calibrar atrás.`;
+      } else if (backPinnaBaseline !== null) {
+        pinnaCalibrationStatus.textContent = `Atrás ${backPinnaBaseline.toFixed(3)} guardado. Falta calibrar frente.`;
+      } else {
+        pinnaCalibrationStatus.textContent = 'Sin calibrar: las fuentes se consideran frontales para evitar falsos posteriores.';
+      }
+    }
+
+    function setPinnaCalibrationButtonsDisabled(disabled) {
+      btnCalibrateFront.disabled = disabled;
+      btnCalibrateBack.disabled = disabled;
+    }
+
+    function beginPinnaCalibration(mode) {
+      if (!isRunning || inputMode !== 'hardware') {
+        showToast('Inicia el análisis con los micrófonos antes de calibrar', 'error');
+        return;
+      }
+      pinnaCalibrationMode = mode;
+      pinnaCalibrationSamples = [];
+      pinnaCalibrationStartedAt = performance.now();
+      setPinnaCalibrationButtonsDisabled(true);
+      const direction = mode === 'front' ? 'al frente' : 'detrás';
+      updatePinnaCalibrationStatus(`Midiendo ${direction}… mantén una fuente de ruido estable durante 2 segundos.`);
+      showToast(`Calibrando referencia ${direction}`, 'info');
+    }
+
+    function cancelPinnaCalibration() {
+      pinnaCalibrationMode = null;
+      pinnaCalibrationSamples = [];
+      pinnaCalibrationStartedAt = 0;
+      setPinnaCalibrationButtonsDisabled(false);
+    }
+
+    function collectPinnaCalibrationSample(rawRatio, audible) {
+      if (!pinnaCalibrationMode) return;
+      const elapsed = performance.now() - pinnaCalibrationStartedAt;
+
+      if (audible && Number.isFinite(rawRatio) && rawRatio > 0) {
+        pinnaCalibrationSamples.push(rawRatio);
+      }
+
+      if (elapsed >= 1800 && pinnaCalibrationSamples.length >= 30) {
+        const baseline = median(pinnaCalibrationSamples);
+        if (pinnaCalibrationMode === 'front') frontPinnaBaseline = baseline;
+        else backPinnaBaseline = baseline;
+        const completedDirection = pinnaCalibrationMode === 'front' ? 'frontal' : 'posterior';
+        cancelPinnaCalibration();
+        frontBackState = 'front';
+        updatePinnaCalibrationStatus();
+        if (frontPinnaBaseline !== null && backPinnaBaseline !== null) {
+          const separation = Math.abs(frontPinnaBaseline - backPinnaBaseline);
+          const average = Math.max(0.0001, (frontPinnaBaseline + backPinnaBaseline) / 2);
+          if (separation / average < 0.04) {
+            updatePinnaCalibrationStatus('Las referencias son demasiado similares. Se mantendrá la clasificación frontal; repite la calibración con ruido de banda ancha.');
+            showToast('Frente y atrás no presentan separación suficiente', 'error');
+            return;
+          }
+        }
+        showToast(`Referencia ${completedDirection} guardada`, 'success');
+      } else if (elapsed >= 5000) {
+        cancelPinnaCalibration();
+        updatePinnaCalibrationStatus('No hubo señal suficiente. Acerca la fuente y vuelve a intentar.');
+        showToast('Calibración cancelada por señal insuficiente', 'error');
+      }
+    }
+
+    function resetPinnaCalibration(showNotification = true) {
+      cancelPinnaCalibration();
+      frontPinnaBaseline = null;
+      backPinnaBaseline = null;
+      frontBackState = 'front';
+      updatePinnaCalibrationStatus();
+      if (showNotification) showToast('Calibración frente/atrás restablecida', 'info');
+    }
+
+    function isSourceBehind(rawRatio) {
+      if (frontPinnaBaseline === null || backPinnaBaseline === null) {
+        frontBackState = 'front';
+        return false;
+      }
+
+      const separation = Math.abs(frontPinnaBaseline - backPinnaBaseline);
+      const average = Math.max(0.0001, (frontPinnaBaseline + backPinnaBaseline) / 2);
+      if (separation / average < 0.04) {
+        frontBackState = 'front';
+        return false;
+      }
+
+      const midpoint = (frontPinnaBaseline + backPinnaBaseline) / 2;
+      const sensitivity = parseFloat(pinnaSensSlider.value);
+      const margin = separation * Math.max(0.06, 0.22 / sensitivity);
+      const rearHasLowerRatio = backPinnaBaseline < frontPinnaBaseline;
+
+      if (rearHasLowerRatio) {
+        if (frontBackState === 'front' && rawRatio < midpoint - margin) frontBackState = 'back';
+        else if (frontBackState === 'back' && rawRatio > midpoint + margin) frontBackState = 'front';
+      } else {
+        if (frontBackState === 'front' && rawRatio > midpoint + margin) frontBackState = 'back';
+        else if (frontBackState === 'back' && rawRatio < midpoint - margin) frontBackState = 'front';
+      }
+
+      return frontBackState === 'back';
+    }
+
+    btnCalibrateFront.addEventListener('click', () => beginPinnaCalibration('front'));
+    btnCalibrateBack.addEventListener('click', () => beginPinnaCalibration('back'));
+    btnResetPinnaCalibration.addEventListener('click', () => resetPinnaCalibration());
+
+    trimSlider.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      trimVal.textContent = `${val > 0 ? '+' : ''}${val.toFixed(1)} dB`;
+      if (trimGainNodeL && trimGainNodeR) {
+        const gainLinear = Math.pow(10, val / 20);
+        if (val >= 0) {
+          trimGainNodeR.gain.value = gainLinear;
+          trimGainNodeL.gain.value = 1.0;
+        } else {
+          trimGainNodeL.gain.value = 1.0 / gainLinear;
+          trimGainNodeR.gain.value = 1.0;
+        }
+      }
+    });
+
+    modeHardware.addEventListener('click', () => {
+      if (inputMode === 'hardware') return;
+      inputMode = 'hardware';
+      modeHardware.className = 'py-1.5 text-[11px] font-semibold rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 transition';
+      modeSynthetic.className = 'py-1.5 text-[11px] font-semibold rounded-lg text-slate-400 hover:text-white transition';
+      syntheticControls.classList.add('hidden');
+      stopSyntheticSource();
+      if (isRunning) restartStream();
+    });
+
+    modeSynthetic.addEventListener('click', () => {
+      if (inputMode === 'synthetic') return;
+      inputMode = 'synthetic';
+      modeSynthetic.className = 'py-1.5 text-[11px] font-semibold rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 transition';
+      modeHardware.className = 'py-1.5 text-[11px] font-semibold rounded-lg text-slate-400 hover:text-white transition';
+      syntheticControls.classList.remove('hidden');
+      if (isRunning) restartStream();
+    });
+
+    synthVolumeSlider.addEventListener('input', (e) => {
+      const vol = parseFloat(e.target.value);
+      synthVolLabel.textContent = `${Math.round(vol * 100)}%`;
+      if (synthMasterGain && audioCtx) {
+        synthMasterGain.gain.setTargetAtTime(vol, audioCtx.currentTime, 0.03);
+      }
+    });
+
+    synthAngleSlider.addEventListener('input', (e) => {
+      const angle = parseInt(e.target.value, 10);
+      synthAngleDegrees.textContent = `${angle}°`;
+      let desc = `${angle}°`;
+      if (angle === 0) desc += ' (Frente - 0°)';
+      else if (angle === -90) desc += ' (Izquierda - 270°)';
+      else if (angle === 90) desc += ' (Derecha - 90°)';
+      else if (Math.abs(angle) === 180) desc += ' (Atrás - 180°)';
+      else if (angle < 0 && angle > -90) desc += ' (Frente Izq)';
+      else if (angle > 0 && angle < 90) desc += ' (Frente Der)';
+      else if (angle < -90) desc += ' (Atrás Izq)';
+      else if (angle > 90) desc += ' (Atrás Der)';
+      synthAngleLabel.textContent = desc;
+
+      applySynthetic3DPosition(angle);
+    });
+
+    btnToggleSynthPlay.addEventListener('click', async () => {
+      // Ensure AudioContext is instantiated and unlocked on user interaction
+      await ensureAudioContext();
+      
+      if (!isSynthAudible) {
+        startSyntheticPlayback();
+      } else {
+        stopSyntheticSource();
+      }
+    });
+
+    synthSoundType.addEventListener('change', () => {
+      if (isSynthAudible) {
+        // Re-trigger with new sound type
+        startSyntheticPlayback();
+      }
+    });
+
+    btnSynthAutoOrbit.addEventListener('click', () => {
+      if (autoOrbitInterval) {
+        clearInterval(autoOrbitInterval);
+        autoOrbitInterval = null;
+        btnSynthAutoOrbit.classList.remove('text-cyan-300', 'border-cyan-500', 'bg-dark-600');
+        btnSynthAutoOrbit.innerHTML = `
+          <svg class="w-3 h-3 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span>Auto-Orbitar Sonido 360° (Giro Continuo)</span>
+        `;
+      } else {
+        btnSynthAutoOrbit.classList.add('text-cyan-300', 'border-cyan-500', 'bg-dark-600');
+        btnSynthAutoOrbit.innerHTML = `
+          <svg class="w-3 h-3 text-rose-400 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>Detener Auto-Órbita</span>
+        `;
+        autoOrbitInterval = setInterval(() => {
+          let curr = parseInt(synthAngleSlider.value, 10);
+          curr = curr >= 180 ? -180 : curr + 3;
+          synthAngleSlider.value = curr;
+          synthAngleSlider.dispatchEvent(new Event('input'));
+        }, 50);
+      }
+    });
+
+    async function ensureAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)({
+          latencyHint: 'interactive'
+        });
+      }
+      if (audioCtx.state === 'suspended') {
+        await audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function createNoiseBuffer(ctx) {
+      const bufferSize = ctx.sampleRate * 2; // 2 seconds of pink noise
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        b0 = 0.99886 * b0 + white * 0.0555179;
+        b1 = 0.99332 * b1 + white * 0.0750759;
+        b2 = 0.96900 * b2 + white * 0.1538520;
+        b3 = 0.86650 * b3 + white * 0.3104856;
+        b4 = 0.55000 * b4 + white * 0.5329522;
+        b5 = -0.7616 * b5 - white * 0.0168980;
+        data[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.08;
+        b6 = white * 0.115926;
+      }
+      return buffer;
+    }
+
+    async function startSyntheticPlayback() {
+      await ensureAudioContext();
+      stopSyntheticSource(); // Clear active oscillators/timers
+
+      // Master gain for test audio
+      synthMasterGain = audioCtx.createGain();
+      synthMasterGain.gain.value = parseFloat(synthVolumeSlider.value);
+
+      // Create Web Audio HRTF PannerNode
+      // This calculates genuine ear-filtering (ITD, ILD, and pinna reflections) in the browser
+      synthPanner3D = audioCtx.createPanner();
+      synthPanner3D.panningModel = 'HRTF';
+      synthPanner3D.distanceModel = 'inverse';
+      synthPanner3D.refDistance = 1;
+      synthPanner3D.maxDistance = 10000;
+      synthPanner3D.rolloffFactor = 1;
+      synthPanner3D.coneInnerAngle = 360;
+
+      // Position the listener at origin (0, 0, 0) looking at -Z (straight ahead)
+      if (audioCtx.listener.positionX) {
+        audioCtx.listener.positionX.setValueAtTime(0, audioCtx.currentTime);
+        audioCtx.listener.positionY.setValueAtTime(0, audioCtx.currentTime);
+        audioCtx.listener.positionZ.setValueAtTime(0, audioCtx.currentTime);
+        audioCtx.listener.forwardX.setValueAtTime(0, audioCtx.currentTime);
+        audioCtx.listener.forwardY.setValueAtTime(0, audioCtx.currentTime);
+        audioCtx.listener.forwardZ.setValueAtTime(-1, audioCtx.currentTime);
+        audioCtx.listener.upX.setValueAtTime(0, audioCtx.currentTime);
+        audioCtx.listener.upY.setValueAtTime(1, audioCtx.currentTime);
+        audioCtx.listener.upZ.setValueAtTime(0, audioCtx.currentTime);
+      } else {
+        // Fallback for older Web Audio API
+        audioCtx.listener.setPosition(0, 0, 0);
+        audioCtx.listener.setOrientation(0, 0, -1, 0, 1, 0);
+      }
+
+      // Route audio to Headphones/Speakers (audioCtx.destination) AND to internal analysers
+      synthPanner3D.connect(synthMasterGain);
+      synthMasterGain.connect(audioCtx.destination); // CRITICAL: Emits audio to the physical output
+
+      // Split panner output so the radar and VU meters can also visualize it directly in test mode
+      ensureAnalysersAvailable();
+      const splitter = audioCtx.createChannelSplitter(2);
+      synthMasterGain.connect(splitter);
+      splitter.connect(trimGainNodeL, 0);
+      splitter.connect(trimGainNodeR, 1);
+
+      // Update position immediately
+      applySynthetic3DPosition(parseInt(synthAngleSlider.value, 10));
+
+      const type = synthSoundType.value;
+
+      if (type === 'sineTone') {
+        // Continuous harmonic tone
+        const osc = audioCtx.createOscillator();
+        const toneFilter = audioCtx.createBiquadFilter();
+        toneFilter.type = 'lowpass';
+        toneFilter.frequency.value = 1800;
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+        
+        // Gentle vibrato for natural acoustic identification
+        const lfo = audioCtx.createOscillator();
+        const lfoGain = audioCtx.createGain();
+        lfo.frequency.value = 5; // 5 Hz vibrato
+        lfoGain.gain.value = 12; // pitch excursion
+        lfo.connect(osc.frequency);
+        lfo.start();
+
+        osc.connect(toneFilter);
+        toneFilter.connect(synthPanner3D);
+        osc.start();
+        synthSourceNode = { osc, lfo };
+
+      } else if (type === 'pinkNoise') {
+        // Rhythmic bursts of Pink Noise (ideal for HRTF evaluation)
+        if (!synthWhiteNoiseBuffer) {
+          synthWhiteNoiseBuffer = createNoiseBuffer(audioCtx);
+        }
+
+        function triggerNoisePulse() {
+          if (!isSynthAudible || !audioCtx) return;
+          const noiseSrc = audioCtx.createBufferSource();
+          noiseSrc.buffer = synthWhiteNoiseBuffer;
+          noiseSrc.loop = true;
+
+          const envelope = audioCtx.createGain();
+          const now = audioCtx.currentTime;
+          envelope.gain.setValueAtTime(0.001, now);
+          envelope.gain.linearRampToValueAtTime(0.8, now + 0.04);
+          envelope.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+
+          noiseSrc.connect(envelope);
+          envelope.connect(synthPanner3D);
+
+          noiseSrc.start(now);
+          noiseSrc.stop(now + 0.45);
+        }
+
+        triggerNoisePulse();
+        synthIntervalTimer = setInterval(triggerNoisePulse, 500);
+
+      } else if (type === 'doorKnock') {
+        // Acoustic wooden door knock simulation (rich in low transients & high reflections)
+        function triggerDoorKnock() {
+          if (!isSynthAudible || !audioCtx) return;
+          
+          // Realistic double-knock sequence ("Toc - Toc")
+          [0, 0.16].forEach((delay) => {
+            const now = audioCtx.currentTime + delay;
+            
+            // Low body resonator
+            const osc = audioCtx.createOscillator();
+            const oscGain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(140, now);
+            osc.frequency.exponentialRampToValueAtTime(45, now + 0.08);
+
+            oscGain.gain.setValueAtTime(0.9, now);
+            oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+            osc.connect(oscGain);
+            oscGain.connect(synthPanner3D);
+
+            // Wood impact click / transient
+            if (!synthWhiteNoiseBuffer) synthWhiteNoiseBuffer = createNoiseBuffer(audioCtx);
+            const clickSrc = audioCtx.createBufferSource();
+            clickSrc.buffer = synthWhiteNoiseBuffer;
+            const clickFilter = audioCtx.createBiquadFilter();
+            clickFilter.type = 'bandpass';
+            clickFilter.frequency.value = 1600;
+            clickFilter.Q.value = 3.0;
+
+            const clickGain = audioCtx.createGain();
+            clickGain.gain.setValueAtTime(0.8, now);
+            clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+
+            clickSrc.connect(clickFilter);
+            clickFilter.connect(clickGain);
+            clickGain.connect(synthPanner3D);
+
+            osc.start(now);
+            osc.stop(now + 0.12);
+            clickSrc.start(now);
+            clickSrc.stop(now + 0.08);
+          });
+        }
+
+        triggerDoorKnock();
+        synthIntervalTimer = setInterval(triggerDoorKnock, 1100);
+      }
+
+      isSynthAudible = true;
+      btnSynthPlayText.textContent = "Detener Sonido en Audífonos";
+      btnToggleSynthPlay.className = "flex-1 py-2 px-3 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs tracking-wide transition flex items-center justify-center gap-1.5 shadow-md shadow-rose-600/20 active:scale-95";
+      synthStatusLed.className = "w-2 h-2 rounded-full bg-emerald-400 animate-ping";
+
+      // If the main visualizer isn't running yet, kick it off automatically so user sees the radar
+      if (!isRunning) {
+        isRunning = true;
+        updateUIState(true);
+        startRenderLoop();
+      }
+
+      showToast("Reproduciendo audio espacial 3D hacia tus audífonos", "info");
+    }
+
+    function stopSyntheticSource() {
+      isSynthAudible = false;
+      if (synthIntervalTimer) {
+        clearInterval(synthIntervalTimer);
+        synthIntervalTimer = null;
+      }
+      if (synthSourceNode) {
+        try {
+          if (synthSourceNode.osc) synthSourceNode.osc.stop();
+          if (synthSourceNode.lfo) synthSourceNode.lfo.stop();
+        } catch(e) {}
+        synthSourceNode = null;
+      }
+      if (synthMasterGain && audioCtx) {
+        synthMasterGain.gain.setValueAtTime(0, audioCtx.currentTime);
+      }
+
+      btnSynthPlayText.textContent = "Emitir Sonido en Audífonos";
+      btnToggleSynthPlay.className = "flex-1 py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs tracking-wide transition flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95";
+      synthStatusLed.className = "w-2 h-2 rounded-full bg-amber-400";
+    }
+
+    function applySynthetic3DPosition(angleDeg) {
+      if (!synthPanner3D || !audioCtx) return;
+
+      // In Web Audio 3D Coordinates:
+      // X: Left (-1) / Right (+1)
+      // Y: Up / Down (0 for horizontal plane)
+      // Z: Front (-1) / Back (+1)
+      const rad = (angleDeg * Math.PI) / 180;
+      const x = Math.sin(rad) * 1.5; // distance radius 1.5 meters
+      const y = 0.0;
+      const z = -Math.cos(rad) * 1.5; // -Z is facing front, +Z is facing rear (behind listener)
+
+      if (synthPanner3D.positionX) {
+        synthPanner3D.positionX.setTargetAtTime(x, audioCtx.currentTime, 0.04);
+        synthPanner3D.positionY.setTargetAtTime(y, audioCtx.currentTime, 0.04);
+        synthPanner3D.positionZ.setTargetAtTime(z, audioCtx.currentTime, 0.04);
+      } else {
+        synthPanner3D.setPosition(x, y, z);
+      }
+    }
+
+    function ensureAnalysersAvailable() {
+      if (!trimGainNodeL) {
+        trimGainNodeL = audioCtx.createGain();
+        trimGainNodeR = audioCtx.createGain();
+      }
+      if (!analyserL) {
+        analyserL = audioCtx.createAnalyser();
+        analyserR = audioCtx.createAnalyser();
+        analyserL.fftSize = 1024;
+        analyserR.fftSize = 1024;
+        analyserL.smoothingTimeConstant = 0.2;
+        analyserR.smoothingTimeConstant = 0.2;
+      }
+      if (!analysisGraphConnected) {
+        trimGainNodeL.connect(analyserL);
+        trimGainNodeR.connect(analyserR);
+        analysisGraphConnected = true;
+      }
+    }
+
+    function computeRMS(buffer) {
+      let sum = 0;
+      const len = buffer.length;
+      for (let i = 0; i < len; i++) {
+        sum += buffer[i] * buffer[i];
+      }
+      return Math.sqrt(sum / len);
+    }
+
+    function computeZeroLagCorrelation(bufL, bufR) {
+      let dot = 0;
+      let normL = 0;
+      let normR = 0;
+      for (let i = 0; i < bufL.length; i++) {
+        dot += bufL[i] * bufR[i];
+        normL += bufL[i] * bufL[i];
+        normR += bufR[i] * bufR[i];
+      }
+      const denom = Math.sqrt(normL * normR);
+      return denom > 1e-9 ? dot / denom : 0;
+    }
+
+    // Interaural Time Difference via Normalized Cross-Correlation
+    function computeITD(bufL, bufR, sampleRate) {
+      const maxLag = Math.floor(sampleRate * 0.001); // ±1.0 ms search space
+      let bestCorr = -1;
+      let bestOffset = 0;
+      const len = bufL.length;
+
+      for (let offset = -maxLag; offset <= maxLag; offset++) {
+        let dot = 0;
+        let normL = 0;
+        let normR = 0;
+
+        for (let i = 0; i < len; i++) {
+          const j = i + offset;
+          if (j >= 0 && j < len) {
+            const vL = bufL[i];
+            const vR = bufR[j];
+            dot += vL * vR;
+            normL += vL * vL;
+            normR += vR * vR;
+          }
+        }
+
+        const denom = Math.sqrt(normL * normR);
+        const corr = denom > 1e-9 ? (dot / denom) : 0;
+
+        if (corr > bestCorr) {
+          bestCorr = corr;
+          bestOffset = offset;
+        }
+      }
+
+      return (bestOffset / sampleRate) * 1000;
+    }
+
+    // Pinna spectral ratio in linear energy. Float dB bins are converted to power
+    // before averaging; dividing Uint8 dB-mapped values produces a biased ratio.
+    function computePinnaHighToMidRatio(analyser, sampleRate) {
+      const freqData = new Float32Array(analyser.frequencyBinCount);
+      analyser.getFloatFrequencyData(freqData);
+
+      const nyquist = sampleRate / 2;
+      const binHz = nyquist / analyser.frequencyBinCount;
+
+      const idxMidStart = Math.max(0, Math.floor(1000 / binHz));
+      const idxMidEnd = Math.min(freqData.length - 1, Math.floor(3000 / binHz));
+      const idxHighStart = Math.max(0, Math.floor(4500 / binHz));
+      const idxHighEnd = Math.min(freqData.length - 1, Math.floor(9500 / binHz));
+
+      const averagePower = (start, end) => {
+        let sum = 0;
+        let count = 0;
+        for (let i = start; i <= end; i++) {
+          const db = freqData[i];
+          if (Number.isFinite(db)) {
+            sum += Math.pow(10, db / 10);
+            count++;
+          }
+        }
+        return count > 0 ? sum / count : 0;
+      };
+
+      const midPower = averagePower(idxMidStart, idxMidEnd);
+      const highPower = averagePower(idxHighStart, idxHighEnd);
+
+      if (midPower < 1e-12) return 1.0;
+      return Math.sqrt(highPower / midPower);
+    }
+
+    function trackDiagnostic(track, fallbackLabel) {
+      const settings = track.getSettings ? track.getSettings() : {};
+      const sampleRate = settings.sampleRate ? `${(settings.sampleRate / 1000).toFixed(1)} kHz` : 'frecuencia desconocida';
+      const channels = settings.channelCount ? `${settings.channelCount} canal${settings.channelCount === 1 ? '' : 'es'}` : 'canales desconocidos';
+      const label = track.label || fallbackLabel;
+      return {
+        deviceId: settings.deviceId || '',
+        text: `${label} · ${sampleRate} · ${channels} · activo`
+      };
+    }
+
+    function watchTrackState(track, infoElement, baseText, side) {
+      infoElement.dataset.activeDescription = baseText;
+      track.addEventListener('mute', () => {
+        if (isRunning) {
+          setMicInfo(infoElement, `${baseText.replace(/ · activo$/, '')} · sin señal`, 'warning');
+          if (side === 'estéreo') setMicInfo(micRightInfo, 'Canal 2 · sin señal', 'warning');
+        }
+      });
+      track.addEventListener('unmute', () => {
+        if (isRunning) {
+          setMicInfo(infoElement, baseText, 'active');
+          if (side === 'estéreo') setMicInfo(micRightInfo, 'Canal 2 · activo', 'active');
+        }
+      });
+      track.addEventListener('ended', () => {
+        if (isRunning && inputMode === 'hardware') {
+          setMicInfo(infoElement, `Canal ${side} desconectado`, 'error');
+          if (side === 'estéreo') setMicInfo(micRightInfo, 'Canal 2 desconectado', 'error');
+          setInventoryStatus(`Se perdió el micrófono del canal ${side}. Refresca los dispositivos.`, 'error');
+          showToast(`Micrófono ${side} desconectado`, 'error');
+        }
+      });
+    }
+
+    function validateOpenedMicrophones(trackL, trackR, requestedL, requestedR) {
+      const diagL = trackDiagnostic(trackL, selectedDeviceLabel(micLeftSelect));
+      const diagR = trackDiagnostic(trackR, selectedDeviceLabel(micRightSelect));
+
+      if (requestedL === requestedR) {
+        throw new Error('Selecciona dos micrófonos físicos diferentes para los canales L y R');
+      }
+      if (diagL.deviceId && diagR.deviceId && diagL.deviceId === diagR.deviceId) {
+        throw new Error('El navegador abrió el mismo dispositivo para L y R. Selecciona entradas diferentes');
+      }
+      if (diagL.deviceId && diagL.deviceId !== requestedL) {
+        throw new Error('El navegador sustituyó el micrófono izquierdo solicitado por otro dispositivo');
+      }
+      if (diagR.deviceId && diagR.deviceId !== requestedR) {
+        throw new Error('El navegador sustituyó el micrófono derecho solicitado por otro dispositivo');
+      }
+
+      setMicInfo(micLeftInfo, diagL.text, 'active');
+      setMicInfo(micRightInfo, diagR.text, 'active');
+      watchTrackState(trackL, micLeftInfo, diagL.text, 'L');
+      watchTrackState(trackR, micRightInfo, diagR.text, 'R');
+    }
+
+    async function startAudioEngine() {
+      if (startInProgress || isRunning) return;
+      startInProgress = true;
+      btnMainToggle.disabled = true;
+
+      try {
+        if (inputMode === 'hardware') {
+          if (!window.isSecureContext || !mediaDevicesAvailable()) {
+            throw new Error("El acceso a micrófonos requiere HTTPS o localhost; no abras este archivo directamente con file://");
+          }
+
+          // Asegura que la lista contenga identificadores y nombres reales antes
+          // de seleccionar las entradas que se abrirán.
+          if (!microphonePermissionGranted) {
+            const updated = await populateAudioDevices({ requestPermission: true });
+            if (!updated) return;
+          }
+        }
+
+        await ensureAudioContext();
+        ensureAnalysersAvailable();
+
+        // Apply initial trim
+        const trimValCurrent = parseFloat(trimSlider.value);
+        if (trimValCurrent >= 0) {
+          trimGainNodeR.gain.value = Math.pow(10, trimValCurrent / 20);
+          trimGainNodeL.gain.value = 1.0;
+        } else {
+          trimGainNodeL.gain.value = Math.pow(10, -trimValCurrent / 20);
+          trimGainNodeR.gain.value = 1.0;
+        }
+
+        if (inputMode === 'hardware') {
+          const devL = micLeftSelect.value;
+          const devR = micRightSelect.value;
+          const useStereoInterface = stereoInterfaceMode.checked;
+
+          if (!devL || (!useStereoInterface && !devR)) {
+            throw new Error(useStereoInterface ? 'Selecciona una interfaz estéreo' : 'Selecciona un micrófono para cada canal');
+          }
+          if (!useStereoInterface && devL === devR) {
+            throw new Error('Los canales L y R no pueden utilizar el mismo micrófono');
+          }
+
+          const audioConstraints = (deviceId, channelCount = 1) => ({
+            audio: {
+              deviceId: deviceId ? { exact: deviceId } : undefined,
+              echoCancellation: false,
+              noiseSuppression: false,
+              autoGainControl: false,
+              channelCount: { ideal: channelCount },
+              sampleRate: { ideal: 48000 }
+            }
+          });
+
+          if (useStereoInterface) {
+            streamL = await navigator.mediaDevices.getUserMedia(audioConstraints(devL, 2));
+            const stereoTrack = streamL.getAudioTracks()[0];
+            const stereoSettings = stereoTrack.getSettings ? stereoTrack.getSettings() : {};
+            srcNodeL = audioCtx.createMediaStreamSource(streamL);
+            const detectedChannels = stereoSettings.channelCount || srcNodeL.channelCount || 1;
+
+            if (stereoSettings.deviceId && stereoSettings.deviceId !== devL) {
+              throw new Error('El navegador sustituyó la interfaz estéreo solicitada por otro dispositivo');
+            }
+            if (detectedChannels < 2) {
+              throw new Error('El dispositivo seleccionado abrió solamente un canal. Desactiva el modo estéreo o elige una interfaz de dos canales');
+            }
+
+            inputSplitterNode = audioCtx.createChannelSplitter(2);
+            srcNodeL.connect(inputSplitterNode);
+            inputSplitterNode.connect(trimGainNodeL, 0);
+            inputSplitterNode.connect(trimGainNodeR, 1);
+
+            const base = trackDiagnostic(stereoTrack, selectedDeviceLabel(micLeftSelect));
+            const rate = stereoSettings.sampleRate ? `${(stereoSettings.sampleRate / 1000).toFixed(1)} kHz` : 'frecuencia desconocida';
+            setMicInfo(micLeftInfo, `${stereoTrack.label || selectedDeviceLabel(micLeftSelect)} · canal 1 · ${rate} · activo`, 'active');
+            setMicInfo(micRightInfo, `${stereoTrack.label || selectedDeviceLabel(micLeftSelect)} · canal 2 · ${rate} · activo`, 'active');
+            watchTrackState(stereoTrack, micLeftInfo, base.text, 'estéreo');
+            setInventoryStatus('Interfaz estéreo verificada: canales 1=L y 2=R sincronizados.', 'success');
+          } else {
+            const [leftResult, rightResult] = await Promise.allSettled([
+              navigator.mediaDevices.getUserMedia(audioConstraints(devL)),
+              navigator.mediaDevices.getUserMedia(audioConstraints(devR))
+            ]);
+
+            if (leftResult.status === 'rejected' || rightResult.status === 'rejected') {
+              if (leftResult.status === 'fulfilled') leftResult.value.getTracks().forEach(track => track.stop());
+              if (rightResult.status === 'fulfilled') rightResult.value.getTracks().forEach(track => track.stop());
+
+              const failures = [];
+              if (leftResult.status === 'rejected') failures.push(`L: ${explainMediaDeviceError(leftResult.reason)}`);
+              if (rightResult.status === 'rejected') failures.push(`R: ${explainMediaDeviceError(rightResult.reason)}`);
+              throw new Error(failures.join(' · '));
+            }
+
+            streamL = leftResult.value;
+            streamR = rightResult.value;
+
+            const trackL = streamL.getAudioTracks()[0];
+            const trackR = streamR.getAudioTracks()[0];
+            validateOpenedMicrophones(trackL, trackR, devL, devR);
+
+            srcNodeL = audioCtx.createMediaStreamSource(streamL);
+            srcNodeR = audioCtx.createMediaStreamSource(streamR);
+
+            srcNodeL.connect(trimGainNodeL);
+            srcNodeR.connect(trimGainNodeR);
+            setInventoryStatus('Dos entradas independientes verificadas y capturando audio.', 'success');
+          }
+
+        } else {
+          // Synthetic generator mode
+          if (!isSynthAudible) {
+            startSyntheticPlayback();
+          }
+        }
+
+        isRunning = true;
+        updateUIState(true);
+        startRenderLoop();
+        showToast("Motor acústico en ejecución", "success");
+
+      } catch (err) {
+        console.error("Error arrancando Audio Engine:", err);
+        showToast("Error al inicializar el audio: " + explainMediaDeviceError(err), "error");
+        setInventoryStatus(explainMediaDeviceError(err), 'error');
+        stopAudioEngine();
+      } finally {
+        startInProgress = false;
+        btnMainToggle.disabled = false;
+      }
+    }
+
+    function stopAudioEngine() {
+      isRunning = false;
+      if (pinnaCalibrationMode) {
+        cancelPinnaCalibration();
+        updatePinnaCalibrationStatus();
+      }
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+      if (srcNodeL) srcNodeL.disconnect();
+      if (srcNodeR) srcNodeR.disconnect();
+      if (inputSplitterNode) inputSplitterNode.disconnect();
+      srcNodeL = null;
+      srcNodeR = null;
+      inputSplitterNode = null;
+
+      const activeStreams = new Set([streamL, streamR].filter(Boolean));
+      activeStreams.forEach(stream => stream.getTracks().forEach(track => track.stop()));
+      streamL = null;
+      streamR = null;
+      duplicateSignalFrames = 0;
+      duplicateSignalWarned = false;
+      
+      stopSyntheticSource();
+
+      updateUIState(false);
+      resetMeters();
+      drawRadar(0, 0, 0, 0);
+      if (inputMode === 'hardware') updateIdleMicInfo();
+    }
+
+    async function restartStream() {
+      if (isRunning) {
+        stopAudioEngine();
+        await startAudioEngine();
+      }
+    }
+
+    micLeftSelect.addEventListener('change', async () => {
+      resetPinnaCalibration(false);
+      enforceDistinctSelection('left');
+      await restartStream();
+    });
+    micRightSelect.addEventListener('change', async () => {
+      resetPinnaCalibration(false);
+      enforceDistinctSelection('right');
+      await restartStream();
+    });
+    stereoInterfaceMode.addEventListener('change', async () => {
+      resetPinnaCalibration(false);
+      micRightSelect.disabled = stereoInterfaceMode.checked || detectedAudioInputs.length < 2;
+      if (stereoInterfaceMode.checked) {
+        micRightSelect.value = micLeftSelect.value;
+        setInventoryStatus('Modo estéreo: se usarán los canales 1=L y 2=R del dispositivo izquierdo.', 'info');
+      } else if (detectedAudioInputs.length > 1) {
+        enforceDistinctSelection('left', false);
+        setInventoryStatus(`${detectedAudioInputs.length} entradas físicas disponibles.`, 'success');
+      } else {
+        setInventoryStatus('Solo se detectó una entrada física. Se requieren dos dispositivos o una interfaz estéreo.', 'warning');
+      }
+      updateIdleMicInfo();
+      await restartStream();
+    });
+
+    btnMainToggle.addEventListener('click', async () => {
+      if (isRunning) {
+        stopAudioEngine();
+      } else {
+        await startAudioEngine();
+      }
+    });
+
+    function updateUIState(active) {
+      if (active) {
+        btnMainToggle.className = "px-5 py-2 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-bold text-xs sm:text-sm tracking-wide transition-all shadow-lg shadow-rose-500/20 active:scale-95 flex items-center gap-2";
+        btnMainToggleText.textContent = "DETENER ANÁLISIS";
+        btnPlayIcon.innerHTML = `<rect x="6" y="6" width="12" height="12" rx="2" />`;
+        statusDot.className = "w-2 h-2 rounded-full bg-cyan-400 animate-ping";
+        statusBadge.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/60 border border-cyan-500/40 text-xs font-mono text-cyan-300";
+        statusText.textContent = "EN VIVO (DSP ACTIVO)";
+      } else {
+        btnMainToggle.className = "px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-dark-900 font-bold text-xs sm:text-sm tracking-wide transition-all shadow-lg shadow-cyan-500/20 active:scale-95 flex items-center gap-2";
+        btnMainToggleText.textContent = "INICIAR ANÁLISIS";
+        btnPlayIcon.innerHTML = `<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>`;
+        statusDot.className = "w-2 h-2 rounded-full bg-slate-500";
+        statusBadge.className = "flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700/60 text-xs font-mono text-slate-400";
+        statusText.textContent = "INACTIVO";
+      }
+    }
+
+    function resetMeters() {
+      meterLBar.style.width = '0%';
+      meterRBar.style.width = '0%';
+      meterLText.textContent = '-∞ dB';
+      meterRText.textContent = '-∞ dB';
+      levelLeftBadge.textContent = '-∞ dB';
+      levelRightBadge.textContent = '-∞ dB';
+      valILD.textContent = '0.00';
+      valITD.textContent = '0.00';
+      valPinna.textContent = '1.00';
+      valRMS.textContent = '-∞';
+      overlayAzimuth.textContent = '0.0°';
+      overlayElevation.textContent = '0.00';
+      overlayEnergy.textContent = '0%';
+      zoneBadge.textContent = 'CENTRO';
+      zoneBadge.className = "px-2.5 py-1 rounded-lg bg-dark-900 border border-cyan-500/30 text-cyan-300 font-bold shadow-sm";
+    }
+
+    function startRenderLoop() {
+      if (!analyserL || !analyserR) return;
+      const bufferL = new Float32Array(analyserL.fftSize);
+      const bufferR = new Float32Array(analyserR.fftSize);
+
+      function frame() {
+        if (!isRunning) return;
+
+        analyserL.getFloatTimeDomainData(bufferL);
+        analyserR.getFloatTimeDomainData(bufferR);
+
+        const rmsL = computeRMS(bufferL);
+        const rmsR = computeRMS(bufferR);
+        const avgRMS = (rmsL + rmsR) / 2;
+
+        const dbL = rmsL > 1e-5 ? 20 * Math.log10(rmsL) : -90;
+        const dbR = rmsR > 1e-5 ? 20 * Math.log10(rmsR) : -90;
+        const dbOverall = avgRMS > 1e-5 ? 20 * Math.log10(avgRMS) : -90;
+
+        const pctL = Math.max(0, Math.min(100, ((dbL + 60) / 60) * 100));
+        const pctR = Math.max(0, Math.min(100, ((dbR + 60) / 60) * 100));
+        meterLBar.style.width = `${pctL}%`;
+        meterRBar.style.width = `${pctR}%`;
+        meterLText.textContent = `${dbL.toFixed(1)} dB`;
+        meterRText.textContent = `${dbR.toFixed(1)} dB`;
+        levelLeftBadge.textContent = `${dbL.toFixed(0)} dB`;
+        levelRightBadge.textContent = `${dbR.toFixed(0)} dB`;
+        valRMS.textContent = dbOverall > -80 ? dbOverall.toFixed(1) : '-∞';
+
+        const gateThreshold = parseFloat(noiseThresholdSlider.value);
+        const isAudible = dbOverall > gateThreshold;
+
+        if (inputMode === 'hardware' && !stereoInterfaceMode.checked && isAudible) {
+          const correlation = computeZeroLagCorrelation(bufferL, bufferR);
+          const virtuallyIdentical = correlation > 0.9995 && Math.abs(dbL - dbR) < 0.05;
+          duplicateSignalFrames = virtuallyIdentical ? duplicateSignalFrames + 1 : Math.max(0, duplicateSignalFrames - 3);
+          if (duplicateSignalFrames > 180 && !duplicateSignalWarned) {
+            duplicateSignalWarned = true;
+            setInventoryStatus('Advertencia: L y R parecen señales idénticas. Verifica que el sistema no esté duplicando un mismo micrófono.', 'warning');
+            showToast('L y R parecen provenir de la misma señal', 'error');
+          }
+        } else if (!isAudible) {
+          duplicateSignalFrames = 0;
+        }
+
+        let targetX = 0;
+        let targetY = 1;
+        let ildDb = 0;
+        let itdMs = 0;
+        let pinnaRatio = 1.0;
+
+        if (isAudible) {
+          ildDb = dbR - dbL;
+          let ildNorm = Math.max(-1, Math.min(1, ildDb / 12.0));
+
+          itdMs = computeITD(bufferL, bufferR, audioCtx.sampleRate);
+          let itdNorm = Math.max(-1, Math.min(1, itdMs / 0.65));
+
+          targetX = (ildNorm * 0.65) + (itdNorm * 0.35);
+          targetX = Math.max(-1, Math.min(1, targetX));
+
+          const ratioL = computePinnaHighToMidRatio(analyserL, audioCtx.sampleRate);
+          const ratioR = computePinnaHighToMidRatio(analyserR, audioCtx.sampleRate);
+          pinnaRatio = (ratioL + ratioR) / 2;
+          if (inputMode === 'hardware') collectPinnaCalibrationSample(pinnaRatio, isAudible);
+
+          if (inputMode === 'synthetic') {
+            const deg = parseInt(synthAngleSlider.value, 10);
+            const rad = (deg * Math.PI) / 180;
+            targetX = Math.sin(rad);
+            targetY = Math.cos(rad);
+          } else {
+            const isBehind = isSourceBehind(pinnaRatio);
+            const yAbs = Math.sqrt(Math.max(0.01, 1 - targetX * targetX));
+            targetY = isBehind ? -yAbs : yAbs;
+          }
+        }
+
+        if (!isAudible && inputMode === 'hardware') {
+          collectPinnaCalibrationSample(0, false);
+        }
+
+        const smoothing = parseFloat(smoothingSlider.value);
+        if (isAudible) {
+          currentX = currentX * smoothing + targetX * (1 - smoothing);
+          currentY = currentY * smoothing + targetY * (1 - smoothing);
+          const energyNorm = Math.min(1, Math.max(0, (dbOverall - gateThreshold) / 35));
+          currentRadius = currentRadius * smoothing + energyNorm * (1 - smoothing);
+        } else {
+          currentRadius = currentRadius * 0.85;
+          currentX = currentX * 0.9;
+          currentY = currentY * 0.9;
+        }
+
+        const currentAngleRad = Math.atan2(currentX, currentY);
+        let currentAngleDeg = (currentAngleRad * 180) / Math.PI;
+
+        valILD.textContent = `${ildDb >= 0 ? '+' : ''}${ildDb.toFixed(2)}`;
+        valITD.textContent = `${itdMs >= 0 ? '+' : ''}${itdMs.toFixed(2)}`;
+        valPinna.textContent = pinnaRatio.toFixed(2);
+        overlayAzimuth.textContent = `${currentAngleDeg.toFixed(1)}°`;
+        overlayElevation.textContent = currentY.toFixed(2);
+        overlayEnergy.textContent = `${Math.round(currentRadius * 100)}%`;
+
+        updateZoneLabel(currentX, currentY, isAudible);
+        drawRadar(currentX, currentY, currentRadius, currentAngleDeg);
+
+        animationFrameId = requestAnimationFrame(frame);
+      }
+
+      animationFrameId = requestAnimationFrame(frame);
+    }
+
+    // Determine spatial zone naming
+    function updateZoneLabel(x, y, audible) {
+      if (!audible || currentRadius < 0.05) {
+        zoneBadge.textContent = "SILENCIO / BASE";
+        zoneBadge.className = "px-2.5 py-1 rounded-lg bg-dark-900 border border-slate-700 text-slate-400 font-mono text-xs";
+        return;
+      }
+
+      let lat = "";
+      if (x < -0.35) lat = "IZQUIERDA";
+      else if (x > 0.35) lat = "DERECHA";
+      else lat = "CENTRO";
+
+      let sag = "";
+      if (y > 0.3) sag = "FRENTE";
+      else if (y < -0.3) sag = "ATRÁS";
+
+      let label = "";
+      if (lat === "CENTRO" && sag === "") label = "CENTRAL INMEDIATO";
+      else if (sag === "") label = lat;
+      else if (lat === "CENTRO") label = sag;
+      else label = `${sag} - ${lat}`;
+
+      zoneBadge.textContent = label;
+
+      if (sag === "ATRÁS") {
+        zoneBadge.className = "px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/40 text-amber-300 font-bold text-xs shadow-sm";
+      } else {
+        zoneBadge.className = "px-2.5 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/40 text-cyan-300 font-bold text-xs shadow-sm";
+      }
+    }
+
+    function drawRadar(targetX, targetY, amplitude, angleDeg) {
+      const w = radarCanvas.width;
+      const h = radarCanvas.height;
+      const cx = w / 2;
+      const cy = h / 2;
+      const maxRadius = w * 0.40;
+
+      ctx.fillStyle = '#060a12';
+      ctx.fillRect(0, 0, w, h);
+
+      const rings = [0.25, 0.5, 0.75, 1.0];
+      rings.forEach((r, idx) => {
+        ctx.beginPath();
+        ctx.arc(cx, cy, maxRadius * r, 0, Math.PI * 2);
+        ctx.strokeStyle = idx === 3 ? 'rgba(0, 242, 254, 0.25)' : 'rgba(30, 41, 59, 0.6)';
+        ctx.lineWidth = idx === 3 ? 2 : 1;
+        ctx.setLineDash(idx === 3 ? [] : [4, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      });
+
+      for (let a = 0; a < 360; a += 45) {
+        const rad = (a * Math.PI) / 180;
+        const x2 = cx + Math.sin(rad) * maxRadius;
+        const y2 = cy - Math.cos(rad) * maxRadius;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(x2, y2);
+        ctx.strokeStyle = 'rgba(30, 41, 59, 0.4)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      ctx.font = '700 12px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillText('0° FRENTE', cx, cy - maxRadius - 16);
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText('180° ATRÁS', cx, cy + maxRadius + 18);
+
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#22d3ee';
+      ctx.fillText('270° L', cx - maxRadius - 14, cy);
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#60a5fa';
+      ctx.fillText('R 90°', cx + maxRadius + 14, cy);
+
+      drawDummyHead(cx, cy);
+
+      if (amplitude > 0.04) {
+        const dist = maxRadius * Math.min(1.0, 0.35 + amplitude * 0.65);
+        const px = cx + targetX * dist;
+        const py = cy - targetY * dist;
+
+        soundHistory.push({
+          x: px,
+          y: py,
+          alpha: 1.0,
+          size: 6 + amplitude * 18,
+          isBack: targetY < -0.2
+        });
+      }
+
+      if (soundHistory.length > 25) {
+        soundHistory.shift();
+      }
+
+      for (let i = 0; i < soundHistory.length; i++) {
+        const p = soundHistory[i];
+        p.alpha *= 0.92;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size * (0.4 + (i / soundHistory.length) * 0.6), 0, Math.PI * 2);
+        ctx.fillStyle = p.isBack 
+          ? `rgba(245, 158, 11, ${p.alpha * 0.25})` 
+          : `rgba(0, 242, 254, ${p.alpha * 0.25})`;
+        ctx.fill();
+      }
+
+      if (amplitude > 0.04) {
+        const dist = maxRadius * Math.min(1.0, 0.35 + amplitude * 0.65);
+        const px = cx + targetX * dist;
+        const py = cy - targetY * dist;
+        const isBack = targetY < -0.2;
+
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(px, py);
+        ctx.strokeStyle = isBack ? 'rgba(245, 158, 11, 0.4)' : 'rgba(0, 242, 254, 0.4)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        const coreColor = isBack ? '#fbbf24' : '#00f2fe';
+        const glowRadius = 20 + amplitude * 35;
+        const grad = ctx.createRadialGradient(px, py, 2, px, py, glowRadius);
+        grad.addColorStop(0, isBack ? 'rgba(245, 158, 11, 0.9)' : 'rgba(0, 242, 254, 0.9)');
+        grad.addColorStop(0.5, isBack ? 'rgba(245, 158, 11, 0.25)' : 'rgba(0, 242, 254, 0.25)');
+        grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+        ctx.beginPath();
+        ctx.arc(px, py, glowRadius, 0, Math.PI * 2);
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(px, py, 5 + amplitude * 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = coreColor;
+        ctx.shadowBlur = 15;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+    }
+
+    function drawDummyHead(cx, cy) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, 22, 28, 0, 0, Math.PI * 2);
+      ctx.fillStyle = '#0f172a';
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 2;
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(cx - 5, cy - 26);
+      ctx.lineTo(cx, cy - 35);
+      ctx.lineTo(cx + 5, cy - 26);
+      ctx.fillStyle = '#00f2fe';
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.ellipse(cx - 24, cy, 5, 10, 0, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0, 242, 254, 0.2)';
+      ctx.strokeStyle = '#00f2fe';
+      ctx.lineWidth = 1.5;
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.ellipse(cx + 24, cy, 5, 10, 0, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(59, 130, 246, 0.2)';
+      ctx.strokeStyle = '#3b82f6';
+      ctx.lineWidth = 1.5;
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#64748b';
+      ctx.fill();
+      ctx.restore();
+    }
+
+    window.addEventListener('load', async () => {
+      drawRadar(0, 0, 0, 0);
+      await populateAudioDevices();
+    });
+
+    // Mantiene los selectores sincronizados cuando se conecta, desconecta o
+    // cambia la disponibilidad de un micrófono.
+    if (navigator.mediaDevices?.addEventListener) {
+      navigator.mediaDevices.addEventListener('devicechange', async () => {
+        resetPinnaCalibration(false);
+        const shouldRestart = isRunning && inputMode === 'hardware';
+        const updated = await populateAudioDevices();
+        if (updated && shouldRestart) {
+          showToast('Cambió la lista de micrófonos; reiniciando captura', 'info');
+          await restartStream();
+        }
+      });
+    }
+  </script>
+</body>
+</html>
