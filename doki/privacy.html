@@ -56,54 +56,65 @@
       <div class="max-w-3xl mx-auto prose prose-lg">
         
         <h1 class="text-3xl md:text-4xl font-bold mb-2">Doki Privacy Policy</h1>
-        <p class="text-sm text-gray-500">Last updated: October 2, 2026 · Version 1.0</p>
+        <p class="text-sm text-gray-500">Last updated: October 10, 2026 · Version 1.1</p>
 
         <h2 class="text-2xl font-semibold mt-8">1. Who we are</h2>
         <p>Doki is an application developed by <strong>IANGINE</strong> ("IANGINE", "we", "us"). Contact: <a href="mailto:support@iangine.com" class="underline text-indigo-600 hover:text-indigo-800">support@iangine.com</a>.</p>
 
         <h2 class="text-2xl font-semibold mt-8">2. Summary</h2>
         <p>Doki stores your documents <strong>only on your phone</strong>. We do not have servers that receive your documents or your data. <strong>We do not collect, transmit, sell, or share</strong> personal information.</p>
+        <p class="mt-2">The free plan allows you to store up to 10 documents (a future VIP plan may expand this limit). The application is intended exclusively for individuals aged 18 and older.</p>
 
         <h2 class="text-2xl font-semibold mt-8">3. What information the app handles</h2>
-        <p>The app stores on your device, in encrypted form: the files you add (photos, scans, images, and PDFs), the data you enter about them (name, number, category, cardholder/holder, expiration dates, and reminders), your settings, and your name. This information <strong>never leaves your phone</strong> unless you choose to share it (see section 6).</p>
+        <p>The app stores on your device, in encrypted form (AES-256): the files you add (photos, scans, images, and PDFs), the data you enter about them (name, number, category, holder, expiration dates, and reminders), your settings, and your name.</p>
+        <p class="mt-2">It also handles locally any encrypted backups (files with the <code>.doki</code> extension) you choose to create, as well as security preferences, including screen capture protection. This information does not leave your phone unless you explicitly choose to share or export it (see section 6).</p>
 
         <h2 class="text-2xl font-semibold mt-8">4. Security</h2>
-        <p>Files and the database are encrypted on your device. The encryption key is stored in the system secure storage (Keychain on iOS, Keystore on Android). You can protect access with a 6-digit PIN and biometrics (fingerprint or facial recognition). The app does not receive your biometric data: it is processed entirely by the operating system.</p>
+        <p>Files and the database are encrypted on your device using AES-256. The encryption key is stored in the system secure storage (Keychain on iOS, Keystore on Android). Your PIN is never stored in plain text. You can optionally protect access with biometrics (fingerprint or facial recognition), which is handled exclusively by the operating system; the app never receives or accesses your fingerprint or face data.</p>
+        <p class="mt-2"><strong>Screen capture protection:</strong> enabled by default. While active, Android prevents screenshots and screen recordings within the app. You can toggle this protection on or off at any time under <strong>Profile → Security</strong>.</p>
+        <p class="mt-2"><strong>Backup password:</strong> if you create a local <code>.doki</code> backup, it is encrypted with a password of your choice (minimum 8 characters). <strong>IANGINE cannot recover this password</strong> nor decrypt the backup contents; without it, restoring is impossible.</p>
 
         <h2 class="text-2xl font-semibold mt-8">5. Permissions the app requests</h2>
-        <ul class="list-disc pl-5 space-y-2">
-          <li><strong>Camera:</strong> to take photos or scan documents.</li>
-          <li><strong>Notifications:</strong> to alert you before a document expires. Scheduled locally on your phone.</li>
-          <li><strong>Biometrics:</strong> to unlock the app, if enabled.</li>
-          <li><strong>Files and photos:</strong> to choose a file you want to save, using the system file picker.</li>
+        <p>Doki requests only the permissions strictly necessary for its local functions:</p>
+        <ul class="list-disc pl-5 space-y-2 mt-2">
+          <li><strong>Camera:</strong> to photograph or scan your documents. On Android, document scanning utilizes the Google ML Kit Document Scanner third-party component (by Google); all processing occurs locally on your device without sending images to IANGINE. On iOS, the system scanner is used.</li>
+          <li><strong>Access to photos and files:</strong> to select only the documents or images you choose via the system file picker.</li>
+          <li><strong>Notifications:</strong> to schedule local expiration reminders on your device. Notification text does not include the document name or sensitive details.</li>
+          <li><strong>Biometrics:</strong> to unlock the app using the operating system, if you choose to enable it.</li>
+          <li><strong>Phone reboot:</strong> to automatically reschedule your local expiration reminders after restarting the device.</li>
         </ul>
-        <p class="mt-2">You can revoke any permission at any time in your phone's system settings.</p>
+        <p class="mt-2">On Android, the app <strong>does not request internet access permission</strong>. You can revoke any of these permissions at any time in your phone's settings.</p>
 
         <h2 class="text-2xl font-semibold mt-8">6. When information leaves your phone</h2>
-        <p>Only when you explicitly choose to:</p>
-        <ul class="list-disc pl-5 space-y-2">
-          <li><strong>Sharing a document:</strong> Doki sends the file through the system share sheet. Once it leaves Doki, it is no longer protected by the app; the app warns you before doing so.</li>
-          <li><strong>Backup:</strong> you can export an encrypted <code>.doki</code> file protected by a password you choose. <strong>We cannot recover this password</strong>: without it, the backup cannot be opened.</li>
-          <li><strong>Receiving files from other apps:</strong> (for example, via WhatsApp or email) uses the system share menu.</li>
+        <p>Information only leaves your phone when you explicitly choose to perform one of the following actions:</p>
+        <ul class="list-disc pl-5 space-y-2 mt-2">
+          <li><strong>Sharing an original document:</strong> you can send the original (unencrypted) file to another app of your choice via the system share sheet. The app displays a warning before proceeding; from that point on, the file is governed by the recipient app's policies.</li>
+          <li><strong>Saving or sharing a <code>.doki</code> backup:</strong> you can export an encrypted backup with your password to save it on your device or share it via the system share sheet. Outside the app, the file remains under your sole control and custody. When restoring a backup, you can choose to merge it with your existing data or replace it.</li>
+          <li><strong>Opening external links or the survey:</strong> tapping external links (such as support, policies, or the VIP plan survey) launches your default web browser. The app does not send any document or device data when opening the browser.</li>
         </ul>
+        <p class="mt-2">In all cases, the decision and destination are entirely yours.</p>
 
         <h2 class="text-2xl font-semibold mt-8">7. VIP plan survey</h2>
-        <p>Doki may invite you to answer a survey regarding a potential VIP plan. Tapping "Take survey" opens your browser to an external website (<code>sigmasurvs.com</code>). <strong>That website is independent of Doki and maintains its own privacy policy.</strong> The app transmits no data when opening it. Participation in this survey is voluntary and all responses collected on SigmaSurvs are completely anonymous, used exclusively for aggregate research to evaluate future service features.</p>
+        <p>Doki may invite you to complete a voluntary survey regarding a potential VIP plan. Tapping "Take survey" opens the external platform site (<code>sigmasurvs.com</code>) in your browser. <strong>The app does not transmit your documents or profile data</strong>; the web request is handled directly by your browser. Responses are anonymous and are analyzed by IANGINE solely to evaluate potential future service features.</p>
+        <p class="mt-2">Please note that external web platforms like SigmaSurvs may log standard technical web traffic data (such as IP addresses or technical cookies) under their own privacy policies. We recommend reviewing their policies when visiting.</p>
+        <p class="mt-2">Today there are no purchases or pricing in the app. If a VIP plan or paid features are introduced in the future, this privacy policy will be updated and you will be notified before any payment is collected.</p>
 
         <h2 class="text-2xl font-semibold mt-8">8. What Doki does not do</h2>
-        <p>There are no user accounts, no analytics, no advertising, no trackers, and no third-party tools sending data. The app does not request internet access permission.</p>
+        <p>There are no user accounts on IANGINE servers, no analytics, no advertising, no trackers, and no sale or sharing of personal data with third parties. On Android, the app does not request internet access permission, technically preventing any external transmission of your information.</p>
 
         <h2 class="text-2xl font-semibold mt-8">9. Retention and deletion</h2>
-        <p>Your data remains on your phone until you delete it. You can delete it from <strong>Profile → Delete all data</strong> or by uninstalling the app. If you uninstall without having a backup, <strong>it cannot be recovered</strong>.</p>
+        <p>Your data remains on your phone until you decide to delete it. Selecting <strong>Profile → Delete all data</strong> removes your documents, files, database, and cryptographic keys from the phone, and cancels scheduled notifications. Uninstalling the app also deletes all this data from your device.</p>
+        <p class="mt-2"><strong>Note regarding exported backups:</strong> Any <code>.doki</code> backup files you previously saved or shared outside the app <strong>are NOT deleted</strong> when erasing data or uninstalling Doki, as they reside outside the app's storage and remain under your own management.</p>
+        <p class="mt-2">If you uninstall the app or delete your data without an exported <code>.doki</code> backup (or if you forget your backup password), <strong>the information cannot be recovered</strong>.</p>
 
         <h2 class="text-2xl font-semibold mt-8">10. Children</h2>
-        <p>Doki is not directed to individuals under the age of 14. The application does not collect personal data from any user, including minors. If you are under 14 years of age, you may only use the application under the supervision and consent of a parent or legal guardian.</p>
+        <p>Doki is directed <strong>only to individuals aged 18 and older</strong> and not to minors. The application does not knowingly collect data from minors nor is it intended for them. If you are under 18 years of age, you must not use the application.</p>
 
         <h2 class="text-2xl font-semibold mt-8">11. Your rights</h2>
-        <p>Because we do not receive or hold your data, complete control resides on your device. For questions regarding this policy, you can reach us at <a href="mailto:support@iangine.com" class="underline text-indigo-600 hover:text-indigo-800">support@iangine.com</a>.</p>
+        <p>Because we do not have your data and everything is stored locally, you maintain complete control on your device to view, edit, export, or delete your information at any time. For questions regarding this policy, you can contact us at <a href="mailto:support@iangine.com" class="underline text-indigo-600 hover:text-indigo-800">support@iangine.com</a>.</p>
 
         <h2 class="text-2xl font-semibold mt-8">12. Changes to this policy</h2>
-        <p>If we change how Doki handles data (for example, by introducing paid plans or optional cloud backup), we will update this page and date, and notify you within the app before the change takes effect.</p>
+        <p>Any modification to this policy will be published directly on this page (<a href="https://www.iangine.com/doki/privacy.html" class="underline text-indigo-600 hover:text-indigo-800">https://www.iangine.com/doki/privacy.html</a>) by updating the "Last updated" date and version number. If we make changes that alter data handling or introduce VIP plans, we will notify you within the app before they take effect.</p>
 
         <h2 class="text-2xl font-semibold mt-8">13. Governing law</h2>
         <p>This Privacy Policy is governed by and construed in accordance with the laws of the Republic of Honduras. Any disputes arising in connection with the application shall be subject to the jurisdiction of the competent courts of Honduras.</p>
